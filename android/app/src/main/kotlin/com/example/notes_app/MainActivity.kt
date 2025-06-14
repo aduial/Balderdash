@@ -1,4 +1,4 @@
-package com.example.notes_app
+package org.aduial.nonsense
 
 import io.flutter.embedding.android.FlutterActivity
 

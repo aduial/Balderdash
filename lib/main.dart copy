@@ -2,11 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:nonsense/screens/vocabulary_page.dart';
-import 'package:nonsense/screens/author_page.dart';
-import 'package:nonsense/screens/type_page.dart';
-import 'package:nonsense/screens/category_page.dart';
-import 'package:nonsense/screens/project_page.dart';
-import 'package:nonsense/screens/bootstrap_page.dart';
 import 'package:nonsense/config/colours.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
@@ -23,6 +18,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
+      // home: StartScreen(),
       home: HomeScreen(),
     );
   }
@@ -47,7 +43,7 @@ class HomeScreenState extends State<HomeScreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [tanteRia, blueGrey],
+            colors: [Colors.blueGrey, Colors.blueGrey.withValues(alpha: 0.2)],
           ),
         ),
       ),
@@ -61,12 +57,12 @@ class HomeScreenState extends State<HomeScreen> {
       childDecoration: const BoxDecoration(
         // NOTICE: Uncomment if you want to add shadow behind the page.
         // Keep in mind that it may cause animation jerks.
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 10.0,
-          ),
-        ],
+        // boxShadow: <BoxShadow>[
+        //   BoxShadow(
+        //     color: Colors.black12,
+        //     blurRadius: 0.0,
+        //   ),
+        // ],
         borderRadius: const BorderRadius.all(Radius.circular(16)),
       ),
       drawer: SafeArea(
@@ -82,7 +78,7 @@ class HomeScreenState extends State<HomeScreen> {
                   height: 128.0,
                   margin: const EdgeInsets.only(
                     top: 24.0,
-                    bottom: 24.0,
+                    bottom: 64.0,
                   ),
                   clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(
@@ -94,43 +90,17 @@ class HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 ListTile(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const AuthorPage()),
-                    );
-                  },
+                  onTap: () {},
                   leading: Icon(Icons.people_rounded),
                   title: Text('Authors'),
                 ),
                 ListTile(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const TypePage()),
-                    );
-                  },
-                  leading: Icon(Icons.theater_comedy_rounded),
-                  title: Text('Project types'),
-                ),
-                ListTile(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const ProjectPage()),
-                    );
-                  },
+                  onTap: () {},
                   leading: Icon(Icons.my_library_books_rounded),
                   title: Text('Projects'),
                 ),
                 ListTile(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const CategoryPage()),
-                    );
-                  },
+                  onTap: () {},
                   leading: Icon(Icons.category_rounded),
                   title: Text('Categories'),
                 ),
@@ -145,12 +115,7 @@ class HomeScreenState extends State<HomeScreen> {
                   title: Text('Vocabularies'),
                 ),
                 ListTile(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const BootstrapPage()),
-                    );
-                  },
+                  onTap: () {},
                   leading: Icon(Icons.auto_awesome_rounded),
                   title: Text('Run Nonsense!'),
                 ),
@@ -222,6 +187,41 @@ class HomeScreenState extends State<HomeScreen> {
     _advancedDrawerController.showDrawer();
   }
 }
+
+// class StartScreen extends StatelessWidget {
+//   const StartScreen({super.key});
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//         appBar: AppBar(
+//             iconTheme: IconThemeData(
+//               color: offWhite,
+//             ),
+//             backgroundColor: regularResultBGColour,
+//             title: const Text('Nonsense!',
+//               style: TextStyle(fontWeight: FontWeight.bold,
+//                   color: offWhite),
+//         )
+//         ),
+//         body: Center(
+//           child: ElevatedButton(
+//             child: const Text(
+//                 'Vocabulary editor'
+//             ),
+//             onPressed: () {
+//               Navigator.push(
+//                 context,
+//                 MaterialPageRoute(builder: (context) => const VocabularyPage()),
+//               );
+//             },
+//           ),
+//         ),
+//       backgroundColor: notepaperWhite,
+//     );
+//   }
+// }
+
 
 abstract final class AppTheme {
   // The FlexColorScheme defined light mode ThemeData.
