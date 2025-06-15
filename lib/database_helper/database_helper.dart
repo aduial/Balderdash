@@ -34,22 +34,8 @@ class DatabaseHelper {
 
   Future<Database> get database async {
     // _database = await initiateDatabase();
-    if (_database != null) return _database!;
-    _database = await _initDB('nonsense.sqlite');
+    _database = await _initDB(_dbName);
     return _database;
-  }
-
-  // Future<Database> get database async {
-  //   if (_database != null) return _database!;
-  //   _database = await _initDB('eldamo.sqlite');
-  //   return _database!;
-  // }
-
-  initiateDatabase() async {
-    io.Directory directory = await getApplicationDocumentsDirectory();
-    String path = join(directory.path, _dbName);
-    print('DB location: ${directory.path}');
-    return await openDatabase(path, version: _dbVersion, onCreate: _onCreate);
   }
 
   // return database if already available in App directory
@@ -58,19 +44,18 @@ class DatabaseHelper {
     io.Directory documentsDirectory = await getApplicationDocumentsDirectory();
     String dbPath = join(documentsDirectory.path, dbName);
     bool dbExists = await io.File(dbPath).exists();
-
     if (!dbExists) {
       // Copy from asset
       ByteData data = await rootBundle.load(join("assets", dbName));
       List<int> bytes =
       data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-
       // Write and flush the bytes written
       await io.File(dbPath).writeAsBytes(bytes, flush: true);
     }
-    return await openDatabase(dbPath, version: 1);
+    return await openDatabase(dbPath, version: _dbVersion);
   }
 
+  // deprecated
   void _onCreate(Database db, int version) async {
     await db.execute('''
       CREATE TABLE $_typeTableName(
