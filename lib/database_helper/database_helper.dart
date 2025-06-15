@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'package:flutter/services.dart';
 
 import 'package:nonsense/model/author.dart';
 import 'package:nonsense/model/category.dart';
@@ -7,12 +7,14 @@ import 'package:nonsense/model/project.dart';
 import 'package:nonsense/views/project_view.dart';
 import 'package:nonsense/views/category_view.dart';
 import 'package:nonsense/model/template.dart';
+import 'package:nonsense/views/template_view.dart';
 import 'package:nonsense/model/type.dart';
 import 'package:nonsense/model/vocabulary.dart';
 import 'package:nonsense/views/vocabulary_view.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
+import 'dart:io' as io;
 
 class DatabaseHelper {
 
@@ -31,15 +33,42 @@ class DatabaseHelper {
   static const _vocabularyTableName = "vocabulary";
 
   Future<Database> get database async {
-    _database = await initiateDatabase();
+    // _database = await initiateDatabase();
+    if (_database != null) return _database!;
+    _database = await _initDB('nonsense.sqlite');
     return _database;
   }
 
+  // Future<Database> get database async {
+  //   if (_database != null) return _database!;
+  //   _database = await _initDB('eldamo.sqlite');
+  //   return _database!;
+  // }
+
   initiateDatabase() async {
-    Directory directory = await getApplicationDocumentsDirectory();
+    io.Directory directory = await getApplicationDocumentsDirectory();
     String path = join(directory.path, _dbName);
     print('DB location: ${directory.path}');
     return await openDatabase(path, version: _dbVersion, onCreate: _onCreate);
+  }
+
+  // return database if already available in App directory
+  // else, copy from assets folder to app directory
+  Future<Database> _initDB(String dbName) async {
+    io.Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    String dbPath = join(documentsDirectory.path, dbName);
+    bool dbExists = await io.File(dbPath).exists();
+
+    if (!dbExists) {
+      // Copy from asset
+      ByteData data = await rootBundle.load(join("assets", dbName));
+      List<int> bytes =
+      data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+
+      // Write and flush the bytes written
+      await io.File(dbPath).writeAsBytes(bytes, flush: true);
+    }
+    return await openDatabase(dbPath, version: 1);
   }
 
   void _onCreate(Database db, int version) async {
@@ -151,7 +180,7 @@ class DatabaseHelper {
   Future<Author> upsertAuthor(Author author) async {
     Database db = await instance.database;
     var count = Sqflite.firstIntValue(await db.rawQuery(
-        "SELECT COUNT(*) FROM $_authorTableName WHERE id = ?", [author.id]));
+        "SELECT COUNT(*) FROM $_authorTableName WHERE id = ?;", [author.id]));
     if (count == 0) {
       await db.insert(_authorTableName, author.toMap(),
           conflictAlgorithm: ConflictAlgorithm.replace);
@@ -175,7 +204,7 @@ class DatabaseHelper {
   Future<Category> upsertCategory(Category category) async {
     Database db = await instance.database;
     var count = Sqflite.firstIntValue(await db.rawQuery(
-        "SELECT COUNT(*) FROM $_categoryTableName WHERE id = ?", [category.id]));
+        "SELECT COUNT(*) FROM $_categoryTableName WHERE id = ?;", [category.id]));
     if (count == 0) {
       await db.insert(_categoryTableName, category.toMap(),
           conflictAlgorithm: ConflictAlgorithm.replace);
@@ -317,7 +346,7 @@ class DatabaseHelper {
         "SELECT p.id, p.typeId, t.name AS type, p.authorId, a.name AS author, p.title, p.notes "
             "FROM $_projectTableName p "
             "JOIN $_typeTableName t ON p.typeId = t.id "
-            "JOIN $_authorTableName a ON p.authorId = a.id");
+            "JOIN $_authorTableName a ON p.authorId = a.id;");
     List<ProjectView> projectViews = [];
     for (var result in results) {
       ProjectView projectView = ProjectView.fromMap(result);
@@ -353,7 +382,7 @@ class DatabaseHelper {
             "FROM $_projectTableName p "
             "JOIN $_typeTableName t ON p.typeId = t.id "
             "JOIN $_authorTableName a ON p.authorId = a.id "
-            "WHERE p.id = ?",[id]
+            "WHERE p.id = ?;",[id]
     );
     if (map.isNotEmpty) {
       return ProjectView.fromMap(map.first);
@@ -416,7 +445,7 @@ class DatabaseHelper {
   }
 
 
-  // get list of all the templates
+  // get list of templates
   Future<List<Template>> getTemplates() async {
     Database db = await instance.database;
     final List<Map<String, dynamic>> results = await db.query(
@@ -430,8 +459,39 @@ class DatabaseHelper {
     return templates;
   }
 
+  // get list of templateviews
+  Future<List<TemplateView>> getTemplateViews() async {
+    Database db = await instance.database;
+    final List<Map<String, dynamic>> results = await db.rawQuery(
+        "SELECT t.id, t.projectId, p.title AS project, t.title, t.html, t.notes "
+            "FROM $_templateTableName t "
+            "JOIN $_projectTableName p ON t.projectId = p.id;");
+    List<TemplateView> templateViews = [];
+    for (var result in results) {
+      TemplateView templateView = TemplateView.fromMap(result);
+      templateViews.add(templateView);
+    }
+    return templateViews;
+  }
+
+  // get filtered list of templateviews
+  Future<List<TemplateView>> getFilteredTemplateViews(String searchTerm) async {
+    Database db = await instance.database;
+    final List<Map<String, dynamic>> results = await db.rawQuery(
+        "SELECT t.id, t.projectId, p.title AS project, t.title, t.html, t.notes "
+            "FROM $_templateTableName t "
+            "JOIN $_projectTableName p ON t.projectId = p.id "
+            "WHERE p.title like '%$searchTerm%';");
+    List<TemplateView> templateViews = [];
+    for (var result in results) {
+      TemplateView templateView = TemplateView.fromMap(result);
+      templateViews.add(templateView);
+    }
+    return templateViews;
+  }
+
   // Delete Template
-  Future<int> deleteTemplate(Template template) async {
+  Future<int> deleteTemplate(TemplateView template) async {
     Database db = await instance.database;
     return await db.delete(
       _templateTableName,

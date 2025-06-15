@@ -2,20 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_code_editor/flutter_code_editor.dart';
 import 'package:highlight/src/mode.dart';
 import 'package:nonsense/language/nonsense.dart';
+import 'package:nonsense/language/nonsense_template.dart';
 import 'package:nonsense/language/dusty.dart';
-// import 'package:highlight/languages/dust.dart';
 import 'package:nonsense/config/nonsense_theme_colours.dart';
 import 'package:nonsense/config/colours.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 
-class VocabularyEditor extends StatelessWidget {
+class ContentEditor extends StatelessWidget {
   final String content;
   final Function(String) onContentUpdated;
-  VocabularyEditor({
+  bool isVocabulary = true;
+  ContentEditor({
     super.key,
     required this.content,
-    required this.onContentUpdated
+    required this.onContentUpdated,
+    required this.isVocabulary,
   });
 
   final controller = CodeController();
@@ -23,7 +24,12 @@ class VocabularyEditor extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     controller.text = content;
-    controller.language = nonsense;
+    if (isVocabulary){
+      controller.language = nonsense;
+    } else {
+      controller.language = nonsenseTemplate;
+    }
+    // controller.language = nonsense;
     // controller.
     return MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -42,7 +48,7 @@ class VocabularyEditor extends StatelessWidget {
                     fontFamily: "Courier",
                     fontWeight: FontWeight.normal),
                 gutterStyle: GutterStyle(
-                  margin: 8,
+                  margin: 0,
                   textStyle: TextStyle(
                     height: 1.5,
                     fontSize: 12,

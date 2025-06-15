@@ -7,6 +7,7 @@ import 'package:nonsense/screens/type_page.dart';
 import 'package:nonsense/screens/category_page.dart';
 import 'package:nonsense/screens/project_page.dart';
 import 'package:nonsense/screens/bootstrap_page.dart';
+import 'package:nonsense/screens/template_page.dart';
 import 'package:nonsense/config/colours.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
@@ -155,7 +156,12 @@ class HomeScreenState extends State<HomeScreen> {
                   title: Text('Run Nonsense!'),
                 ),
                 ListTile(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const TemplatePage()),
+                    );
+                  },
                   leading: Icon(Icons.web_rounded),
                   title: Text('HTML Templates'),
                 ),

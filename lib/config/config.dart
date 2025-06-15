@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 // reference screen height minus padding (iPhone 15)
 const double refHeight = 759.0;
 const String newVocabularyTitle = "NEW";
+const String newTemplateTitle = "New Template";
 const String newAuthorName = "New Author";
 const String newCategoryName = "New Category";
 const String newProjectTitle = "New Project";

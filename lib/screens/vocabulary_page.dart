@@ -101,7 +101,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
               itemBuilder: (context, index) {
                 final vocabularyView = snapshot.data![index];
                 return Container(
-                  height: 30,
+                  height: 40,
                   padding: EdgeInsets.fromLTRB(5.0 * toScale, 0.0,
                       5.0 * toScale, 0.0),
                   decoration: BoxDecoration(

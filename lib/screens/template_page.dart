@@ -1,52 +1,52 @@
 import 'package:flutter/material.dart';
-import 'package:nonsense/screens/vocabulary_detail.dart';
-import 'package:nonsense/views/vocabulary_view.dart';
+import 'package:nonsense/screens/template_detail.dart';
+import 'package:nonsense/views/template_view.dart';
 import 'package:nonsense/database_helper/database_helper.dart';
 import 'package:nonsense/config/colours.dart';
 import 'package:nonsense/config/config.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
-class VocabularyPage extends StatefulWidget {
-  const VocabularyPage({super.key});
+class TemplatePage extends StatefulWidget {
+  const TemplatePage({super.key});
 
   @override
-  State<VocabularyPage> createState() => _VocabularyPageState();
+  State<TemplatePage> createState() => _TemplatePageState();
 }
 
-class _VocabularyPageState extends State<VocabularyPage> {
+class _TemplatePageState extends State<TemplatePage> {
   late DatabaseHelper dbHelper;
-  late Future<List<VocabularyView>> _vocabularyViews;
+  late Future<List<TemplateView>> _templateViews;
   final ScrollController _scrollController = ScrollController();
   int numItems = 0;
   String searchTerm = '';
-  Future<int> _getVocabularyListLength() async {
-    return await _vocabularyViews.then((value) {
+  Future<int> _getTemplateListLength() async {
+    return await _templateViews.then((value) {
       return value.length;
     });
   }
 
-  List<VocabularyView> filteredVocabularies = [];
+  List<TemplateView> filteredTemplates = [];
 
   @override
   void initState() {
     super.initState();
     dbHelper = DatabaseHelper.instance;
-    _refreshVocabularyViewList();
+    _refreshTemplateViewList();
   }
 
   onSearch(String value) {
     searchTerm = value;
-    _refreshVocabularyViewList();
+    _refreshTemplateViewList();
   }
 
-  void _refreshVocabularyViewList() {
+  void _refreshTemplateViewList() {
     setState(() {
       if (searchTerm == '') {
-        _vocabularyViews = dbHelper.getVocabularyViews();
+        _templateViews = dbHelper.getTemplateViews();
       } else {
-        _vocabularyViews = dbHelper.getFilteredVocabularyViews(searchTerm);
+        _templateViews = dbHelper.getFilteredTemplateViews(searchTerm);
       }
-      _getVocabularyListLength().then((value) {
+      _getTemplateListLength().then((value) {
         setState(() {
           numItems = value;
         });
@@ -73,7 +73,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
               decoration: InputDecoration(
                 filled: true,
                 fillColor: inActiveLargeSetColour,
-                hintText: "filter vocabularies",
+                hintText: "filter templates",
                 contentPadding: EdgeInsets.all(0),
                 prefixIcon: Icon(Icons.search, color: offWhite),
                 border: OutlineInputBorder(
@@ -83,15 +83,15 @@ class _VocabularyPageState extends State<VocabularyPage> {
               ),
             ),
           )),
-      body: FutureBuilder<List<VocabularyView>>(
-        future: _vocabularyViews,
+      body: FutureBuilder<List<TemplateView>>(
+        future: _templateViews,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No vocabularies found'));
+            return const Center(child: Text('No templates found'));
           }
           return Scrollbar(
             controller: _scrollController,
@@ -99,9 +99,9 @@ class _VocabularyPageState extends State<VocabularyPage> {
               itemCount: numItems,
               controller: _scrollController,
               itemBuilder: (context, index) {
-                final vocabularyView = snapshot.data![index];
+                final templateView = snapshot.data![index];
                 return Container(
-                  height: 30,
+                  height: 40,
                   padding: EdgeInsets.fromLTRB(5.0 * toScale, 0.0,
                       5.0 * toScale, 0.0),
                   decoration: BoxDecoration(
@@ -120,11 +120,9 @@ class _VocabularyPageState extends State<VocabularyPage> {
                           padding:
                               const EdgeInsetsDirectional.fromSTEB(4, 0, 2, 0),
                           child: AutoSizeText(
-                            vocabularyView.title!,
+                            templateView.title ?? "",
                             style: TextStyle(
-                              color: vocabularyView.useThis == 1
-                                  ? veryVeryDark
-                                  : lightBlueGrey
+                              color: veryVeryDark,
                             ),
                             maxLines: 1,
                           ),
@@ -133,29 +131,12 @@ class _VocabularyPageState extends State<VocabularyPage> {
                       Expanded(
                         flex: 2,
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              2, 0, 2 * toScale, 0),
-                          child: AutoSizeText(vocabularyView.category!,
-                              maxLines: 1,
-                              style: TextStyle(
-                                  color: vocabularyView.useThis == 1
-                                      ? inActiveLargeSetColour
-                                      : lightBlueGrey
-                              ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: Padding(
                           padding:
                               const EdgeInsetsDirectional.fromSTEB(2, 0, 2, 0),
-                          child: AutoSizeText(vocabularyView.project!,
+                          child: AutoSizeText(templateView.project!,
                               maxLines: 1,
                               style: TextStyle(
-                                  color: vocabularyView.useThis == 1
-                                      ? secondary
-                                      : lightBlueGrey
+                                color: secondary,
                               ),
                           ),
                         ),
@@ -167,19 +148,17 @@ class _VocabularyPageState extends State<VocabularyPage> {
                               const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
                           child: IconButton(
                             icon: const Icon(Icons.edit),
-                            color: vocabularyView.useThis == 1
-                                ? veryVeryDark
-                                : lightBlueGrey,
+                            color: veryVeryDark,
                             onPressed: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => VocabularyDetail(
-                                      vocabularyView: vocabularyView),
+                                  builder: (context) => TemplateDetail(
+                                      templateView: templateView),
                                 ),
                               ).then((value) {
                                 setState(() {
-                                  _refreshVocabularyViewList();
+                                  _refreshTemplateViewList();
                                 });
                               });
                             },
@@ -193,23 +172,21 @@ class _VocabularyPageState extends State<VocabularyPage> {
                               const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
                           child: IconButton(
                             icon: const Icon(Icons.delete),
-                            color: vocabularyView.useThis == 1
-                                ? veryVeryDark
-                                : lightBlueGrey,
+                            color: veryVeryDark,
                             onPressed: () async {
 
                               final bool isDelete = await showConfirmationAlertDialog(
                                 context,
-                                title: 'Delete ${vocabularyView.title!}?',
-                                message: "Do you want to delete ${vocabularyView.title!}? You cannot undo this!" ,
+                                title: 'Delete ${templateView.title!}?',
+                                message: "Do you want to delete ${templateView.title!}? You cannot undo this!" ,
                                 positiveText: 'Delete',
                                 negativeText: 'Cancel',
                                 highlightNegative: true,
                               );
 
                               if(isDelete){
-                                await dbHelper.deleteVocabulary(vocabularyView);
-                                _refreshVocabularyViewList();
+                                await dbHelper.deleteTemplate(templateView);
+                                _refreshTemplateViewList();
                               }
                             },
                           ),
@@ -226,25 +203,22 @@ class _VocabularyPageState extends State<VocabularyPage> {
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () async {
-          VocabularyView newVocabularyView = VocabularyView.fromMap({
+          TemplateView newTemplateView = TemplateView.fromMap({
             // "id": newVocabulary.id,
-            "categoryId": null,
-            "category": '',
             "projectId": null,
             "project": '',
-            "title": newVocabularyTitle,
-            "content": '',
-            "comment": 'comment',
-            "useThis": 1});
+            "title": newTemplateTitle,
+            "html": '',
+            "notes": 'comment'});
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => VocabularyDetail(
-                  vocabularyView: newVocabularyView),
+              builder: (context) => TemplateDetail(
+                  templateView: newTemplateView),
             ),
           ).then((value) {
             setState(() {
-              _refreshVocabularyViewList();
+              _refreshTemplateViewList();
             });
           });
         },

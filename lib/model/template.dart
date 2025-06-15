@@ -7,12 +7,14 @@
 class Template {
   int? id;
   int? projectId;
+  String? title;
   String? html;
   String? notes;
 
   Template({
     this.id,
     this.projectId,
+    this.title,
     this.html,
     this.notes
   });
@@ -21,6 +23,7 @@ class Template {
     return {
       "id": id,
       "projectId": projectId,
+      "title": title,
       "html": html,
       "notes": notes
     };
@@ -30,6 +33,7 @@ class Template {
     Template template = Template();
     template.id = map['id'];
     template.projectId = map['projectId'];
+    template.title = map['title'];
     template.html = map['html'];
     template.notes = map['notes'];
     return template;

@@ -8,7 +8,7 @@ import 'package:nonsense/database_helper/database_helper.dart';
 import 'package:nonsense/config/colours.dart';
 import 'package:nonsense/config/config.dart';
 import 'package:dropdown_search/dropdown_search.dart';
-import 'package:nonsense/widgets/vocabulary_editor.dart';
+import 'package:nonsense/widgets/content_editor.dart';
 import 'package:widgets_easier/widgets_easier.dart';
 
 class ProjectDetail extends StatefulWidget {
