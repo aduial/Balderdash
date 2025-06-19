@@ -54,6 +54,7 @@ dependencies:
   widgets_easier: ^0.0.10
   flutter_slider_drawer: ^3.0.2
   flutter_advanced_drawer: ^1.5.0
+  super_string: ^1.0.3
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -52,6 +52,7 @@ class DatabaseHelper {
       // Write and flush the bytes written
       await io.File(dbPath).writeAsBytes(bytes, flush: true);
     }
+    print('DB location: $dbPath');
     return await openDatabase(dbPath, version: _dbVersion);
   }
 
@@ -550,6 +551,22 @@ class DatabaseHelper {
     );
   }
 
+
+  // get a specific type
+  Future<Vocabulary> getVocabularyByTitleAndProject(String searchTerm, int projectId) async {
+    Database db = await instance.database;
+    final map = await db.rawQuery(
+        "SELECT * FROM $_vocabularyTableName "
+            "WHERE title = '$searchTerm' "
+            "AND projectId = $projectId "
+            "AND useThis = 1;");
+    if (map.isNotEmpty) {
+      return Vocabulary.fromMap(map.first);
+    } else {
+      throw Exception("Vocabulary with title '$searchTerm' not found for this project");
+    }
+  }
+
   // Inserting and updating a vocabulary
   Future<Vocabulary> upsertVocabulary(Vocabulary vocabulary) async {
     Database db = await instance.database;
@@ -563,6 +580,8 @@ class DatabaseHelper {
     }
     return vocabulary;
   }
+
+
 
   // get VocabularyView list
   Future<List<VocabularyView>> getVocabularyViews() async {

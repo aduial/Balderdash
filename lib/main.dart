@@ -9,7 +9,6 @@ import 'package:nonsense/screens/project_page.dart';
 import 'package:nonsense/screens/bootstrap_page.dart';
 import 'package:nonsense/screens/template_page.dart';
 import 'package:nonsense/config/colours.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 
 void main() => runApp(MyApp());
@@ -68,7 +67,7 @@ class HomeScreenState extends State<HomeScreen> {
             blurRadius: 10.0,
           ),
         ],
-        borderRadius: const BorderRadius.all(Radius.circular(16)),
+        borderRadius: BorderRadius.all(Radius.circular(16)),
       ),
       drawer: SafeArea(
         child: Container(

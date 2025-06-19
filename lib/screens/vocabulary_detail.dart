@@ -76,7 +76,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
   }
 
   setUpdatedProject(int projectId) {
-    newProjectId = projectId!;
+    newProjectId = projectId;
   }
 
   onTitleChanged(String title) async {
@@ -169,6 +169,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                       if (item == null && !isExistingVV) {
                         return 'please select a Category';
                       }
+                      return null;
                     },
                     popupProps: PopupProps.modalBottomSheet(
                         showSelectedItems: true,
@@ -208,6 +209,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                       if (item == null && !isExistingVV) {
                         return 'please select a Project';
                       }
+                      return null;
                     },
                     popupProps: PopupProps.modalBottomSheet(
                         showSelectedItems: true,
@@ -321,9 +323,6 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
               Expanded(
                 flex: 3,
                 child:  ElevatedButton(
-                  child: const Icon(
-                      Icons.save,
-                  ),
                   style: const ButtonStyle(
                     iconAlignment: IconAlignment.end,
                   ),
@@ -356,6 +355,9 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                       Navigator.of(context).pop();
                     }
                   },
+                  child: const Icon(
+                      Icons.save,
+                  ),
                 ),
               ),
             ]),

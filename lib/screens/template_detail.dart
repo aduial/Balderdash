@@ -63,7 +63,7 @@ class _TemplateDetailState extends State<TemplateDetail> {
   }
 
   setUpdatedProject(int projectId) {
-    newProjectId = projectId!;
+    newProjectId = projectId;
   }
 
   onTitleChanged(String title) async {
@@ -150,6 +150,7 @@ class _TemplateDetailState extends State<TemplateDetail> {
                       if (item == null && !isExistingTV) {
                         return 'please select a Project';
                       }
+                      return null;
                     },
                     popupProps: PopupProps.modalBottomSheet(
                         showSelectedItems: true,
@@ -238,9 +239,6 @@ class _TemplateDetailState extends State<TemplateDetail> {
               Expanded(
                 flex: 3,
                 child:  ElevatedButton(
-                  child: const Icon(
-                      Icons.save,
-                  ),
                   style: const ButtonStyle(
                     iconAlignment: IconAlignment.end,
                   ),
@@ -271,6 +269,9 @@ class _TemplateDetailState extends State<TemplateDetail> {
                       Navigator.of(context).pop();
                     }
                   },
+                  child: const Icon(
+                      Icons.save,
+                  ),
                 ),
               ),
             ]),

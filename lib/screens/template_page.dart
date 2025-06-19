@@ -65,7 +65,7 @@ class _TemplatePageState extends State<TemplatePage> {
             color: notepaperWhite,
           ),
           backgroundColor: regularResultBGColour,
-          title: Container(
+          title: SizedBox(
             height: 30,
             child: TextField(
               style: TextStyle(color: offWhite, fontSize: 16),

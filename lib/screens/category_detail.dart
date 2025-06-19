@@ -135,6 +135,7 @@ class _CategoryDetailState extends State<CategoryDetail> {
                       if (isExistingCV && item?.id == newCategoryId) {
                         return "Sorry, can't self-parent";
                       }
+                      return null;
                     },
                     popupProps: PopupProps.modalBottomSheet(
                         showSelectedItems: true,
@@ -208,9 +209,6 @@ class _CategoryDetailState extends State<CategoryDetail> {
               Expanded(
                 flex: 3,
                 child:  ElevatedButton(
-                  child: const Icon(
-                      Icons.save,
-                  ),
                   style: const ButtonStyle(
                     iconAlignment: IconAlignment.end,
                   ),
@@ -240,6 +238,9 @@ class _CategoryDetailState extends State<CategoryDetail> {
                       Navigator.of(context).pop();
                     }
                   },
+                  child: const Icon(
+                      Icons.save,
+                  ),
                 ),
               ),
             ]),

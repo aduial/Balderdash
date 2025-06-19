@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:nonsense/model/project.dart';
 import 'package:nonsense/model/type.dart';
-import 'package:nonsense/model/category.dart';
 import 'package:nonsense/model/author.dart';
 import 'package:nonsense/views/project_view.dart';
 import 'package:nonsense/database_helper/database_helper.dart';
 import 'package:nonsense/config/colours.dart';
 import 'package:nonsense/config/config.dart';
 import 'package:dropdown_search/dropdown_search.dart';
-import 'package:nonsense/widgets/content_editor.dart';
-import 'package:widgets_easier/widgets_easier.dart';
 
 class ProjectDetail extends StatefulWidget {
   final ProjectView projectView;
@@ -162,6 +159,7 @@ class _ProjectDetailState extends State<ProjectDetail> {
                       if (item == null && !isExistingPV) {
                         return 'please select a Type';
                       }
+                      return null;
                     },
                     popupProps: PopupProps.modalBottomSheet(
                         showSelectedItems: true,
@@ -201,6 +199,7 @@ class _ProjectDetailState extends State<ProjectDetail> {
                       if (item == null && !isExistingPV) {
                         return 'please select a Project';
                       }
+                      return null;
                     },
                     popupProps: PopupProps.modalBottomSheet(
                         showSelectedItems: true,
@@ -273,9 +272,6 @@ class _ProjectDetailState extends State<ProjectDetail> {
                   Expanded(
                     flex: 2,
                     child:  ElevatedButton(
-                      child: const Icon(
-                        Icons.save,
-                      ),
                       style: const ButtonStyle(
                         iconAlignment: IconAlignment.end,
                       ),
@@ -306,6 +302,9 @@ class _ProjectDetailState extends State<ProjectDetail> {
                           Navigator.of(context).pop();
                         }
                       },
+                      child: const Icon(
+                        Icons.save,
+                      ),
                     ),
                   ),
                 ]),

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_code_editor/flutter_code_editor.dart';
-import 'package:highlight/src/mode.dart';
 import 'package:nonsense/language/nonsense.dart';
 import 'package:nonsense/language/nonsense_template.dart';
-import 'package:nonsense/language/dusty.dart';
 import 'package:nonsense/config/nonsense_theme_colours.dart';
 import 'package:nonsense/config/colours.dart';
 

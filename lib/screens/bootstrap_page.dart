@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:nonsense/screens/vocabulary_detail.dart';
+import 'package:nonsense/screens/run_page.dart';
 import 'package:nonsense/views/vocabulary_view.dart';
 import 'package:nonsense/database_helper/database_helper.dart';
 import 'package:nonsense/config/colours.dart';
@@ -150,7 +151,7 @@ class _BootstrapPageState extends State<BootstrapPage> {
             blurRadius: 10.0,
           ),
         ],
-        borderRadius: const BorderRadius.all(Radius.circular(16)),
+        borderRadius: BorderRadius.all(Radius.circular(16)),
       ),
       child: Scaffold(
         appBar: AppBar(
@@ -165,7 +166,7 @@ class _BootstrapPageState extends State<BootstrapPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
 
-              Container(
+              SizedBox(
                 height: 30,
                 child: TextField(
                   style: TextStyle(color: offWhite, fontSize: 16),
@@ -297,7 +298,7 @@ class _BootstrapPageState extends State<BootstrapPage> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        VocabularyDetail(
+                                        RunPage(
                                             vocabularyView: vocabularyView),
                                   ),
                                 ).then((value) {
