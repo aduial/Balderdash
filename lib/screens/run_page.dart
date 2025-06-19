@@ -4,8 +4,6 @@ import 'package:nonsense/config/colours.dart';
 import 'package:nonsense/config/config.dart';
 import 'package:nonsense/views/vocabulary_view.dart';
 import 'package:nonsense/model/vocabulary.dart';
-import 'dart:convert';
-import 'dart:math';
 import 'package:nonsense/widgets/voc_trace.dart';
 
 import '../widgets/voc_trace.dart';
@@ -47,187 +45,23 @@ class _RunPageState extends State<RunPage> {
       "comment": widget._vocabularyView.comment,
       "useThis": widget._vocabularyView.useThis,
     });
-    resultController.text = await parseVocabulary(voc);
-  }
-
-  Future<String> parseVocabulary(Vocabulary voc, [int contentCase = 0]) async {
     VocTrace vc = VocTrace(
-      line: pickRandomLine(splitVocabulary(voc.content!)),
-        flushResult: (String childResult){
-          addToResul(childResult);
-        }
-    );
-    child: ContentEditor(
-        content: widget.vocabularyView.content!,
-        onContentUpdated: (String updatedContent){
-          onContentChanged(updatedContent);},
-        isVocabulary: true
-    )
-    await parseLine(vc);
-    return globalResult.toString();
+        vocabulary: voc,
+        flush: _onFlush,
+        repeat: 1);
+    globalResult.write(await vc.parse());
+    resultController.text = globalResult.toString();
   }
 
-  // copy original Nonsense Perl script behaviour:
-  // ignore lines after an empty line (useful for testing)
-  List<String> splitVocabulary(String content) {
-    List<String> uniqueLines = [];
-    List<String> activeLines = [];
-    List<String> linesToAdd = [];
-    LineSplitter ls = LineSplitter();
-    uniqueLines = ls.convert(content);
-    for (var line in uniqueLines) {
-      if (line.isEmpty){
-        break;
-      }
-      activeLines.add(line);
-    }
-    for (var line in activeLines) {
-      if (line.contains(RegExp(r'^#\d+#'))) {
-        linesToAdd.addAll(applyWeighting(line));
-      }
-    }
-    return List.from(activeLines)..addAll(linesToAdd);
+  _onFlush(String result){
+    globalResult.write(result);
+    // return flushLocalResult();
   }
 
-  List<String> applyWeighting(String line) {
-    List<String> addingLines = [];
-    int start = line.indexOf('#');
-    int end = line.indexOf('#', start + 1);
-    int weight = int.parse(line.substring(start + 1, end));
-    for (int i = 1; i <= weight; i++) {
-      // add as many copies as the factor specifies
-      addingLines.add(line);
-    }
-    return addingLines;
+  void addChildResult(String childResult){
+    globalResult.write(childResult);
   }
 
-  String pickRandomLine(List<String> weightedLines) {
-    final random = Random();
-    return weightedLines[random.nextInt(weightedLines.length)];
-  }
-
-  Future<String> parseLine(VocTrace vc) async {
-    vc.line = vc.line.replaceAll(RegExp(r'^#\d+#'), '');
-    if (vc.line.contains(RegExp(r'^#\d+-\d+}'))) {
-      // weighting factor: random nr between two nrs, inclusive
-      vc = parseNumberRange(vc);
-    } else if (vc.line.startsWith('{[')) {
-      // anonymous, pick one and add
-      vc = parseAnonymous(vc);
-    } else if (vc.line.startsWith('{\\')) {
-      // line break
-      vc = parseSpecial(vc);
-    } else if (vc.line.contains(RegExp(r'^{\^?\w*(#\d+-\d+)?}'))) {
-      // variable
-      vc = await parseVariable(vc);
-    } else if (vc.line.contains(RegExp(r'^[\w\s\\@()<>$%*";:?!\-+,.]'))) {
-      // literal
-      vc = parseLiteral(vc);
-    }
-    if (vc.line.isNotEmpty) {
-      // get to the next part of the line
-      return await parseLine(vc);
-    } else {
-      // end of vc lifecycle, flush vc buffer to global result
-      globalResult.write(vc.localResult.toString());
-
-      return "";
-    }
-  }
-
-  VocTrace parseSpecial(VocTrace vc) {
-    int start = vc.line.indexOf('{') + 2;
-    int end = vc.line.indexOf('}', start + 1);
-    switch (vc.line.substring(start,end).toUpperCase()) {
-      case 'N':
-        vc.localResult.write('\n');
-      case 'L':
-        vc.localResult.write('{');
-      case 'R':
-        vc.localResult.write('}');
-      case '0':
-        vc.localResult.write('');
-      default:
-        vc.localResult.write('');
-    }
-    vc.localResult.write(vc.line.substring(start + 1, end));
-    // chop from current line
-    vc.line = vc.line.substring(end + 1);
-    return vc;
-  }
-
-  VocTrace parseNumberRange(VocTrace vc) {
-    int between = parseNumberBetween(vc);
-    // add to result
-    vc.localResult.write(between.toString());
-    int start = vc.line.indexOf('{#');
-    int end = vc.line.indexOf('}', start + 2);
-    // chop from current line
-    vc.line = vc.line.substring(end + 1);
-    return vc;
-  }
-
-  VocTrace parseAnonymous(VocTrace vc) {
-    final random = Random();
-    int start = vc.line.indexOf('{[');
-    int end = vc.line.indexOf('}', start + 1);
-    String anonymous = vc.line.substring(start + 2, end);
-    // add to result
-    if (anonymous.split("|").length > 1 || random.nextBool()){
-      vc.localResult.write(pickRandomLine(anonymous.split("|")));
-    }
-    // chop from current line
-    vc.line = vc.line.substring(end + 1);
-    return vc;
-  }
-
-  Future<VocTrace> parseVariable(VocTrace vc) async {
-    print(vc.line);
-;    if (vc.line.contains(RegExp(r'^{\^?\w*(#\d+-\d+)}'))) {
-      vc.repeat = parseNumberBetween(vc);
-      vc.line = vc.line.replaceFirst(RegExp(r'#\d+-\d+'), '');
-    }
-    int start = vc.line.indexOf('{');
-    int end = vc.line.indexOf('}', start + 1);
-    vc.variableName = vc.line.substring(start + 1, end);
-    Vocabulary next = await getVocabulary(
-        vc.getVariableName().toUpperCase(),
-        widget._vocabularyView.projectId!);
-    // suspend vc, flush local buffer to global
-    globalResult.write(vc.localResult.toString());
-    // and clear to store the rest
-    vc.localResult.clear();
-    // add required nr of copies, the only way I could think of without
-    // needing to figure out how to communicate across recursion levels
-    for (int i = 1; i <= vc.repeat; i++) {
-      await parseVocabulary(next);
-    }
-    // chop off from current line
-    vc.line = vc.line.substring(end + 1);
-    return vc;
-  }
-
-  int parseNumberBetween(VocTrace vc){
-    final random = Random();
-    int start = vc.line.indexOf('#');
-    int dash = vc.line.indexOf('-');
-    int end = vc.line.indexOf('}', start + 1);
-    int first = int.parse(vc.line.substring(start + 1, dash));
-    int second = int.parse(vc.line.substring(dash + 1, end));
-    int large = max(first, second) + 1;
-    int small = min(first, second);
-    return first + random.nextInt(large - small);
-  }
-
-  VocTrace parseLiteral(VocTrace vc){
-    int start = vc.line.indexOf(RegExp(r'^'));
-    int end = vc.line.indexOf(RegExp(r'$|{'), start + 1);
-    // add to result
-    vc.localResult.write(vc.line.substring(start, end));
-    // chop from line
-    vc.line = vc.line.substring(end);
-    return vc;
-  }
 
   @override
   Widget build(BuildContext context) {
