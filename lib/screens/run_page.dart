@@ -8,8 +8,6 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:nonsense/widgets/voc_trace.dart';
 
-import '../widgets/voc_trace.dart';
-
 class RunPage extends StatefulWidget {
   final VocabularyView _vocabularyView;
   const RunPage({super.key, required VocabularyView vocabularyView})
@@ -24,7 +22,6 @@ class _RunPageState extends State<RunPage> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController resultController =
       TextEditingController(text: '');
-  StringBuffer globalResult = StringBuffer();
 
   @override
   void initState() {
@@ -37,7 +34,6 @@ class _RunPageState extends State<RunPage> {
   }
 
   Future<void> doThings() async {
-    globalResult.clear();
     Vocabulary voc = Vocabulary.fromMap({
       "id": widget._vocabularyView.id,
       "categoryId": widget._vocabularyView.categoryId,
@@ -47,24 +43,16 @@ class _RunPageState extends State<RunPage> {
       "comment": widget._vocabularyView.comment,
       "useThis": widget._vocabularyView.useThis,
     });
-    resultController.text = await parseVocabulary(voc);
+    VocTrace vc = VocTrace(
+        vocabulary: voc,
+        line: pickRandomLine(splitVocabulary(voc.content!)));
+    resultController.text = await parseVocabulary(vc);
   }
 
-  Future<String> parseVocabulary(Vocabulary voc, [int contentCase = 0]) async {
-    VocTrace vc = VocTrace(
-      line: pickRandomLine(splitVocabulary(voc.content!)),
-        flushResult: (String childResult){
-          addToResul(childResult);
-        }
-    );
-    child: ContentEditor(
-        content: widget.vocabularyView.content!,
-        onContentUpdated: (String updatedContent){
-          onContentChanged(updatedContent);},
-        isVocabulary: true
-    )
-    await parseLine(vc);
-    return globalResult.toString();
+  Future<String> parseVocabulary(VocTrace vcn) async {
+    VocTrace vc = vcn;
+    return await parseLine(vc);
+    // return globalResult.toString();
   }
 
   // copy original Nonsense Perl script behaviour:
@@ -76,7 +64,7 @@ class _RunPageState extends State<RunPage> {
     LineSplitter ls = LineSplitter();
     uniqueLines = ls.convert(content);
     for (var line in uniqueLines) {
-      if (line.isEmpty){
+      if (line.isEmpty) {
         break;
       }
       activeLines.add(line);
@@ -128,17 +116,15 @@ class _RunPageState extends State<RunPage> {
       // get to the next part of the line
       return await parseLine(vc);
     } else {
-      // end of vc lifecycle, flush vc buffer to global result
-      globalResult.write(vc.localResult.toString());
-
-      return "";
+      // end of vc lifecycle, flush child buffer to parent
+      return vc.getCasedResult();
     }
   }
 
   VocTrace parseSpecial(VocTrace vc) {
     int start = vc.line.indexOf('{') + 2;
     int end = vc.line.indexOf('}', start + 1);
-    switch (vc.line.substring(start,end).toUpperCase()) {
+    switch (vc.line.substring(start, end).toUpperCase()) {
       case 'N':
         vc.localResult.write('\n');
       case 'L':
@@ -173,7 +159,7 @@ class _RunPageState extends State<RunPage> {
     int end = vc.line.indexOf('}', start + 1);
     String anonymous = vc.line.substring(start + 2, end);
     // add to result
-    if (anonymous.split("|").length > 1 || random.nextBool()){
+    if (anonymous.split("|").length > 1 || random.nextBool()) {
       vc.localResult.write(pickRandomLine(anonymous.split("|")));
     }
     // chop from current line
@@ -182,32 +168,32 @@ class _RunPageState extends State<RunPage> {
   }
 
   Future<VocTrace> parseVariable(VocTrace vc) async {
-    print(vc.line);
-;    if (vc.line.contains(RegExp(r'^{\^?\w*(#\d+-\d+)}'))) {
-      vc.repeat = parseNumberBetween(vc);
+    int repeat = 1;
+    String varTitle = '';
+    if (vc.line.contains(RegExp(r'^{\^?\w*(#\d+-\d+)}'))) {
+      repeat = parseNumberBetween(vc);
       vc.line = vc.line.replaceFirst(RegExp(r'#\d+-\d+'), '');
     }
     int start = vc.line.indexOf('{');
     int end = vc.line.indexOf('}', start + 1);
-    vc.variableName = vc.line.substring(start + 1, end);
+    varTitle = vc.line.substring(start + 1, end);
     Vocabulary next = await getVocabulary(
-        vc.getVariableName().toUpperCase(),
+        varTitle.replaceFirst('^', '').toUpperCase(),
         widget._vocabularyView.projectId!);
-    // suspend vc, flush local buffer to global
-    globalResult.write(vc.localResult.toString());
-    // and clear to store the rest
-    vc.localResult.clear();
-    // add required nr of copies, the only way I could think of without
-    // needing to figure out how to communicate across recursion levels
-    for (int i = 1; i <= vc.repeat; i++) {
-      await parseVocabulary(next);
-    }
+    VocTrace vcn = VocTrace(
+        vocabulary: next,
+        line: pickRandomLine(splitVocabulary(next.content!)));
+    vcn.repeat = repeat;
+    vcn.variableName = varTitle;
+    // for (int i = 1; i <= repeat; i++) {
+    vc.localResult.write(await parseVocabulary(vcn));
+    // }
     // chop off from current line
     vc.line = vc.line.substring(end + 1);
     return vc;
   }
 
-  int parseNumberBetween(VocTrace vc){
+  int parseNumberBetween(VocTrace vc) {
     final random = Random();
     int start = vc.line.indexOf('#');
     int dash = vc.line.indexOf('-');
@@ -219,7 +205,7 @@ class _RunPageState extends State<RunPage> {
     return first + random.nextInt(large - small);
   }
 
-  VocTrace parseLiteral(VocTrace vc){
+  VocTrace parseLiteral(VocTrace vc) {
     int start = vc.line.indexOf(RegExp(r'^'));
     int end = vc.line.indexOf(RegExp(r'$|{'), start + 1);
     // add to result
