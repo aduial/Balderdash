@@ -7,6 +7,7 @@ import 'package:nonsense/model/vocabulary.dart';
 import 'dart:convert';
 import 'dart:math';
 import 'package:nonsense/widgets/voc_trace.dart';
+import 'package:date_format/date_format.dart';
 
 class RunPage extends StatefulWidget {
   final VocabularyView _vocabularyView;
@@ -18,6 +19,7 @@ class RunPage extends StatefulWidget {
 }
 
 class _RunPageState extends State<RunPage> {
+  Map<String, String> stateVariables = {};
   late DatabaseHelper _dbHelper;
   final ScrollController _scrollController = ScrollController();
   final TextEditingController resultController =
@@ -103,14 +105,26 @@ class _RunPageState extends State<RunPage> {
       // anonymous, pick one and add
       vc = parseAnonymous(vc);
     } else if (vc.line.startsWith('{\\')) {
-      // line break
+      // line break, { } or null
       vc = parseSpecial(vc);
-    } else if (vc.line.contains(RegExp(r'^{\^?\w*(#\d+-\d+)?}'))) {
+    } else if (vc.line.contains(RegExp(r'^\{\w*:=\^?\w+(#\d+-\d+)?\}'))) {
+      // evaluate command and store as state variable
+      vc = await parseStateVariable(vc);
+    } else if (vc.line.contains(RegExp(r'^\{\w*=([\w\s\\@()<>%*_";:?!\-+,.])+\}'))) {
+      // add literal string as state variable
+      vc = parseStateLiteral(vc);
+    } else if (vc.line.contains(RegExp(r'^\{\^?\w+(#\d+-\d+)?\}'))) {
       // variable
       vc = await parseVariable(vc);
-    } else if (vc.line.contains(RegExp(r'^[\w\s\\@()<>$%*";:?!\-+,.]'))) {
+    } else if (vc.line.contains(RegExp(r'^[\w\s\\@()<>%*_";:?!\-+,.]'))) {
       // literal
       vc = parseLiteral(vc);
+    } else if (vc.line.contains(RegExp(r'^\{\$\w*\}'))) {
+      // read state variable
+      vc = readStateVariable(vc);
+    } else if (vc.line.contains(RegExp(r'^\{@(%-?\w\w?\W*)*(\|\d+\|\d+)?\}'))) {
+      // {@strftime format|number1|number2}
+      vc = insertStrfTime(vc);
     }
     if (vc.line.isNotEmpty) {
       // get to the next part of the line
@@ -119,6 +133,53 @@ class _RunPageState extends State<RunPage> {
       // end of vc lifecycle, flush child buffer to parent
       return vc.getCasedResult();
     }
+  }
+
+  // convert most strftime commands into their equivalent Dart counterpart
+  // to ensure backwards compatibility with existing Nonsense grammar files
+  VocTrace insertStrfTime(VocTrace vc) {
+    final random = Random();
+    int begin = 0;
+    int end = 0;
+    int between = 0;
+    if (vc.line.contains(RegExp(r'\|\d+\|\d+'))) {
+      int eerste = vc.line.indexOf('|');
+      int tweede = vc.line.indexOf('|', eerste + 1);
+      int laatste = vc.line.indexOf('}');
+      String numberOne = vc.line.substring(eerste + 1, tweede);
+      String numberTwo = vc.line.substring(tweede + 1, laatste);
+      int nr1 = int.parse(numberOne);
+      int nr2 = int.parse(numberTwo);
+      int small = min(nr1, nr2);
+      int large = max(nr1, nr2) + 1;
+      between = small + random.nextInt(large - small);
+    }
+    DateTime someTimeAgo = DateTime.now().subtract(Duration(seconds: 0 - between));
+    begin = vc.line.indexOf('@') + 1;
+    if (vc.line.contains('|')){
+      end = vc.line.indexOf('|');
+    } else {
+      end = vc.line.indexOf('}');
+    }
+    String strfTime = vc.line.substring(begin, end);
+    strfTime = strfTime.replaceFirst('%f', '%f%g');
+    List<String> strfTokens = strfTime.split('%');
+    RegExp azAZ = new RegExp(r'([a-zA-Z]+)');
+    RegExp rest = new RegExp(r'([^a-zA-Z]+)');
+    List<String> dtFormat = [];
+    for (String token in strfTokens){
+      if (token.isNotEmpty){
+        var key = azAZ.firstMatch(token)?.group(0) ?? '';
+        dtFormat.add(strfToDart["%$key"] ?? '');
+        var fuzz = rest.firstMatch(token)?.group(0) ?? '';
+        if (fuzz.isNotEmpty){
+          dtFormat.add(fuzz);
+        }
+      }
+    }
+    vc.localResult.write(formatDate(someTimeAgo, dtFormat));
+    vc.line = vc.line.substring(vc.line.indexOf('}') + 1);
+    return vc;
   }
 
   VocTrace parseSpecial(VocTrace vc) {
@@ -167,6 +228,22 @@ class _RunPageState extends State<RunPage> {
     return vc;
   }
 
+  Future<VocTrace> parseStateVariable (VocTrace vc) async {
+    VocTrace vcs = VocTrace(
+        vocabulary: vc.vocabulary,
+        line: vc.line);
+    int start = vcs.line.indexOf('{');
+    int end = vcs.line.indexOf(':=', start + 1);
+    String key = vcs.line.substring(start + 1, end);
+    vcs.line = vcs.line.replaceFirst(RegExp(r'^\{.+?:='), '{');
+    VocTrace value = await parseVariable(vcs);
+    stateVariables.addAll({key : value.getCasedResult()});
+    // chop off from current line
+    int endCmd = vc.line.indexOf('}', end);
+    vc.line = vc.line.substring(endCmd + 1);
+    return vc;
+  }
+
   Future<VocTrace> parseVariable(VocTrace vc) async {
     int repeat = 1;
     String varTitle = '';
@@ -185,9 +262,7 @@ class _RunPageState extends State<RunPage> {
         line: pickRandomLine(splitVocabulary(next.content!)));
     vcn.repeat = repeat;
     vcn.variableName = varTitle;
-    // for (int i = 1; i <= repeat; i++) {
     vc.localResult.write(await parseVocabulary(vcn));
-    // }
     // chop off from current line
     vc.line = vc.line.substring(end + 1);
     return vc;
@@ -202,7 +277,32 @@ class _RunPageState extends State<RunPage> {
     int second = int.parse(vc.line.substring(dash + 1, end));
     int large = max(first, second) + 1;
     int small = min(first, second);
-    return first + random.nextInt(large - small);
+    return small + random.nextInt(large - small);
+  }
+
+
+  VocTrace parseStateLiteral (VocTrace vc) {
+    int start = vc.line.indexOf('{');
+    int equals = vc.line.indexOf('=', start + 1);
+    int end = vc.line.indexOf('}');
+    String key = vc.line.substring(start + 1, equals);
+    String value = vc.line.substring(equals + 1, end);
+    stateVariables.addAll({key : value});
+    vc.line = vc.line.substring(end + 1);
+    return vc;
+  }
+
+  VocTrace readStateVariable (VocTrace vc) {
+    int start = vc.line.indexOf('{\$') + 2;
+    int end = vc.line.indexOf('}', start + 2);
+    String key = vc.line.substring(start, end);
+    if (stateVariables.containsKey(key)){
+      vc.localResult.write(stateVariables[key]);
+    } else {
+      vc.localResult.write("[variable '$key' not found]");
+    }
+    vc.line = vc.line.substring(end + 1);
+    return vc;
   }
 
   VocTrace parseLiteral(VocTrace vc) {
@@ -239,7 +339,9 @@ class _RunPageState extends State<RunPage> {
           child: ListTileTheme(
             textColor: Colors.white,
             iconColor: Colors.white,
-            child: Column(mainAxisSize: MainAxisSize.max, children: [
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -275,25 +377,29 @@ class _RunPageState extends State<RunPage> {
                 ],
               ),
               Padding(padding: EdgeInsets.all(6)),
-              Row(
-                children: [
-                  Expanded(
-                    flex: 8,
-                    child: TextField(
-                      controller: resultController,
-                      decoration: InputDecoration(
-                          isDense: true,
-                          filled: true,
-                          fillColor: offWhite,
-                          labelText: '${widget._vocabularyView.title!} result',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          )),
-                      maxLines: null,
+              Expanded(
+                flex: 8,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: resultController,
+                        decoration: InputDecoration(
+                            isDense: true,
+                            filled: true,
+                            fillColor: offWhite,
+                            labelText: '${widget._vocabularyView.title!} result',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            )),
+                        maxLines: null,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              Padding(padding: EdgeInsets.all(12)),
             ]),
           ),
         ),

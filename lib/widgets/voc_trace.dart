@@ -22,7 +22,7 @@ class VocTrace {
     }
   }
 
-  // case 1 returns only capitalised string if result hasn't been cleared
+
   String getCasedResult() {
     if (repeat > 1) {
       multiply();

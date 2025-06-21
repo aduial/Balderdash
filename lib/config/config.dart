@@ -10,6 +10,34 @@ const String newCategoryName = "New Category";
 const String newProjectTitle = "New Project";
 const String BootstrapSubTitle = "tap icon to filter on Project and Category";
 
+Map<String, String> strfToDart = {
+  '%a': 'D',
+  '%A': 'DD',
+  '%d': 'dd',
+  '%-d': 'd',
+  '%b': 'M',
+  '%B': 'MM',
+  '%m': 'mm',
+  '%-m': 'm',
+  '%y': 'yy',
+  '%Y': 'yyyy',
+  '%H': 'HH',
+  '%-H': 'H',
+  '%I': 'hh',
+  '%-I': 'h',
+  '%p': 'am',
+  '%M': 'nn',
+  '%-M': 'n',
+  '%S': 'ss',
+  '%-S': 's',
+  '%f': 'SSS',
+  '%g': 'uuu',
+  '%W': 'WW',
+  '%-W': 'W',
+  '%z': 'z',
+  '%Z': 'Z',
+};
+
 var langCategories = <String>[
   'minimal',
   'basic',
