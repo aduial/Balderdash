@@ -9,6 +9,7 @@ import 'package:nonsense/screens/project_page.dart';
 import 'package:nonsense/screens/bootstrap_page.dart';
 import 'package:nonsense/screens/template_page.dart';
 import 'package:nonsense/config/colours.dart';
+import 'package:nonsense/config/user_preferences.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 
 void main() => runApp(MyApp());
@@ -21,6 +22,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     return MaterialApp(
+      navigatorKey: UserPreferences.navigatorKey,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       home: HomeScreen(),
@@ -97,6 +99,16 @@ class HomeScreenState extends State<HomeScreen> {
                   onTap: () {
                     Navigator.push(
                       context,
+                      MaterialPageRoute(builder: (context) => const BootstrapPage()),
+                    );
+                  },
+                  leading: Icon(Icons.auto_awesome_rounded),
+                  title: Text('Run Nonsense!'),
+                ),
+                ListTile(
+                  onTap: () {
+                    Navigator.push(
+                      context,
                       MaterialPageRoute(
                           builder: (context) => const AuthorPage()),
                     );
@@ -143,16 +155,6 @@ class HomeScreenState extends State<HomeScreen> {
                   },
                   leading: Icon(Icons.article_rounded),
                   title: Text('Vocabularies'),
-                ),
-                ListTile(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const BootstrapPage()),
-                    );
-                  },
-                  leading: Icon(Icons.auto_awesome_rounded),
-                  title: Text('Run Nonsense!'),
                 ),
                 ListTile(
                   onTap: () {
@@ -216,7 +218,51 @@ class HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        body: Container(),
+        body: Padding(
+          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+          child: Container(
+            child: ListTileTheme(
+              textColor: Colors.white,
+              iconColor: Colors.white,
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 128.0,
+                      height: 128.0,
+                      margin: const EdgeInsets.only(
+                        top: 24.0,
+                        bottom: 24.0,
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      decoration: BoxDecoration(
+                        color: Colors.black26,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Image.asset(
+                        'assets/images/boek.png',
+                      ),
+                    ),
+                    const Text.rich(
+                      TextSpan(
+                        text: 'Hello', // default text style
+                        // children: <TextSpan>[
+                        //   TextSpan(text: ' beautiful ', style: TextStyle(fontStyle: FontStyle.italic)),
+                        //   TextSpan(text: 'world', style: TextStyle(fontWeight: FontWeight.bold)),
+                        // ],
+                      ),
+                    )
+                  ],
+                ),
+                Padding(padding: EdgeInsets.all(12)),
+              ]),
+            ),
+          ),
+        ),
       ),
     );
   }

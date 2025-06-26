@@ -1,13 +1,17 @@
+import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:nonsense/database_helper/database_helper.dart';
 import 'package:nonsense/config/colours.dart';
 import 'package:nonsense/config/config.dart';
+import 'package:nonsense/config/user_preferences.dart';
 import 'package:nonsense/views/vocabulary_view.dart';
 import 'package:nonsense/model/vocabulary.dart';
 import 'dart:convert';
 import 'dart:math';
 import 'package:nonsense/widgets/voc_trace.dart';
+import 'package:nonsense/utils/string_utils.dart';
 import 'package:date_format/date_format.dart';
+
 
 class RunPage extends StatefulWidget {
   final VocabularyView _vocabularyView;
@@ -24,6 +28,7 @@ class _RunPageState extends State<RunPage> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController resultController =
       TextEditingController(text: '');
+  String previousLine = '';
 
   @override
   void initState() {
@@ -47,14 +52,15 @@ class _RunPageState extends State<RunPage> {
     });
     VocTrace vc = VocTrace(
         vocabulary: voc,
-        line: pickRandomLine(splitVocabulary(voc.content!)));
-    resultController.text = await parseVocabulary(vc);
-  }
-
-  Future<String> parseVocabulary(VocTrace vcn) async {
-    VocTrace vc = vcn;
-    return await parseLine(vc);
-    // return globalResult.toString();
+        line: pickRandomLine(splitVocabulary(voc.content!)),
+        variableName: StringUtils.capitalise(voc.title!.toLowerCase()));
+    String result = await parseVocabulary(vc);
+    if (result.contains(doubleCurlyBracesError)){
+      resultController.text = "Vocabulary '${vc.variableName}' contains double curly "
+          "braces ( {{ or }} ) leading to infinite loops. Please fix this first.";
+    } else {
+      resultController.text = await parseVocabulary(vc);
+    }
   }
 
   // copy original Nonsense Perl script behaviour:
@@ -96,10 +102,19 @@ class _RunPageState extends State<RunPage> {
     return weightedLines[random.nextInt(weightedLines.length)];
   }
 
-  Future<String> parseLine(VocTrace vc) async {
+  Future<String> parseVocabulary(VocTrace vc) async {
+    // print(vc.line);
+    if (vc.line.isNotEmpty && vc.line == previousLine){
+      return endlessLoopError;
+    }
+    if (vc.line.contains("{{") || vc.line.contains("}}")){
+      return doubleCurlyBracesError;
+    }
+    previousLine = vc.line;
+    // remove weighting factor
     vc.line = vc.line.replaceAll(RegExp(r'^#\d+#'), '');
     if (vc.line.contains(RegExp(r'^#\d+-\d+}'))) {
-      // weighting factor: random nr between two nrs, inclusive
+      // random nr in range, inclusive
       vc = parseNumberRange(vc);
     } else if (vc.line.startsWith('{[')) {
       // anonymous, pick one and add
@@ -116,10 +131,11 @@ class _RunPageState extends State<RunPage> {
     } else if (vc.line.contains(RegExp(r'^\{\^?\w+(#\d+-\d+)?\}'))) {
       // variable
       vc = await parseVariable(vc);
-    } else if (vc.line.contains(RegExp(r'^[\w\s\\@()<>%*_";:?!\-+,.]'))) {
+    // } else if (vc.line.contains(RegExp(r'^[\w\s\\@()<>%*_";:?!\-+,.]'))) {
+    } else if (vc.line.contains(RegExp(r'^[\x27\w\s\\@()<>%*_";:?!\-+,.]'))) {
       // literal
       vc = parseLiteral(vc);
-    } else if (vc.line.contains(RegExp(r'^\{\$\w*\}'))) {
+    } else if (vc.line.contains(RegExp(r'^\{\$\^?\w*\}'))) {
       // read state variable
       vc = readStateVariable(vc);
     } else if (vc.line.contains(RegExp(r'^\{@(%-?\w\w?\W*)*(\|\d+\|\d+)?\}'))) {
@@ -128,7 +144,9 @@ class _RunPageState extends State<RunPage> {
     }
     if (vc.line.isNotEmpty) {
       // get to the next part of the line
-      return await parseLine(vc);
+
+      // await Future.delayed(Duration(milliseconds: 1000));
+      return await parseVocabulary(vc);
     } else {
       // end of vc lifecycle, flush child buffer to parent
       return vc.getCasedResult();
@@ -164,8 +182,8 @@ class _RunPageState extends State<RunPage> {
     String strfTime = vc.line.substring(begin, end);
     strfTime = strfTime.replaceFirst('%f', '%f%g');
     List<String> strfTokens = strfTime.split('%');
-    RegExp azAZ = new RegExp(r'([a-zA-Z]+)');
-    RegExp rest = new RegExp(r'([^a-zA-Z]+)');
+    RegExp azAZ = RegExp(r'([a-zA-Z]+)');
+    RegExp rest = RegExp(r'([^a-zA-Z]+)');
     List<String> dtFormat = [];
     for (String token in strfTokens){
       if (token.isNotEmpty){
@@ -229,18 +247,17 @@ class _RunPageState extends State<RunPage> {
   }
 
   Future<VocTrace> parseStateVariable (VocTrace vc) async {
-    VocTrace vcs = VocTrace(
-        vocabulary: vc.vocabulary,
-        line: vc.line);
-    int start = vcs.line.indexOf('{');
-    int end = vcs.line.indexOf(':=', start + 1);
-    String key = vcs.line.substring(start + 1, end);
-    vcs.line = vcs.line.replaceFirst(RegExp(r'^\{.+?:='), '{');
-    VocTrace value = await parseVariable(vcs);
-    stateVariables.addAll({key : value.getCasedResult()});
-    // chop off from current line
-    int endCmd = vc.line.indexOf('}', end);
-    vc.line = vc.line.substring(endCmd + 1);
+    int start = vc.line.indexOf('{');
+    int equals = vc.line.indexOf(':=', start + 1);
+    int end = vc.line.indexOf('}');
+    String key = vc.line.substring(start + 1, equals).toLowerCase().replaceFirst('^', '');
+    String varTitle = vc.line.substring(equals + 2, end);
+    VocTrace vcn = await retrieveVocabularyVariable(vc, varTitle);
+    await parseVocabulary(vcn);
+    // vcn.localResult.write(await parseVocabulary(vcn));
+    stateVariables.addAll({key : vcn.getResult()});
+    // chop state var from current line
+    vc.line = vc.line.substring(end + 1);
     return vc;
   }
 
@@ -254,18 +271,44 @@ class _RunPageState extends State<RunPage> {
     int start = vc.line.indexOf('{');
     int end = vc.line.indexOf('}', start + 1);
     varTitle = vc.line.substring(start + 1, end);
-    Vocabulary next = await getVocabulary(
-        varTitle.replaceFirst('^', '').toUpperCase(),
-        widget._vocabularyView.projectId!);
-    VocTrace vcn = VocTrace(
-        vocabulary: next,
-        line: pickRandomLine(splitVocabulary(next.content!)));
-    vcn.repeat = repeat;
-    vcn.variableName = varTitle;
-    vc.localResult.write(await parseVocabulary(vcn));
+    VocTrace vcn = await retrieveVocabularyVariable(vc, varTitle);
+    for (int i = 1; i <= repeat; i++) {
+      // print(i.toString());
+      vcn.line = pickRandomLine(splitVocabulary(vcn.vocabulary.content!));
+      String nextResult = await parseVocabulary(vcn);
+      if (nextResult.contains(endlessLoopError)){
+        vc.localResult.write("Endless loop detected parsing ${vcn.line}, please review the syntax");
+        break;
+      } else {
+        vc.localResult.write(await parseVocabulary(vcn));
+      }
+      vcn.localResult.clear();
+    }
     // chop off from current line
     vc.line = vc.line.substring(end + 1);
     return vc;
+  }
+
+  Future<VocTrace> retrieveVocabularyVariable(VocTrace vc, String varTitle) async {
+    late Vocabulary next;
+    try {
+      next = await getVocabulary(
+          varTitle.replaceFirst('^', '').toUpperCase(),
+          widget._vocabularyView.projectId!);
+    } on Exception {
+      showError(vocabularyNotFound,
+          "Vocabulary '${varTitle.replaceFirst('^', '').toUpperCase()}' called in '${vc.variableName}' not found");
+    }
+    if (next.content!.isEmpty){
+      showError(noEmptyVocabulary,
+          "Vocabulary '${varTitle.replaceFirst('^', '').toUpperCase()}' called in '${vc.variableName}' has no content");
+    }
+
+    VocTrace vcn = VocTrace(
+        vocabulary: next,
+        line: pickRandomLine(splitVocabulary(next.content!)),
+        variableName: varTitle);
+    return vcn;
   }
 
   int parseNumberBetween(VocTrace vc) {
@@ -280,26 +323,27 @@ class _RunPageState extends State<RunPage> {
     return small + random.nextInt(large - small);
   }
 
-
   VocTrace parseStateLiteral (VocTrace vc) {
     int start = vc.line.indexOf('{');
     int equals = vc.line.indexOf('=', start + 1);
     int end = vc.line.indexOf('}');
-    String key = vc.line.substring(start + 1, equals);
+    String key = vc.line.substring(start + 1, equals).toLowerCase();
     String value = vc.line.substring(equals + 1, end);
     stateVariables.addAll({key : value});
     vc.line = vc.line.substring(end + 1);
     return vc;
   }
 
+  // casing of state vars
   VocTrace readStateVariable (VocTrace vc) {
     int start = vc.line.indexOf('{\$') + 2;
     int end = vc.line.indexOf('}', start + 2);
-    String key = vc.line.substring(start, end);
+    String variableName = vc.line.substring(start, end);
+    String key = variableName.toLowerCase().replaceFirst('^', '');
     if (stateVariables.containsKey(key)){
-      vc.localResult.write(stateVariables[key]);
+      vc.localResult.write(StringUtils.getCasey(variableName, stateVariables[key]!));
     } else {
-      vc.localResult.write("[variable '$key' not found]");
+      vc.localResult.write("[in line ${vc.line}, variable '$key' not found]");
     }
     vc.line = vc.line.substring(end + 1);
     return vc;
@@ -314,6 +358,28 @@ class _RunPageState extends State<RunPage> {
     vc.line = vc.line.substring(end);
     return vc;
   }
+
+  void showError(String title, String msg) => showDialog<String>(
+    context: UserPreferences.navigatorKey.currentContext!,
+      builder:
+          (BuildContext context) => AlertDialog(
+            title: Text(title),
+            content: Text(msg),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  int count = 0;
+                  Navigator.of(context).popUntil((_) => count++ >= 2);
+                },
+                child: const Text('Go back'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, 'OK'),
+                child: const Text('OK'),
+              ),
+            ],
+          )
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -407,3 +473,5 @@ class _RunPageState extends State<RunPage> {
     );
   }
 }
+
+

@@ -1,0 +1,50 @@
+class StringUtils {
+  StringUtils._();
+  static String exampleCase = '';
+  static String followCase = '';
+
+  static String capitalise(String input) {
+    return (input.length > 1)
+        ? input[0].toUpperCase() + input.substring(1)
+        : input.toUpperCase();
+  }
+
+  static String getCasey(String example, String follow) {
+    exampleCase = example;
+    followCase = follow;
+    switch (checkCase()) {
+      case 1:
+        return capitalise(followCase
+            .toString());
+      case 2:
+        return followCase.toString().toLowerCase();
+      case 3:
+        return followCase.toString().toUpperCase();
+      case 4:
+        return followCase.toString();
+      case 0:
+        return followCase.toString();
+    }
+    return "Error applying case formatting";
+  }
+
+
+  static int checkCase() {
+    RegExp cap = RegExp(r'^\^');
+    RegExp lc = RegExp(r'^[a-z0-9]+$');
+    RegExp uc = RegExp(r'^[A-Z0-9]+$');
+    RegExp mc = RegExp(r'^[a-zA-Z0-9]+$');
+
+    if (cap.hasMatch(exampleCase)) {
+      return 1;
+    } else if (lc.hasMatch(exampleCase)) {
+      return 2;
+    } else if (uc.hasMatch(exampleCase)) {
+      return 3;
+    } else if (mc.hasMatch(exampleCase)) {
+      return 4;
+    } else {
+      return 0;
+    }
+  }
+}

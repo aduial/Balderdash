@@ -552,20 +552,6 @@ class DatabaseHelper {
   }
 
 
-  // get a specific type
-  Future<Vocabulary> getVocabularyByTitleAndProject(String searchTerm, int projectId) async {
-    Database db = await instance.database;
-    final map = await db.rawQuery(
-        "SELECT * FROM $_vocabularyTableName "
-            "WHERE title = '$searchTerm' "
-            "AND projectId = $projectId "
-            "AND useThis = 1;");
-    if (map.isNotEmpty) {
-      return Vocabulary.fromMap(map.first);
-    } else {
-      throw Exception("Vocabulary with title '$searchTerm' not found for this project");
-    }
-  }
 
   // Inserting and updating a vocabulary
   Future<Vocabulary> upsertVocabulary(Vocabulary vocabulary) async {
@@ -619,6 +605,21 @@ class DatabaseHelper {
     return vocabularyViews;
   }
 
+  // get Vocabulary by title and projectId, Library (projectId = 1) always included
+  Future<Vocabulary> getVocabularyByTitleAndProject(String searchTerm, int projectId) async {
+    Database db = await instance.database;
+    final map = await db.rawQuery(
+        "SELECT * FROM $_vocabularyTableName "
+            "WHERE title = '$searchTerm' "
+            "AND (projectId = $projectId OR projectId = 1) "
+            "AND useThis = 1;");
+    if (map.isNotEmpty) {
+      return Vocabulary.fromMap(map.first);
+    } else {
+      throw Exception("Vocabulary with title '$searchTerm' not found for this project");
+    }
+  }
+
   // get list of vocabularyViews filtered on title, project and category
   Future<List<VocabularyView>> getFilteredVocabulariesBPAC(String searchTerm, int projectId, int categoryId) async {
     Database db = await instance.database;
@@ -650,15 +651,22 @@ class DatabaseHelper {
 
 String vocabularyWhereClause(String searchTerm, int projectId, int categoryId){
   final whereClause = StringBuffer('WHERE 1 = 1 ');
+  String orderByClause = '';
   if (searchTerm.isNotEmpty) {
     whereClause.write("AND v.title like '%$searchTerm%' ");
   }
   if (projectId > 0) {
-    whereClause.write("AND v.projectId = $projectId ");
+    // always include Library vocabularies (projectId = 1)
+    whereClause.write("AND (v.projectId = $projectId OR v.projectId = 1) ");
   }
   if (categoryId > 0) {
     whereClause.write("AND v.categoryId = $categoryId ");
   }
-  whereClause.write(";");
+  if (projectId > 0 && categoryId > 0){
+    orderByClause = "ORDER BY v.projectId desc, v.categoryId asc, v.title asc;";
+  } else if (projectId == 0){
+    orderByClause = "ORDER BY v.projectId asc, v.categoryId asc, v.title asc;";
+  }
+  whereClause.write(orderByClause);
   return whereClause.toString();
 }

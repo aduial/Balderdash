@@ -238,7 +238,7 @@ class _BootstrapPageState extends State<BootstrapPage> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: <Widget>[
                         Expanded(
-                          flex: 3,
+                          flex: 6,
                           child: Padding(
                             padding: const EdgeInsetsDirectional.fromSTEB(
                                 4, 0, 2, 0),
