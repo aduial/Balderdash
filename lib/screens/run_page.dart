@@ -41,6 +41,7 @@ class _RunPageState extends State<RunPage> {
   }
 
   Future<void> doThings() async {
+    stateVariables.clear();
     Vocabulary voc = Vocabulary.fromMap({
       "id": widget._vocabularyView.id,
       "categoryId": widget._vocabularyView.categoryId,
@@ -122,7 +123,7 @@ class _RunPageState extends State<RunPage> {
     } else if (vc.line.startsWith('{\\')) {
       // line break, { } or null
       vc = parseSpecial(vc);
-    } else if (vc.line.contains(RegExp(r'^\{\w*:=\^?\w+(#\d+-\d+)?\}'))) {
+    } else if (vc.line.contains(RegExp(r'^\{\w+:=[\x27\w\s\\^@|()<>%*_";:?!\-+,.]+\}'))) {
       // evaluate command and store as state variable
       vc = await parseStateVariable(vc);
     } else if (vc.line.contains(RegExp(r'^\{\w*=([\w\s\\@()<>%*_";:?!\-+,.])+\}'))) {
@@ -172,7 +173,7 @@ class _RunPageState extends State<RunPage> {
       int large = max(nr1, nr2) + 1;
       between = small + random.nextInt(large - small);
     }
-    DateTime someTimeAgo = DateTime.now().subtract(Duration(seconds: 0 - between));
+    DateTime someTimeAgo = DateTime.now().subtract(Duration(seconds: between));
     begin = vc.line.indexOf('@') + 1;
     if (vc.line.contains('|')){
       end = vc.line.indexOf('|');
@@ -251,7 +252,7 @@ class _RunPageState extends State<RunPage> {
     int equals = vc.line.indexOf(':=', start + 1);
     int end = vc.line.indexOf('}');
     String key = vc.line.substring(start + 1, equals).toLowerCase().replaceFirst('^', '');
-    String varTitle = vc.line.substring(equals + 2, end);
+    String varTitle = '{${vc.line.substring(equals + 2, end)}}';
     VocTrace vcn = await retrieveVocabularyVariable(vc, varTitle);
     await parseVocabulary(vcn);
     // vcn.localResult.write(await parseVocabulary(vcn));
@@ -291,23 +292,35 @@ class _RunPageState extends State<RunPage> {
 
   Future<VocTrace> retrieveVocabularyVariable(VocTrace vc, String varTitle) async {
     late Vocabulary next;
-    try {
-      next = await getVocabulary(
-          varTitle.replaceFirst('^', '').toUpperCase(),
-          widget._vocabularyView.projectId!);
-    } on Exception {
-      showError(vocabularyNotFound,
-          "Vocabulary '${varTitle.replaceFirst('^', '').toUpperCase()}' called in '${vc.variableName}' not found");
+    late VocTrace vcn;
+    if (varTitle.contains(RegExp(r'^\^?\w+(#\d+-\d+)?'))) {
+      try {
+        next = await getVocabulary(
+            varTitle.replaceFirst('^', '').toUpperCase(),
+            widget._vocabularyView.projectId!);
+      } on Exception {
+        showError(vocabularyNotFound,
+            "Vocabulary '${varTitle
+                .replaceFirst('^', '')
+                .toUpperCase()}' called in '${vc.variableName}' not found");
+      }
+      if (next.content!.isEmpty) {
+        showError(noEmptyVocabulary,
+            "Vocabulary '${varTitle
+                .replaceFirst('^', '')
+                .toUpperCase()}' called in '${vc
+                .variableName}' has no content");
+      }
+      vcn = VocTrace(
+          vocabulary: next,
+          line: pickRandomLine(splitVocabulary(next.content!)),
+          variableName: varTitle);
+    } else {
+      vcn = VocTrace(
+          vocabulary: vc.vocabulary,
+          line: varTitle,
+          variableName: varTitle);
     }
-    if (next.content!.isEmpty){
-      showError(noEmptyVocabulary,
-          "Vocabulary '${varTitle.replaceFirst('^', '').toUpperCase()}' called in '${vc.variableName}' has no content");
-    }
-
-    VocTrace vcn = VocTrace(
-        vocabulary: next,
-        line: pickRandomLine(splitVocabulary(next.content!)),
-        variableName: varTitle);
     return vcn;
   }
 
