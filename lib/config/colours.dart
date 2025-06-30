@@ -10,7 +10,10 @@
 
   const sortOfRed = Color(0xFF876D97);
   const iceBlue = Color(0xFF5B6CA0);
+  const iceMountainBlue = Color(0xFF445278);
   const mountainBlue = Color(0xFF27466F);
+  const tanteMountainRia = Color(0xFF2B4969);
+  const tanteRiaSAvonds = Color(0xFF364B63);
   const blueBottom = Color(0xFF1F3D58);
 
   const darkerBlueGrey = Color(0xFF2E3B41);
@@ -22,7 +25,7 @@
   const blueGrey = Color(0xFF607D8B);
   const pastelIndigo = Color(0xFF5968B3);
   const tanteRia = Color(0xFF5A7EA5);
-  const tanteRiaSAvonds = Color(0xFF364B63);
+  // const tanteRiaSAvonds = Color(0xFF364B63);
 
   const lightBlueGrey = Color(0xFF90B0C0);
   const bluerGrey = Color(0xFF608DAB);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:nonsense/screens/vocabulary_page.dart';
 import 'package:nonsense/screens/author_page.dart';
@@ -8,7 +9,10 @@ import 'package:nonsense/screens/category_page.dart';
 import 'package:nonsense/screens/project_page.dart';
 import 'package:nonsense/screens/bootstrap_page.dart';
 import 'package:nonsense/screens/template_page.dart';
+import 'package:nonsense/screens/intro.dart';
+import 'package:nonsense/screens/help.dart';
 import 'package:nonsense/config/colours.dart';
+import 'package:nonsense/config/config.dart';
 import 'package:nonsense/config/user_preferences.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 
@@ -41,6 +45,10 @@ class HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    var padding = MediaQuery.paddingOf(context);
+    double displayHeight =
+        MediaQuery.of(context).size.height - padding.top - padding.bottom;
+    double toScale = refHeight / displayHeight;
     return AdvancedDrawer(
       backdrop: Container(
         width: double.infinity,
@@ -74,8 +82,8 @@ class HomeScreenState extends State<HomeScreen> {
       drawer: SafeArea(
         child: Container(
           child: ListTileTheme(
-            textColor: Colors.white,
-            iconColor: Colors.white,
+            textColor: ithildin,
+            iconColor: ithildin,
             child: Column(
               mainAxisSize: MainAxisSize.max,
               children: [
@@ -99,7 +107,8 @@ class HomeScreenState extends State<HomeScreen> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const BootstrapPage()),
+                      MaterialPageRoute(
+                          builder: (context) => const BootstrapPage()),
                     );
                   },
                   leading: Icon(Icons.auto_awesome_rounded),
@@ -130,7 +139,8 @@ class HomeScreenState extends State<HomeScreen> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const ProjectPage()),
+                      MaterialPageRoute(
+                          builder: (context) => const ProjectPage()),
                     );
                   },
                   leading: Icon(Icons.my_library_books_rounded),
@@ -140,7 +150,8 @@ class HomeScreenState extends State<HomeScreen> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const CategoryPage()),
+                      MaterialPageRoute(
+                          builder: (context) => const CategoryPage()),
                     );
                   },
                   leading: Icon(Icons.category_rounded),
@@ -150,7 +161,8 @@ class HomeScreenState extends State<HomeScreen> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const VocabularyPage()),
+                      MaterialPageRoute(
+                          builder: (context) => const VocabularyPage()),
                     );
                   },
                   leading: Icon(Icons.article_rounded),
@@ -160,7 +172,8 @@ class HomeScreenState extends State<HomeScreen> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const TemplatePage()),
+                      MaterialPageRoute(
+                          builder: (context) => const TemplatePage()),
                     );
                   },
                   leading: Icon(Icons.web_rounded),
@@ -197,8 +210,10 @@ class HomeScreenState extends State<HomeScreen> {
       // this is the start screen
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Nonsense!'),
+          backgroundColor: blueTop,
+          // title: const Text('Nonsense!'),
           leading: IconButton(
+            color: ithildin,
             onPressed: _handleMenuButtonPressed,
             icon: ValueListenableBuilder<AdvancedDrawerValue>(
               valueListenable: _advancedDrawerController,
@@ -218,49 +233,203 @@ class HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        body: Padding(
-          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-          child: Container(
-            child: ListTileTheme(
-              textColor: Colors.white,
-              iconColor: Colors.white,
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 128.0,
-                      height: 128.0,
-                      margin: const EdgeInsets.only(
-                        top: 24.0,
-                        bottom: 24.0,
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      decoration: BoxDecoration(
-                        color: Colors.black26,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Image.asset(
-                        'assets/images/boek.png',
-                      ),
-                    ),
-                    const Text.rich(
-                      TextSpan(
-                        text: 'Hello', // default text style
-                        // children: <TextSpan>[
-                        //   TextSpan(text: ' beautiful ', style: TextStyle(fontStyle: FontStyle.italic)),
-                        //   TextSpan(text: 'world', style: TextStyle(fontWeight: FontWeight.bold)),
-                        // ],
-                      ),
-                    )
-                  ],
+        backgroundColor: blueTop,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                "Nonsense!",
+                style: GoogleFonts.playfairDisplay(
+                  color: ithildin,
+                  textStyle: Theme.of(context).textTheme.displayLarge,
+                  fontWeight: FontWeight.w200,
+                  fontSize: 70 * toScale,
                 ),
-                Padding(padding: EdgeInsets.all(12)),
-              ]),
-            ),
+              ),
+              Text(
+                "a context-free grammar engine",
+                style: GoogleFonts.rosario(
+                    color: ithildin,
+                    fontWeight: FontWeight.w300,
+                    // fontStyle: FontStyle.italic,
+                    fontSize: 22 * toScale),
+              ),
+              SizedBox(
+                width: double.infinity,
+                height: 30.0 * toScale,
+              ),
+              SizedBox(
+                width: double.infinity,
+                height: 50.0 * toScale,
+                child: const DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: yellowGrey,
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: double.infinity,
+                height: 20.0 * toScale,
+                child: const DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: sortOfRed,
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: double.infinity,
+                height: 35.0 * toScale,
+                child: const DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: iceBlue,
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 4,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [iceBlue, iceMountainBlue],
+                    ),
+                  ),
+                  width: double.infinity,
+                  alignment: Alignment.center,
+                  // color: mountainBlue,
+                  child: Padding(
+                    padding: EdgeInsetsDirectional.fromSTEB(
+                        30 * toScale, 30 * toScale, 30 * toScale, 10 * toScale),
+                    child: Text(
+                      "Did you ever wish you had a million monkeys with typewriters in your pocket? "
+                      "Your wish has been granted - without the need to supply bananas and ink ribbons! ",
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                          color: ithildin,
+                          fontWeight: FontWeight.w300,
+                          fontStyle: FontStyle.italic,
+                          fontSize: 15 * toScale),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 3,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [iceMountainBlue, tanteMountainRia],
+                    ),
+                  ),
+                  width: double.infinity,
+                  alignment: Alignment.center,
+                  // color: mountainBlue,
+                  child: Padding(
+                    padding: EdgeInsetsDirectional.fromSTEB(
+                        30 * toScale, 30 * toScale, 30 * toScale, 10 * toScale),
+                    child: Text(
+                      "Based on the 2001 Perl version by James Baughn, Fred Hirsch and Peter Suschlik "
+                      "(nonsense.sourceforge.net)",
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                          color: ithildin,
+                          fontWeight: FontWeight.w300,
+                          fontSize: 14 * toScale),
+                    ),
+                  ),
+                ),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [tanteMountainRia, mountainBlue],
+                  ),
+                ),
+                height: 50.0 * toScale,
+                // color: mountainBlue,
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: sortOfRed,
+                            surfaceTintColor: pink,
+                            // padding: const EdgeInsets.symmetric(horizontal: 6),
+                            shape: const RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(16)),
+                            ),
+                            elevation: 5,
+                            iconAlignment: IconAlignment.end,
+                          ),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const Help()),
+                            );
+                          },
+                          child: const Icon(
+                            Icons.question_mark_rounded,
+                            color: ithildin,
+                          ))
+                    ]),
+              ),
+              Expanded(
+                flex: 3,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [mountainBlue, blueBottom],
+                    ),
+                  ),
+                  width: double.infinity,
+                  // color: tanteRiaSAvonds,
+                  child: Padding(
+                    padding: EdgeInsetsDirectional.fromSTEB(
+                        30 * toScale, 15 * toScale, 30 * toScale, 0),
+                    child: Text(
+                      "Tap the menu icon top left to start creating nonsense. For an introduction on how "
+                          "to use this app tap the (?) button above.",
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                          color: ithildin,
+                          fontWeight: FontWeight.w300,
+                          fontSize: 13 * toScale),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 2,
+                child: Container(
+                  width: double.infinity,
+                  color: blueBottom,
+                  child: Padding(
+                    padding: EdgeInsetsDirectional.fromSTEB(
+                        30 * toScale, 10 * toScale, 30 * toScale, 10 * toScale),
+                    child: Text(
+                        "This version of Nonsense! was built by Lúthien Dulk (https://animatrice.nl)",
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                          color: ithildin,
+                          fontWeight: FontWeight.w300,
+                          fontSize: 12 * toScale),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -269,7 +438,7 @@ class HomeScreenState extends State<HomeScreen> {
 
   void _handleMenuButtonPressed() {
     // NOTICE: Manage Advanced Drawer state through the Controller.
-    // _advancedDrawerController.value = AdvancedDrawerValue.visible();
+    _advancedDrawerController.value = AdvancedDrawerValue.visible();
     _advancedDrawerController.showDrawer();
   }
 }
@@ -314,8 +483,3 @@ abstract final class AppTheme {
     cupertinoOverrideTheme: const CupertinoThemeData(applyThemeToAll: true),
   );
 }
-
-
-
-
-
