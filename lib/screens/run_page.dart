@@ -1,15 +1,14 @@
-import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
-import 'package:nonsense/database_helper/database_helper.dart';
-import 'package:nonsense/config/colours.dart';
-import 'package:nonsense/config/config.dart';
-import 'package:nonsense/config/user_preferences.dart';
-import 'package:nonsense/views/vocabulary_view.dart';
-import 'package:nonsense/model/vocabulary.dart';
+import 'package:balderdash/database_helper/database_helper.dart';
+import 'package:balderdash/config/colours.dart';
+import 'package:balderdash/config/config.dart';
+import 'package:balderdash/config/user_preferences.dart';
+import 'package:balderdash/views/vocabulary_view.dart';
+import 'package:balderdash/model/vocabulary.dart';
 import 'dart:convert';
 import 'dart:math';
-import 'package:nonsense/widgets/voc_trace.dart';
-import 'package:nonsense/utils/string_utils.dart';
+import 'package:balderdash/widgets/voc_trace.dart';
+import 'package:balderdash/utils/string_utils.dart';
 import 'package:date_format/date_format.dart';
 
 
@@ -42,6 +41,7 @@ class _RunPageState extends State<RunPage> {
 
   Future<void> doThings() async {
     stateVariables.clear();
+    previousLine = '';
     Vocabulary voc = Vocabulary.fromMap({
       "id": widget._vocabularyView.id,
       "categoryId": widget._vocabularyView.categoryId,
@@ -104,17 +104,16 @@ class _RunPageState extends State<RunPage> {
   }
 
   Future<String> parseVocabulary(VocTrace vc) async {
-    // print(vc.line);
-    if (vc.line.isNotEmpty && vc.line == previousLine){
-      return endlessLoopError;
-    }
-    if (vc.line.contains("{{") || vc.line.contains("}}")){
-      return doubleCurlyBracesError;
-    }
-    previousLine = vc.line;
     // remove weighting factor
     vc.line = vc.line.replaceAll(RegExp(r'^#\d+#'), '');
-    if (vc.line.contains(RegExp(r'^#\d+-\d+}'))) {
+    if (vc.line.isNotEmpty && vc.line == previousLine){
+      return "$endlessLoopError in ${vc.line}";
+    }
+    if (vc.line.contains("{{") || vc.line.contains("}}")){
+      return "$doubleCurlyBracesError in ${vc.line}";
+    }
+    previousLine = vc.line;
+    if (vc.line.contains(RegExp(r'^\{#\d+-\d+\}'))) {
       // random nr in range, inclusive
       vc = parseNumberRange(vc);
     } else if (vc.line.startsWith('{[')) {
@@ -123,20 +122,20 @@ class _RunPageState extends State<RunPage> {
     } else if (vc.line.startsWith('{\\')) {
       // line break, { } or null
       vc = parseSpecial(vc);
-    } else if (vc.line.contains(RegExp(r'^\{\w+:=[\x27\w\s\\^@|()<>%*_";:?!\-+,.]+\}'))) {
+    } else if (vc.getNormaLine().contains(RegExp(r'^\{\w+:=[\x27\w\s\\^@|()<>%*_";:?!\-+,.]+\}'))) {
       // evaluate command and store as state variable
       vc = await parseStateVariable(vc);
-    } else if (vc.line.contains(RegExp(r'^\{\w*=([\w\s\\@()<>%*_";:?!\-+,.])+\}'))) {
+    } else if (vc.getNormaLine().contains(RegExp(r'^\{\w*=([\w\s\\@()<>%*_";:?!\-+,.])+\}'))) {
       // add literal string as state variable
       vc = parseStateLiteral(vc);
-    } else if (vc.line.contains(RegExp(r'^\{\^?\w+(#\d+-\d+)?\}'))) {
+    } else if (vc.getNormaLine().contains(RegExp(r'^\{\^?\w+(#\d+-\d+)?\}'))) {
       // variable
       vc = await parseVariable(vc);
     // } else if (vc.line.contains(RegExp(r'^[\w\s\\@()<>%*_";:?!\-+,.]'))) {
-    } else if (vc.line.contains(RegExp(r'^[\x27\w\s\\@()<>%*_";:?!\-+,.]'))) {
+    } else if (vc.getNormaLine().contains(RegExp(r'^[\x27\w\s\\@()&<>%*_"/;:?!\-+,.]'))) {
       // literal
       vc = parseLiteral(vc);
-    } else if (vc.line.contains(RegExp(r'^\{\$\^?\w*\}'))) {
+    } else if (vc.getNormaLine().contains(RegExp(r'^\{\$\^?\w*\}'))) {
       // read state variable
       vc = readStateVariable(vc);
     } else if (vc.line.contains(RegExp(r'^\{@(%-?\w\w?\W*)*(\|\d+\|\d+)?\}'))) {
@@ -145,6 +144,9 @@ class _RunPageState extends State<RunPage> {
     }
     if (vc.line.isNotEmpty) {
       // get to the next part of the line
+      // if (vc.line == previousLine){
+      //   print("1");
+      // }
 
       // await Future.delayed(Duration(milliseconds: 1000));
       return await parseVocabulary(vc);
@@ -252,7 +254,7 @@ class _RunPageState extends State<RunPage> {
     int equals = vc.line.indexOf(':=', start + 1);
     int end = vc.line.indexOf('}');
     String key = vc.line.substring(start + 1, equals).toLowerCase().replaceFirst('^', '');
-    String varTitle = '{${vc.line.substring(equals + 2, end)}}';
+    String varTitle = vc.line.substring(equals + 2, end);
     VocTrace vcn = await retrieveVocabularyVariable(vc, varTitle);
     await parseVocabulary(vcn);
     // vcn.localResult.write(await parseVocabulary(vcn));
@@ -274,11 +276,11 @@ class _RunPageState extends State<RunPage> {
     varTitle = vc.line.substring(start + 1, end);
     VocTrace vcn = await retrieveVocabularyVariable(vc, varTitle);
     for (int i = 1; i <= repeat; i++) {
-      // print(i.toString());
+      // print(i.toString()); // hieronder kan weg
       vcn.line = pickRandomLine(splitVocabulary(vcn.vocabulary.content!));
       String nextResult = await parseVocabulary(vcn);
       if (nextResult.contains(endlessLoopError)){
-        vc.localResult.write("Endless loop detected parsing ${vcn.line}, please review the syntax");
+        vc.localResult.write("Endless loop detected parsing '${vcn.line}', please review the syntax");
         break;
       } else {
         vc.localResult.write(await parseVocabulary(vcn));
@@ -293,7 +295,7 @@ class _RunPageState extends State<RunPage> {
   Future<VocTrace> retrieveVocabularyVariable(VocTrace vc, String varTitle) async {
     late Vocabulary next;
     late VocTrace vcn;
-    if (varTitle.contains(RegExp(r'^\^?\w+(#\d+-\d+)?'))) {
+    if (varTitle.contains(RegExp(r'\^?\w+(#\d+-\d+)?'))) {
       try {
         next = await getVocabulary(
             varTitle.replaceFirst('^', '').toUpperCase(),
@@ -413,8 +415,15 @@ class _RunPageState extends State<RunPage> {
       ),
       backgroundColor: notepaperWhite,
       body: Padding(
-        padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        padding: EdgeInsets.symmetric(vertical: 0, horizontal: 0),
         child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [lightBlueGrey, blueGrey],
+            ),
+          ),
           child: ListTileTheme(
             textColor: Colors.white,
             iconColor: Colors.white,
@@ -430,15 +439,16 @@ class _RunPageState extends State<RunPage> {
                     height: 128.0,
                     margin: const EdgeInsets.only(
                       top: 24.0,
-                      bottom: 24.0,
+                      bottom: 8.0,
                     ),
                     clipBehavior: Clip.antiAlias,
                     decoration: BoxDecoration(
-                      color: Colors.black26,
+                      // color: Colors.black12,
                       shape: BoxShape.circle,
                     ),
                     child: Image.asset(
-                      'assets/images/shampoo.png',
+                      getRBDImg(),
+                      // 'assets/images/shampoo.png',
                     ),
                   ),
                   ElevatedButton(
@@ -451,7 +461,7 @@ class _RunPageState extends State<RunPage> {
                         });
                       },
                       child: const Icon(
-                        Icons.cable_rounded,
+                        Icons.play_arrow_rounded,
                       ))
                 ],
               ),
@@ -461,6 +471,10 @@ class _RunPageState extends State<RunPage> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    SizedBox(
+                      width: 16.0,
+                      height: 8.0,
+                    ),
                     Expanded(
                       child: TextField(
                         controller: resultController,
@@ -468,12 +482,15 @@ class _RunPageState extends State<RunPage> {
                             isDense: true,
                             filled: true,
                             fillColor: offWhite,
-                            labelText: '${widget._vocabularyView.title!} result',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                             )),
                         maxLines: null,
                       ),
+                    ),
+                    SizedBox(
+                      width: 16.0,
+                      height: 8.0,
                     ),
                   ],
                 ),

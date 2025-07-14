@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:nonsense/model/author.dart';
-import 'package:nonsense/database_helper/database_helper.dart';
-import 'package:nonsense/config/colours.dart';
-import 'package:nonsense/config/config.dart';
+import 'package:balderdash/model/author.dart';
+import 'package:balderdash/database_helper/database_helper.dart';
+import 'package:balderdash/config/colours.dart';
+import 'package:balderdash/config/config.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
 class AuthorPage extends StatefulWidget {
@@ -106,7 +106,7 @@ class _AuthorPageState extends State<AuthorPage> {
     return Scaffold(
       appBar: AppBar(
           iconTheme: IconThemeData(
-            color: notepaperWhite,
+            color: blueNotePaperColour,
           ),
           backgroundColor: regularResultBGColour,
           title: SizedBox(
@@ -127,98 +127,109 @@ class _AuthorPageState extends State<AuthorPage> {
               ),
             ),
           )),
-      body: FutureBuilder<List<Author>>(
-        future: _authors,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No authors found'));
-          }
-          return Scrollbar(
-            controller: _scrollController,
-            child: ListView.builder(
-              itemCount: numItems,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [lightBlueGrey, blueGrey],
+          ),
+        ),
+        child: FutureBuilder<List<Author>>(
+          future: _authors,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(child: Text('No authors found'));
+            }
+            return Scrollbar(
               controller: _scrollController,
-              itemBuilder: (context, index) {
-                final author = snapshot.data![index];
-                return Container(
-                  padding: EdgeInsets.fromLTRB(5.0 * toScale, 2.0 * toScale,
-                      5.0 * toScale, 5.0 * toScale),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                          width: toScale, color: tanteRia),
+              child: ListView.builder(
+                itemCount: numItems,
+                controller: _scrollController,
+                itemBuilder: (context, index) {
+                  final author = snapshot.data![index];
+                  return Container(
+                    height: 40,
+                    padding: EdgeInsets.fromLTRB(5.0 * toScale, 0.0,
+                        5.0 * toScale, 0.0),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                            width: toScale, color: tanteRia),
+                      ),
+                      color: notepaperWhite,
                     ),
-                    color: notepaperWhite,
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Expanded(
-                        flex: 3,
-                        child: Padding(
-                          padding:
-                          const EdgeInsetsDirectional.fromSTEB(4, 0, 2, 0),
-                          child: AutoSizeText(
-                            author.name!,
-                            style: TextStyle(
-                                color: veryVeryDark
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Expanded(
+                          flex: 3,
+                          child: Padding(
+                            padding:
+                            const EdgeInsetsDirectional.fromSTEB(4, 0, 2, 0),
+                            child: AutoSizeText(
+                              author.name!,
+                              style: TextStyle(
+                                  color: veryVeryDark
+                              ),
+                              maxLines: 1,
                             ),
-                            maxLines: 1,
                           ),
                         ),
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Padding(
-                          padding:
-                          const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                          child: IconButton(
-                            icon: const Icon(Icons.edit),
-                              color: veryVeryDark,
-                            onPressed: () {
-                              _showForm(author);
-                            },
+                        Expanded(
+                          flex: 1,
+                          child: Padding(
+                            padding:
+                            const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                            child: IconButton(
+                              icon: const Icon(Icons.edit),
+                                color: blueAppbarColour,
+                              onPressed: () {
+                                _showForm(author);
+                              },
+                            ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Padding(
-                          padding:
-                          const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                          child: IconButton(
-                            icon: const Icon(Icons.delete),
-                            color: veryVeryDark,
-                            onPressed: () async {
-                              final bool isDelete = await showConfirmationAlertDialog(
-                                context,
-                                title: 'Delete ${author.name!}?',
-                                message: "Do you want to delete ${author.name!}? You cannot undo this!" ,
-                                positiveText: 'Delete',
-                                negativeText: 'Cancel',
-                                highlightNegative: true,
-                              );
-                              if(isDelete){
-                                await dbHelper.deleteAuthor(author);
-                                _refreshAuthorList();
-                              }
-                            },
+                        Expanded(
+                          flex: 1,
+                          child: Padding(
+                            padding:
+                            const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                            child: IconButton(
+                              icon: const Icon(Icons.delete),
+                              color: blueAppbarColour,
+                              onPressed: () async {
+                                final bool isDelete = await showConfirmationAlertDialog(
+                                  context,
+                                  title: 'Delete ${author.name!}?',
+                                  message: "Do you want to delete ${author.name!}? You cannot undo this!" ,
+                                  positiveText: 'Delete',
+                                  negativeText: 'Cancel',
+                                  highlightNegative: true,
+                                );
+                                if(isDelete){
+                                  await dbHelper.deleteAuthor(author);
+                                  _refreshAuthorList();
+                                }
+                              },
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          );
-        },
+                      ],
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: blueNotePaperColour,
         child: const Icon(Icons.add),
         onPressed: () {
           _showForm(null);

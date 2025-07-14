@@ -1,4 +1,4 @@
-package org.aduial.nonsense
+package org.aduial.balderdash
 
 import io.flutter.embedding.android.FlutterActivity
 

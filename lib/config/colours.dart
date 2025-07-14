@@ -27,6 +27,8 @@
   const tanteRia = Color(0xFF5A7EA5);
   // const tanteRiaSAvonds = Color(0xFF364B63);
 
+  //const notepaperWhite = Color(0xFFE6F0E3);
+  const lightGreenGrey = Color(0xFFA0B8B0);
   const lightBlueGrey = Color(0xFF90B0C0);
   const bluerGrey = Color(0xFF608DAB);
   const earthGrey = Color(0xff7F7B5E);
@@ -103,6 +105,36 @@
   const onPrimaryFixed = Color(0xFF400019);
   const onPrimaryFixedVariant = Color(0xFF520021);
   const secondary = Color(0xFF9B4050);
+
+
+
+  const redNotePaperColour = Color (0xFFF49085);
+  const redAppbarColour = Color (0xFFD45045);
+  const redDarkGradientColour = Color (0xFFB8A2A0);
+
+  const orangeNotePaperColour = Color (0xFFF0AC80);
+  const orangeAppbarColour = Color (0xFFB07040);
+  const orangeDarkGradientColour = Color (0xFFB8B0A0);
+
+  const yellowNotePaperColour = Color (0xFFDEE083);
+  const yellowAppbarColour = Color (0xFF909045);
+  const yellowDarkGradientColour = Color (0xFFB4B8A0);
+
+  const greenNotePaperColour = Color (0xFFA3E0A5);
+  const greenAppbarColour = Color (0xFF45744B);
+  const greenDarkGradientColour = Color (0xFFA0B8A4);
+
+  const cyanNotePaperColour = Color (0xFF73E0E0);
+  const cyanAppbarColour = Color (0xFF208084);
+  const cyanDarkGradientColour = Color (0xFFA0B8B8);
+
+  const blueNotePaperColour = Color (0xFF78B1FF);
+  const blueAppbarColour = Color (0xFF4378C0);
+  const blueDarkGradientColour = Color (0xFFA0A9B8);
+
+  const violetNotePaperColour = Color (0xFFC090FF);
+  const violetAppbarColour = Color (0xFF7060A0);
+  const violetDarkGradientColour = Color (0xFFAEA0B8);
 
   const String cssText = '$startSpan$cssColText; $fontLight$endSpan';
   const String cssBoldMountainBlue = '$startSpan$cssColMountainBlue; $fontBold$endSpan';

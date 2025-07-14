@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'package:nonsense/config/colours.dart';
-import 'package:nonsense/config/config.dart';
-import 'package:nonsense/screens/about_voc1.dart';
+import 'package:balderdash/config/colours.dart';
+import 'package:balderdash/config/config.dart';
 
 class Intro extends StatelessWidget {
-  const Intro({Key? key}) : super(key: key);
+  const Intro({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -89,72 +88,77 @@ class Intro extends StatelessWidget {
                     ),
                   ),
                   width: double.infinity,
-                    alignment: Alignment.topCenter,
-                    child: Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(
-                            20 * toScale, 0, 20 * toScale, 30 * toScale),
-                        child: RichText(
-                          textAlign: TextAlign.left,
-                          text: TextSpan(
-                            text: "The original ",
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyLarge!
-                                .copyWith(
-                                    color: ithildin,
-                                    fontWeight: FontWeight.w300,
-                                    fontSize: 13 * toScale),
-                            children: <TextSpan>[
-                              TextSpan(
-                                  text: "Nonsense ",
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.w600)),
-                              TextSpan(
-                                  text: "script defined the grammar in ",
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.w300)),
-                              TextSpan(
-                                  text: ".data files",
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.w600)),
-                              TextSpan(
-                                  text: ", each containing many ",
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.w300)),
-                              TextSpan(
-                                  text: "vocabularies ",
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.w600)),
-                              TextSpan(
-                                  text:
-                                      "(see below). Creating nonsense required one or more .data files "
-                                      "and selecting one vocabulary as a starting point. This app doesn’t "
-                                      "use data files, but a local ",
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.w300)),
-                              TextSpan(
-                                  text: "SQLite ",
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.w600)),
-                              TextSpan(
-                                  text:
-                                      "database.\n\nThis allows adding entities like users, "
-                                      "categories and projects to structure the process, and "
-                                      "that you can use or ignore as you see fit. "
-                                      "The smaller screen size gave rise to the vocabulary as the "
-                                      "basic unit of a grammar, instead of .data files containing "
-                                      "dozens of vocabularies each.\n\n"
-                                      "How Nonsense! works, writing vocabularies and managing "
-                                      "projects in the app is all described in help pages.",
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.w300)),
-                            ],
+                  alignment: Alignment.topCenter,
+                  child: Padding(
+                      padding: EdgeInsetsDirectional.fromSTEB(
+                          20 * toScale, 0, 20 * toScale, 30 * toScale),
+                      child: Scrollbar(
+                        child: SingleChildScrollView(
+                          child: RichText(
+                            textAlign: TextAlign.left,
+                            text: TextSpan(
+                              text:
+                                  "This app is a continuation of a context-free grammar text generator "
+                                  "from 2001 called ",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge!
+                                  .copyWith(
+                                      color: ithildin,
+                                      fontWeight: FontWeight.w300,
+                                      fontSize: 13 * toScale),
+                              children: <TextSpan>[
+                                TextSpan(
+                                    text: "Nonsense",
+                                    style: TextStyle(fontWeight: FontWeight.w600)),
+                                TextSpan(
+                                    text:
+                                        ", that you can still download from\nhttps://nonsense.sourceforge.net/. "
+                                            "A slightly extended version 0.7.1 that fixes the issue "
+                                            "with cgi-bin deployment and adds some minor features is available "
+                                            "on Github here:\nhttps://github.com/aduial/nonsense\n\n"
+                                        "Nonsense defines the grammar in ",
+                                    style: TextStyle(fontWeight: FontWeight.w300)),
+                                TextSpan(
+                                    text: ".data files",
+                                    style: TextStyle(fontWeight: FontWeight.w600)),
+                                TextSpan(
+                                    text: ", each containing many ",
+                                    style: TextStyle(fontWeight: FontWeight.w300)),
+                                TextSpan(
+                                    text: "vocabularies",
+                                    style: TextStyle(fontWeight: FontWeight.w600)),
+                                TextSpan(
+                                    text:
+                                        "(a group of lines containing text and commands). "
+                                        "Balderdash! is completely compatible with grammars written "
+                                        "for Nonsense. In fact, I've included the original demo "
+                                        "content in this app. The difference is that this app doesn’t "
+                                        "use .data files, but a local ",
+                                    style: TextStyle(fontWeight: FontWeight.w300)),
+                                TextSpan(
+                                    text: "SQLite ",
+                                    style: TextStyle(fontWeight: FontWeight.w600)),
+                                TextSpan(
+                                    text:
+                                        "database.\n\nThis allows adding entities like users, "
+                                        "categories and projects to structure the process, "
+                                        "that you can use or ignore as you see fit. "
+                                        "The smaller screen size gave rise to the vocabulary as the "
+                                        "basic unit of a grammar instead of .data files containing "
+                                        "dozens of vocabularies each.\n\n"
+                                        "How Nonsense! works, writing vocabularies and managing "
+                                        "projects in the app is all described in help pages.\n\n\n\n\n",
+                                    style: TextStyle(fontWeight: FontWeight.w300)),
+                              ],
+                            ),
                           ),
-                        )),
-                  ),
+                        ),
+                      )),
                 ),
-              ]),
-        ),
+              ),
+            ]),
+      ),
     );
   }
 }

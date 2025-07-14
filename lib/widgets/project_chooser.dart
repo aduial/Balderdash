@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:nonsense/model/project.dart';
-import 'package:nonsense/database_helper/database_helper.dart';
-import 'package:nonsense/views/vocabulary_view.dart';
+import 'package:balderdash/model/project.dart';
+import 'package:balderdash/database_helper/database_helper.dart';
+import 'package:balderdash/views/vocabulary_view.dart';
 
 
 class ProjectDropdown extends StatefulWidget {

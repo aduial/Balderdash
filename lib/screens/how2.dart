@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'package:nonsense/config/colours.dart';
-import 'package:nonsense/config/config.dart';
-import 'package:nonsense/screens/help.dart';
+import 'package:balderdash/config/colours.dart';
+import 'package:balderdash/config/config.dart';
+import 'package:balderdash/screens/help.dart';
 
 class How2 extends StatelessWidget {
-  const How2({Key? key}) : super(key: key);
+  const How2({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +21,7 @@ class How2 extends StatelessWidget {
         ),
         backgroundColor: mountainBlue,
         title: Text(
-          "How Nonsense! works (2)",
+          "How Balderdash! works (2)",
           style: Theme.of(context).textTheme.bodyLarge!.copyWith(
               color: ithildin,
               fontWeight: FontWeight.w500,
@@ -118,7 +118,7 @@ class How2 extends StatelessWidget {
                                     text:
                                         "In that sense, Nonsense! is way more creative and free than "
                                         "any AI, that obediently regurgitates content found elsewhere. "
-                                        "It operates on the narrow path between meaningless chaos and "
+                                        "It walks the narrow path between meaningless chaos and "
                                         "boring copy-pasting, and it is up to you, as user, to find it.\n\n"
                                         "Copy-pasting and generating chaos are simple; compiling text "
                                         "alternatives, crafting phrase patterns and using state variables "

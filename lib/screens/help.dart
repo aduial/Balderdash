@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-import 'package:nonsense/config/colours.dart';
-import 'package:nonsense/config/config.dart';
-import 'package:nonsense/screens/intro.dart';
-import 'package:nonsense/screens/how1.dart';
-import 'package:nonsense/screens/about_voc1.dart';
+import 'package:balderdash/config/colours.dart';
+import 'package:balderdash/config/config.dart';
+import 'package:balderdash/screens/intro.dart';
+import 'package:balderdash/screens/how1.dart';
+import 'package:balderdash/screens/about_voc1.dart';
+import 'package:balderdash/screens/usage1.dart';
+import 'package:balderdash/screens/quick.dart';
+import 'package:balderdash/screens/cgi.dart';
+import 'package:balderdash/screens/fixing.dart';
+import 'package:balderdash/screens/prefs.dart';
+import 'package:balderdash/main.dart';
 
 class Help extends StatelessWidget {
-  const Help({Key? key}) : super(key: key);
+  const Help({super.key});
+
 
   @override
   Widget build(BuildContext context) {
@@ -18,8 +24,12 @@ class Help extends StatelessWidget {
     double toScale = refHeight / displayHeight;
     return Scaffold(
       appBar: AppBar(
-        iconTheme: IconThemeData(
+        leading: IconButton(
+          icon: const Icon(Icons.home_rounded),
           color: ithildin,
+          onPressed: () {
+            Navigator.of(context).push(_goHome());
+          },
         ),
         backgroundColor: mountainBlue,
         title: Text(
@@ -48,19 +58,18 @@ class Help extends StatelessWidget {
                 ),
                 clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
-                  color: Colors.black26,
+                  // color: Colors.black12,
                   shape: BoxShape.circle,
                 ),
                 child: Image.asset(
-                  'assets/images/zakmes.png',
+                  getHelpImg(),
                 ),
               ),
               ListTile(
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (context) => const Intro()),
+                    MaterialPageRoute(builder: (context) => const Intro()),
                   );
                 },
                 leading: Icon(Icons.auto_awesome_rounded),
@@ -70,11 +79,20 @@ class Help extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (context) => const How1()),
+                    MaterialPageRoute(builder: (context) => Quick()),
                   );
                 },
-                leading: Icon(Icons.people_rounded),
+                leading: Icon(Icons.rocket_launch_rounded),
+                title: Text('Quickstart'),
+              ),
+              ListTile(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const How1()),
+                  );
+                },
+                leading: Icon(Icons.question_answer_rounded),
                 title: Text('How does it work?'),
               ),
               ListTile(
@@ -84,52 +102,48 @@ class Help extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => const AboutVoc1()),
                   );
                 },
-                leading: Icon(Icons.theater_comedy_rounded),
+                leading: Icon(Icons.article_rounded),
                 title: Text('Vocabularies'),
               ),
               ListTile(
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (context) => const Intro()),
-                  );
-                },
-                leading: Icon(Icons.my_library_books_rounded),
-                title: Text('Categories & Projects'),
-              ),
-              ListTile(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const Intro()),
+                    MaterialPageRoute(builder: (context) => const Usage1()),
                   );
                 },
                 leading: Icon(Icons.category_rounded),
-                title: Text('Users & Types'),
+                title: Text('Using the app'),
               ),
               ListTile(
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (context) => const Intro()),
+                    MaterialPageRoute(builder: (context) => const Prefs()),
                   );
                 },
-                leading: Icon(Icons.article_rounded),
+                leading: Icon(Icons.category_rounded),
+                title: Text('Preferences'),
+              ),
+              ListTile(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const Cgi()),
+                  );
+                },
+                leading: Icon(Icons.web_rounded),
                 title: Text('CGI deployment'),
               ),
               ListTile(
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (context) => const Intro()),
+                    MaterialPageRoute(builder: (context) => const Fixing()),
                   );
                 },
-                leading: Icon(Icons.web_rounded),
-                title: Text('Provided examples'),
+                leading: Icon(Icons.heart_broken_rounded),
+                title: Text("It doesn't work!"),
               ),
               Spacer(),
               DefaultTextStyle(
@@ -150,4 +164,35 @@ class Help extends StatelessWidget {
       ),
     );
   }
+}
+
+Route _goHome() {
+  return PageRouteBuilder(
+    transitionDuration: const Duration(milliseconds: 500),
+    pageBuilder: (
+        context,
+        animation,
+        secondaryAnimation) => const HomeScreen(),
+      transitionsBuilder: (
+          context,
+          animation,
+          secondaryAnimation,
+          child) {
+        const begin = Offset(0.0, 1.0);
+        const end = Offset.zero;
+        const curve = Curves.easeInOutQuad;
+
+        final tween = Tween(
+            begin: begin,
+            end: end);
+        final curvedAnimation = CurvedAnimation(
+            parent: animation,
+            curve: curve);
+
+        return SlideTransition(
+          position: tween.animate(curvedAnimation),
+          child: child,
+        );
+      }
+  );
 }

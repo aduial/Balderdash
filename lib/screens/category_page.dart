@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:nonsense/screens/category_detail.dart';
-import 'package:nonsense/views/category_view.dart';
-import 'package:nonsense/database_helper/database_helper.dart';
-import 'package:nonsense/config/colours.dart';
-import 'package:nonsense/config/config.dart';
+import 'package:balderdash/screens/category_detail.dart';
+import 'package:balderdash/views/category_view.dart';
+import 'package:balderdash/database_helper/database_helper.dart';
+import 'package:balderdash/config/colours.dart';
+import 'package:balderdash/config/config.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
 class CategoryPage extends StatefulWidget {
@@ -63,7 +63,7 @@ class _CategoryPageState extends State<CategoryPage> {
     return Scaffold(
       appBar: AppBar(
           iconTheme: IconThemeData(
-            color: notepaperWhite,
+            color: cyanNotePaperColour,
           ),
           backgroundColor: regularResultBGColour,
           title: SizedBox(
@@ -84,120 +84,131 @@ class _CategoryPageState extends State<CategoryPage> {
               ),
             ),
           )),
-      body: FutureBuilder<List<CategoryView>>(
-        future: _categoryViews,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No categories found'));
-          }
-          return Scrollbar(
-            controller: _scrollController,
-            child: ListView.builder(
-              itemCount: numItems,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [lightBlueGrey, blueGrey],
+          ),
+        ),
+        child: FutureBuilder<List<CategoryView>>(
+          future: _categoryViews,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(child: Text('No categories found'));
+            }
+            return Scrollbar(
               controller: _scrollController,
-              itemBuilder: (context, index) {
-                final categoryView = snapshot.data![index];
-                return Container(
-                  padding: EdgeInsets.fromLTRB(5.0 * toScale, 2.0 * toScale,
-                      5.0 * toScale, 5.0 * toScale),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(width: toScale, color: tanteRia),
+              child: ListView.builder(
+                itemCount: numItems,
+                controller: _scrollController,
+                itemBuilder: (context, index) {
+                  final categoryView = snapshot.data![index];
+                  return Container(
+                    height: 40,
+                    padding: EdgeInsets.fromLTRB(5.0 * toScale, 0.0,
+                        5.0 * toScale, 0.0),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(width: toScale, color: tanteRia),
+                      ),
+                      color: notepaperWhite,
                     ),
-                    color: notepaperWhite,
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Expanded(
-                        flex: 3,
-                        child: Padding(
-                          padding:
-                              const EdgeInsetsDirectional.fromSTEB(4, 0, 2, 0),
-                          child: AutoSizeText(
-                            categoryView.parent!,
-                            style: TextStyle(color: veryVeryDark),
-                            maxLines: 1,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Expanded(
+                          flex: 3,
+                          child: Padding(
+                            padding:
+                                const EdgeInsetsDirectional.fromSTEB(4, 0, 2, 0),
+                            child: AutoSizeText(
+                              categoryView.parent!,
+                              style: TextStyle(color: veryVeryDark),
+                              maxLines: 1,
+                            ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                        flex: 6,
-                        child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              2, 0, 2 * toScale, 0),
-                          child: AutoSizeText(
-                            categoryView.name!,
-                            maxLines: 1,
-                            style: TextStyle(color: veryVeryDark),
+                        Expanded(
+                          flex: 6,
+                          child: Padding(
+                            padding: EdgeInsetsDirectional.fromSTEB(
+                                2, 0, 2 * toScale, 0),
+                            child: AutoSizeText(
+                              categoryView.name!,
+                              maxLines: 1,
+                              style: TextStyle(color: veryVeryDark),
+                            ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: Padding(
-                          padding:
-                              const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                          child: IconButton(
-                            icon: const Icon(Icons.edit),
-                            color: veryVeryDark,
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => CategoryDetail(
-                                      categoryView: categoryView),
-                                ),
-                              ).then((value) {
-                                setState(() {
-                                  _refreshCategoryViewList();
+                        Expanded(
+                          flex: 2,
+                          child: Padding(
+                            padding:
+                                const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                            child: IconButton(
+                              icon: const Icon(Icons.edit),
+                              color: cyanAppbarColour,
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => CategoryDetail(
+                                        categoryView: categoryView),
+                                  ),
+                                ).then((value) {
+                                  setState(() {
+                                    _refreshCategoryViewList();
+                                  });
                                 });
-                              });
-                            },
+                              },
+                            ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: Padding(
-                          padding:
-                              const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                          child: IconButton(
-                            icon: const Icon(Icons.delete),
-                            color: veryVeryDark,
-                            onPressed: () async {
-                              final bool isDelete =
-                                  await showConfirmationAlertDialog(
-                                context,
-                                title: 'Delete ${categoryView.name!}?',
-                                message:
-                                    "Do you want to delete category ${categoryView.name!}? You cannot undo this!",
-                                positiveText: 'Delete',
-                                negativeText: 'Cancel',
-                                highlightNegative: true,
-                              );
+                        Expanded(
+                          flex: 2,
+                          child: Padding(
+                            padding:
+                                const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                            child: IconButton(
+                              icon: const Icon(Icons.delete),
+                              color: cyanAppbarColour,
+                              onPressed: () async {
+                                final bool isDelete =
+                                    await showConfirmationAlertDialog(
+                                  context,
+                                  title: 'Delete ${categoryView.name!}?',
+                                  message:
+                                      "Do you want to delete category ${categoryView.name!}? You cannot undo this!",
+                                  positiveText: 'Delete',
+                                  negativeText: 'Cancel',
+                                  highlightNegative: true,
+                                );
 
-                              if (isDelete) {
-                                await dbHelper.deleteCategory(categoryView);
-                                _refreshCategoryViewList();
-                              }
-                            },
+                                if (isDelete) {
+                                  await dbHelper.deleteCategory(categoryView);
+                                  _refreshCategoryViewList();
+                                }
+                              },
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          );
-        },
+                      ],
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: cyanNotePaperColour,
         child: const Icon(Icons.add),
         onPressed: () async {
           CategoryView newCategoryView = CategoryView.fromMap({

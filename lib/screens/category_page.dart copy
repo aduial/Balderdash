@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:nonsense/screens/category_detail.dart';
-import 'package:nonsense/views/category_view.dart';
-import 'package:nonsense/database_helper/database_helper.dart';
-import 'package:nonsense/config/colours.dart';
-import 'package:nonsense/config/config.dart';
+import 'package:balderdash/screens/category_detail.dart';
+import 'package:balderdash/views/category_view.dart';
+import 'package:balderdash/database_helper/database_helper.dart';
+import 'package:balderdash/config/colours.dart';
+import 'package:balderdash/config/config.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
 class CategoryPage extends StatefulWidget {

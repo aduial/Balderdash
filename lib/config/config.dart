@@ -1,4 +1,56 @@
 
+import 'dart:math';
+import 'package:flutter/material.dart';
+
+
+final navigatorKey = GlobalKey<NavigatorState>();
+
+String _menuImg = 'assets/images/shampoo.png';
+String _helpImg = 'assets/images/einenhand.png';
+String _drawerImg = 'assets/images/eend.png';
+String _rbdImg = 'assets/images/afwas.png';
+
+setMenuImg(){
+    _menuImg = getImage();
+}
+
+setHelpImg(){
+  _helpImg = getImage();
+  do {
+    "set helpimg";
+    _helpImg = getImage();
+  } while (_helpImg == _menuImg);
+}
+setDrawerImg(){
+  do {
+    "set drawerimg";
+    _drawerImg = getImage();
+  } while (_drawerImg == _menuImg || _drawerImg == _helpImg);
+}
+
+setRBDImg(){
+  do {
+    "set BDimg";
+    _rbdImg = getImage();
+  } while (_rbdImg == _menuImg || _rbdImg == _helpImg|| _rbdImg == _drawerImg);
+}
+
+String getMenuImg(){
+  return _menuImg;
+}
+
+String getHelpImg(){
+  return _helpImg;
+}
+
+String getDrawerImg(){
+  return _drawerImg;
+}
+
+String getRBDImg(){
+  return _rbdImg;
+}
+
 
 // reference screen height minus padding (iPhone 15)
   const double refHeight = 759.0;
@@ -7,12 +59,14 @@
   const String newAuthorName = "New Author";
   const String newCategoryName = "New Category";
   const String newProjectTitle = "New Project";
-  const String BootstrapSubTitle = "tap icon to filter on Project and Category";
+  const String BootstrapSubTitle = "tap gear to filter on Project & Category";
   const String noEmptyVocabulary = "Vocabulary without content";
   const String vocabularyNotFound = "Vocabulary not found";
   const String endlessLoopDetected = "Endless loop";
   const String endlessLoopError = "ENDLESS_LOOP_ERROR";
   const String doubleCurlyBracesError = "DOUBLE_CURLY_BRACES_ERROR";
+  const String defaultProject = "defaultProject";
+  const String defaultCategory = "defaultCategory";
 
   Map<String, String> strfToDart = {
     '%a': 'D',
@@ -42,3 +96,82 @@
     '%Z': 'Z',
   };
 
+List<String> images = [
+  'assets/images/aftershave.png',
+  'assets/images/afwas.png',
+  'assets/images/allergiepillen.png',
+  'assets/images/anwb.png',
+  'assets/images/badschuim.png',
+  'assets/images/bergschoenen.png',
+  'assets/images/bestek.png',
+  'assets/images/boek.png',
+  'assets/images/bzztop.png',
+  'assets/images/deodorant.png',
+  'assets/images/didier.png',
+  'assets/images/diveholiday.png',
+  'assets/images/drwho.png',
+  'assets/images/eend.png',
+  'assets/images/einenhand.png',
+  'assets/images/gel.png',
+  'assets/images/gitaar.png',
+  'assets/images/glazen.png',
+  'assets/images/groke.png',
+  'assets/images/haarlak.png',
+  'assets/images/hangmat.png',
+  'assets/images/hellsangel.png',
+  'assets/images/hoed.png',
+  'assets/images/juwelen.png',
+  'assets/images/kleurtjes.png',
+  'assets/images/knijn.png',
+  'assets/images/knijpers.png',
+  'assets/images/kompas.png',
+  'assets/images/kurketrekker.png',
+  'assets/images/lipbalsem.png',
+  'assets/images/luchtpomp.png',
+  'assets/images/makeup.png',
+  'assets/images/matras.png',
+  'assets/images/motor.png',
+  'assets/images/muts.png',
+  'assets/images/nachtcreme.png',
+  'assets/images/netteschoenen.png',
+  'assets/images/oma.png',
+  'assets/images/pechspul.png',
+  'assets/images/picnic.png',
+  'assets/images/pleisters.png',
+  'assets/images/plu.png',
+  'assets/images/poejoe.png',
+  'assets/images/poezerik.png',
+  'assets/images/pollepel.png',
+  'assets/images/prommah.png',
+  'assets/images/radio.png',
+  'assets/images/regen.png',
+  'assets/images/rubberhamer.png',
+  'assets/images/sandalen.png',
+  'assets/images/schaak.png',
+  'assets/images/schaar.png',
+  'assets/images/schans.png',
+  'assets/images/scheer.png',
+  'assets/images/shampoo.png',
+  'assets/images/skiholiday.png',
+  'assets/images/slippers.png',
+  'assets/images/smite.png',
+  'assets/images/strandbal.png',
+  'assets/images/strandschepje.png',
+  'assets/images/tandpasta.png',
+  'assets/images/tas.png',
+  'assets/images/tennisballen.png',
+  'assets/images/tent.png',
+  'assets/images/verrekijker.png',
+  'assets/images/voetbal.png',
+  'assets/images/watercooler.png',
+  'assets/images/wfh.png',
+  'assets/images/zakmes.png',
+];
+
+String getImage() {
+  int nrImages = images.length;
+  final random = Random();
+  int imagenr = random.nextInt(nrImages);
+  // print("image nr: $imagenr");
+  return images[imagenr] ?? '';
+}

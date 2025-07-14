@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'package:nonsense/config/colours.dart';
-import 'package:nonsense/config/config.dart';
-import 'package:nonsense/screens/about_voc4.dart';
+import 'package:balderdash/config/colours.dart';
+import 'package:balderdash/config/config.dart';
+import 'package:balderdash/screens/about_voc4.dart';
 
 class AboutVoc3 extends StatelessWidget {
-  const AboutVoc3({Key? key}) : super(key: key);
+  const AboutVoc3({super.key});
 
   @override
   Widget build(BuildContext context) {

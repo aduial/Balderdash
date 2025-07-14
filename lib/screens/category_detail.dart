@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:nonsense/model/category.dart';
-import 'package:nonsense/views/category_view.dart';
-import 'package:nonsense/database_helper/database_helper.dart';
-import 'package:nonsense/config/colours.dart';
-import 'package:nonsense/config/config.dart';
+import 'package:balderdash/model/category.dart';
+import 'package:balderdash/views/category_view.dart';
+import 'package:balderdash/database_helper/database_helper.dart';
+import 'package:balderdash/config/colours.dart';
+import 'package:balderdash/config/config.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 
 class CategoryDetail extends StatefulWidget {
@@ -55,7 +55,7 @@ class _CategoryDetailState extends State<CategoryDetail> {
 
   void _refreshLists() {
     setState(() {
-      _parents = dbHelper.getCategories();
+      _parents = dbHelper.getCategoriesAbove(0);
     });
   }
 
@@ -89,162 +89,170 @@ class _CategoryDetailState extends State<CategoryDetail> {
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(
-          color: notepaperWhite,
+          color: cyanNotePaperColour,
         ),
         backgroundColor: regularResultBGColour,
         title: Text(
           "Edit ${widget.categoryView.name!}",
           style: TextStyle(color: notepaperWhite),
         ),
-
       ),
-      backgroundColor: notepaperWhite,
-      body: Padding(
-        padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-        child: Form(
-          key: _categoryFormKey,
-          child: ListView(padding: EdgeInsets.all(4), children: [
-            Row(
-              children: [
-                Expanded(
-                  child: DropdownSearch<Category>(
-                    key: _parentDDKey,
-                    itemAsString: (item) => item.name!,
-                    items: (filter, t) => _parents,
-                    onSelected: (Category? item) {
-                      setState(() {
-                        setUpdatedParent(item!.id!);
-                      });
-                    },
-                    decoratorProps: DropDownDecoratorProps(
-                      decoration: InputDecoration(
-                        floatingLabelBehavior: FloatingLabelBehavior.always,
-                        isDense: true,
-                        filled: true,
-                        fillColor: offWhite,
-                          labelText: 'PARENT CATEGORY',
-                        labelStyle:
-                            TextStyle(fontSize: 14),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          )
-                      ),
-                    ),
-                    compareFn: (item, sItem) => item.id == sItem.id,
-                    validator: (item) {
-                      if (isExistingCV && item?.id == newCategoryId) {
-                        return "Sorry, can't self-parent";
-                      }
-                      return null;
-                    },
-                    popupProps: PopupProps.modalBottomSheet(
-                        showSelectedItems: true,
-                        showSearchBox: false,
-                        itemBuilder: categoryModalItem),
-                  ),
-                ),
-                Padding(padding: EdgeInsets.all(4)),
-                Expanded(
-                    child: TextFormField(
-                      controller: nameController,
-                      textCapitalization: TextCapitalization.sentences,
-                      decoration: InputDecoration(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [notepaperWhite, lightGreenGrey],
+          ),
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+          child: Form(
+            key: _categoryFormKey,
+            child: ListView(padding: EdgeInsets.all(4), children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: DropdownSearch<Category>(
+                      key: _parentDDKey,
+                      itemAsString: (item) => item.name!,
+                      items: (filter, t) => _parents,
+                      onSelected: (Category? item) {
+                        setState(() {
+                          setUpdatedParent(item!.id!);
+                        });
+                      },
+                      decoratorProps: DropDownDecoratorProps(
+                        decoration: InputDecoration(
+                          floatingLabelBehavior: FloatingLabelBehavior.always,
                           isDense: true,
                           filled: true,
                           fillColor: offWhite,
-                          labelText: 'NAME',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          )
+                            labelText: 'PARENT CATEGORY',
+                          labelStyle:
+                              TextStyle(fontSize: 14),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            )
+                        ),
                       ),
-                      maxLines: 1,
-                      onChanged: (value) => onNameChanged(value),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Name cannot be empty';
-                        }
-                        if (value == newCategoryName) {
-                          return "Something else?";
-                        }
-                        // first find category with the same name
-                        List<CategoryView> nameCVList =
-                        cvList.where((i) => i.name == value).toList();
-                        // of those, take the ones with a different id
-                        List<CategoryView> filterCVList =
-                        nameCVList.where((j) => j.id != newCategoryId).toList();
-                        if (filterCVList.isNotEmpty) {
-                          return "'${filterCVList[0].name!}' exist, try again";
+                      compareFn: (item, sItem) => item.id == sItem.id,
+                      validator: (item) {
+                        if (isExistingCV && item?.id == newCategoryId) {
+                          return "Sorry, can't self-parent";
                         }
                         return null;
                       },
+                      popupProps: PopupProps.modalBottomSheet(
+                          showSelectedItems: true,
+                          showSearchBox: false,
+                          itemBuilder: categoryModalItem),
                     ),
                   ),
-              ],
-            ),
-            Padding(padding: EdgeInsets.all(8)),
-            Row(children: [
-              Expanded(
-                flex: 8,
-                child: TextFormField(
-                  controller: commentController,
-                  decoration: InputDecoration(
-                      isDense: true,
-                      filled: true,
-                      fillColor: offWhite,
-                      labelText: 'COMMENT',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      )
-                  ),
-                  maxLines: 1,
-                  onChanged: (value) => onCommentChanged(value),
-                  validator: (value) {
-                    return null;
-                  },
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 4.0),
-              ),
-              Expanded(
-                flex: 3,
-                child:  ElevatedButton(
-                  style: const ButtonStyle(
-                    iconAlignment: IconAlignment.end,
-                  ),
-                  onPressed: () async {
-                    if (_categoryFormKey.currentState!.validate()) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            backgroundColor: regularResultBGColour,
-                            behavior: SnackBarBehavior.fixed,
-                            // margin: EdgeInsets.only(bottom: 0.0),
-                            content: Text('Saving category',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 18,
-                              ),
-                            ),
-                            dismissDirection: DismissDirection.none
+                  Padding(padding: EdgeInsets.all(4)),
+                  Expanded(
+                      child: TextFormField(
+                        controller: nameController,
+                        textCapitalization: TextCapitalization.sentences,
+                        decoration: InputDecoration(
+                            isDense: true,
+                            filled: true,
+                            fillColor: offWhite,
+                            labelText: 'NAME',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            )
                         ),
-                      );
-                      newCategory = Category.fromMap({
-                        "id": widget.categoryView.id,
-                        "parentId": newParentId,
-                        "name": newName,
-                        "comment": newComment,
-                      });
-                      await dbHelper.upsertCategory(newCategory);
-                      Navigator.of(context).pop();
-                    }
-                  },
-                  child: const Icon(
-                      Icons.save,
+                        maxLines: 1,
+                        onChanged: (value) => onNameChanged(value),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Name cannot be empty';
+                          }
+                          if (value == newCategoryName) {
+                            return "Something else?";
+                          }
+                          // first find category with the same name
+                          List<CategoryView> nameCVList =
+                          cvList.where((i) => i.name == value).toList();
+                          // of those, take the ones with a different id
+                          List<CategoryView> filterCVList =
+                          nameCVList.where((j) => j.id != newCategoryId).toList();
+                          if (filterCVList.isNotEmpty) {
+                            return "'${filterCVList[0].name!}' exist, try again";
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                ],
+              ),
+              Padding(padding: EdgeInsets.all(8)),
+              Row(children: [
+                Expanded(
+                  flex: 8,
+                  child: TextFormField(
+                    controller: commentController,
+                    decoration: InputDecoration(
+                        isDense: true,
+                        filled: true,
+                        fillColor: offWhite,
+                        labelText: 'COMMENT',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        )
+                    ),
+                    maxLines: 1,
+                    onChanged: (value) => onCommentChanged(value),
+                    validator: (value) {
+                      return null;
+                    },
                   ),
                 ),
-              ),
-            ]),
-          ]
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4.0),
+                ),
+                Expanded(
+                  flex: 3,
+                  child:  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      iconColor: cyanAppbarColour,
+                      shadowColor: Colors.black,
+                    ),
+                    onPressed: () async {
+                      if (_categoryFormKey.currentState!.validate()) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              backgroundColor: regularResultBGColour,
+                              behavior: SnackBarBehavior.fixed,
+                              // margin: EdgeInsets.only(bottom: 0.0),
+                              content: Text('Saving category',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                ),
+                              ),
+                              dismissDirection: DismissDirection.none
+                          ),
+                        );
+                        newCategory = Category.fromMap({
+                          "id": widget.categoryView.id,
+                          "parentId": newParentId,
+                          "name": newName,
+                          "comment": newComment,
+                        });
+                        await dbHelper.upsertCategory(newCategory);
+                        Navigator.of(context).pop();
+                      }
+                    },
+                    child: const Icon(
+                        Icons.save,
+                    ),
+                  ),
+                ),
+              ]),
+            ]
+            ),
           ),
         ),
       ),

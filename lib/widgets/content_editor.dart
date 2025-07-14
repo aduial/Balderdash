@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_code_editor/flutter_code_editor.dart';
-import 'package:nonsense/language/nonsense.dart';
-import 'package:nonsense/language/nonsense_template.dart';
-import 'package:nonsense/config/nonsense_theme_colours.dart';
-import 'package:nonsense/config/colours.dart';
+import 'package:balderdash/language/balderdash.dart';
+import 'package:balderdash/language/balderdash_template.dart';
+import 'package:balderdash/config/balderdash_theme_colours.dart';
+import 'package:balderdash/config/colours.dart';
 
 
 class ContentEditor extends StatelessWidget {
@@ -23,18 +23,18 @@ class ContentEditor extends StatelessWidget {
   Widget build(BuildContext context) {
     controller.text = content;
     if (isVocabulary){
-      controller.language = nonsense;
+      controller.language = balderdash;
     } else {
-      controller.language = nonsenseTemplate;
+      controller.language = balderdashTemplate;
     }
-    // controller.language = nonsense;
+    // controller.language = balderdash;
     // controller.
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         body: CodeTheme(
           data: CodeThemeData(
-              styles: nonsenseTheme),
+              styles: balderdashTheme),
             child: SingleChildScrollView(
               child: CodeField(
                 background: offWhite,

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:nonsense/screens/project_detail.dart';
-import 'package:nonsense/views/project_view.dart';
-import 'package:nonsense/database_helper/database_helper.dart';
-import 'package:nonsense/config/colours.dart';
-import 'package:nonsense/config/config.dart';
+import 'package:balderdash/screens/project_detail.dart';
+import 'package:balderdash/views/project_view.dart';
+import 'package:balderdash/database_helper/database_helper.dart';
+import 'package:balderdash/config/colours.dart';
+import 'package:balderdash/config/config.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
 class ProjectPage extends StatefulWidget {
@@ -62,159 +62,170 @@ class _ProjectPageState extends State<ProjectPage> {
     return Scaffold(
       appBar: AppBar(
           iconTheme: IconThemeData(
-            color: notepaperWhite,
+            color: orangeNotePaperColour,
           ),
-          backgroundColor: regularResultBGColour,
+          backgroundColor: inActiveLargeSetColour,
           title: SizedBox(
             height: 30,
             child: TextField(
-              style: TextStyle(color: offWhite, fontSize: 16),
+              style: TextStyle(color: darkerBlueGrey, fontSize: 16),
               onChanged: (value) => onSearch(value),
               decoration: InputDecoration(
                 filled: true,
-                fillColor: inActiveLargeSetColour,
-                hintText: "filter pojects",
+                fillColor: notepaperWhite,
+                hintText: "filter projects",
                 contentPadding: EdgeInsets.all(0),
-                prefixIcon: Icon(Icons.search, color: offWhite),
+                prefixIcon: Icon(Icons.search, color: darkerBlueGrey),
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(50),
                     borderSide: BorderSide.none),
-                hintStyle: TextStyle(fontSize: 14, color: notepaperWhite),
+                hintStyle: TextStyle(fontSize: 14, color: darkerBlueGrey),
               ),
             ),
           )),
-      body: FutureBuilder<List<ProjectView>>(
-        future: _projectViews,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No projects found'));
-          }
-          return Scrollbar(
-            controller: _scrollController,
-            child: ListView.builder(
-              itemCount: numItems,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [notepaperWhite, blueGrey],
+          ),
+        ),
+        child: FutureBuilder<List<ProjectView>>(
+          future: _projectViews,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(child: Text('No projects found'));
+            }
+            return Scrollbar(
               controller: _scrollController,
-              itemBuilder: (context, index) {
-                final projectView = snapshot.data![index];
-                return Container(
-                  padding: EdgeInsets.fromLTRB(5.0 * toScale, 2.0 * toScale,
-                      5.0 * toScale, 5.0 * toScale),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                          width: toScale, color: tanteRia),
+              child: ListView.builder(
+                itemCount: numItems,
+                controller: _scrollController,
+                itemBuilder: (context, index) {
+                  final projectView = snapshot.data![index];
+                  return Container(
+                    height: 40,
+                    padding: EdgeInsets.fromLTRB(5.0 * toScale, 0.0,
+                        5.0 * toScale, 0.0),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                            width: toScale, color: tanteRia),
+                      ),
+                      color: notepaperWhite,
                     ),
-                    color: notepaperWhite,
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Expanded(
-                        flex: 2,
-                        child: Padding(
-                          padding:
-                              const EdgeInsetsDirectional.fromSTEB(4, 0, 2, 0),
-                          child: AutoSizeText(
-                            projectView.type!,
-                            style: TextStyle(
-                              color: veryVeryDark
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Expanded(
+                          flex: 2,
+                          child: Padding(
+                            padding:
+                                const EdgeInsetsDirectional.fromSTEB(4, 0, 2, 0),
+                            child: AutoSizeText(
+                              projectView.type!,
+                              style: TextStyle(
+                                color: veryVeryDark
+                              ),
+                              maxLines: 1,
                             ),
-                            maxLines: 1,
                           ),
                         ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              2, 0, 2 * toScale, 0),
-                          child: AutoSizeText(
-                            projectView.author!,
-                              maxLines: 1,
-                              style: TextStyle(
-                                  color: veryVeryDark
-                              ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 4,
-                        child: Padding(
-                          padding:
-                              const EdgeInsetsDirectional.fromSTEB(2, 0, 2, 0),
-                          child: AutoSizeText(
-                            projectView.title!,
-                              maxLines: 1,
-                              style: TextStyle(
-                                  color: veryVeryDark
-                              ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Padding(
-                          padding:
-                              const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                          child: IconButton(
-                            icon: const Icon(Icons.edit),
-                            color: veryVeryDark,
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ProjectDetail(
-                                      projectView: projectView),
+                        Expanded(
+                          flex: 2,
+                          child: Padding(
+                            padding: EdgeInsetsDirectional.fromSTEB(
+                                2, 0, 2 * toScale, 0),
+                            child: AutoSizeText(
+                              projectView.author!,
+                                maxLines: 1,
+                                style: TextStyle(
+                                    color: veryVeryDark
                                 ),
-                              ).then((value) {
-                                setState(() {
-                                  _refreshProjectViewList();
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 4,
+                          child: Padding(
+                            padding:
+                                const EdgeInsetsDirectional.fromSTEB(2, 0, 2, 0),
+                            child: AutoSizeText(
+                              projectView.title!,
+                                maxLines: 1,
+                                style: TextStyle(
+                                    color: veryVeryDark
+                                ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: Padding(
+                            padding:
+                                const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                            child: IconButton(
+                              icon: const Icon(Icons.edit),
+                              color: orangeAppbarColour,
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ProjectDetail(
+                                        projectView: projectView),
+                                  ),
+                                ).then((value) {
+                                  setState(() {
+                                    _refreshProjectViewList();
+                                  });
                                 });
-                              });
-                            },
+                              },
+                            ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Padding(
-                          padding:
-                              const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                          child: IconButton(
-                            icon: const Icon(Icons.delete),
-                            color: veryVeryDark,
-                            onPressed: () async {
+                        Expanded(
+                          flex: 1,
+                          child: Padding(
+                            padding:
+                                const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                            child: IconButton(
+                              icon: const Icon(Icons.delete),
+                              color: orangeAppbarColour,
+                              onPressed: () async {
 
-                              final bool isDelete = await showConfirmationAlertDialog(
-                                context,
-                                title: 'Delete ${projectView.title!}?',
-                                message: "Do you want to delete project '${projectView.title!}'? You cannot undo this!" ,
-                                positiveText: 'Delete',
-                                negativeText: 'Cancel',
-                                highlightNegative: true,
-                              );
+                                final bool isDelete = await showConfirmationAlertDialog(
+                                  context,
+                                  title: 'Delete ${projectView.title!}?',
+                                  message: "Do you want to delete project '${projectView.title!}'? You cannot undo this!" ,
+                                  positiveText: 'Delete',
+                                  negativeText: 'Cancel',
+                                  highlightNegative: true,
+                                );
 
-                              if(isDelete){
-                                await dbHelper.deleteProject(projectView);
-                                _refreshProjectViewList();
-                              }
-                            },
+                                if(isDelete){
+                                  await dbHelper.deleteProject(projectView);
+                                  _refreshProjectViewList();
+                                }
+                              },
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          );
-        },
+                      ],
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: orangeNotePaperColour,
         child: const Icon(Icons.add),
         onPressed: () async {
           ProjectView newProjectView = ProjectView.fromMap({

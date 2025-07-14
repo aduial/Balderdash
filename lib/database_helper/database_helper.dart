@@ -1,16 +1,16 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
 
-import 'package:nonsense/model/author.dart';
-import 'package:nonsense/model/category.dart';
-import 'package:nonsense/model/project.dart';
-import 'package:nonsense/views/project_view.dart';
-import 'package:nonsense/views/category_view.dart';
-import 'package:nonsense/model/template.dart';
-import 'package:nonsense/views/template_view.dart';
-import 'package:nonsense/model/type.dart';
-import 'package:nonsense/model/vocabulary.dart';
-import 'package:nonsense/views/vocabulary_view.dart';
+import 'package:balderdash/model/author.dart';
+import 'package:balderdash/model/category.dart';
+import 'package:balderdash/model/project.dart';
+import 'package:balderdash/views/project_view.dart';
+import 'package:balderdash/views/category_view.dart';
+import 'package:balderdash/model/template.dart';
+import 'package:balderdash/views/template_view.dart';
+import 'package:balderdash/model/type.dart';
+import 'package:balderdash/model/vocabulary.dart';
+import 'package:balderdash/views/vocabulary_view.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -23,7 +23,7 @@ class DatabaseHelper {
   DatabaseHelper._init();
   late Database _database;
 
-  static const _dbName = "nonsense.db";
+  static const _dbName = "balderdash.db";
   static const _dbVersion = 1;
   static const _typeTableName = "type";
   static const _authorTableName = "author";
@@ -52,7 +52,7 @@ class DatabaseHelper {
       // Write and flush the bytes written
       await io.File(dbPath).writeAsBytes(bytes, flush: true);
     }
-    print('DB location: $dbPath');
+    // print('DB location: $dbPath');
     return await openDatabase(dbPath, version: _dbVersion);
   }
 
@@ -216,9 +216,13 @@ class DatabaseHelper {
   }
 
   // get list of categories
-  Future<List<Category>> getCategories() async {
+  Future<List<Category>> getCategoriesAbove(int id) async {
     Database db = await instance.database;
-    final List<Map<String, dynamic>> results = await db.query(_categoryTableName, orderBy: 'name ASC');
+    final List<Map<String, dynamic>> results = await db.rawQuery(
+        "SELECT * FROM $_categoryTableName WHERE "
+            "id > $id "
+            "ORDER BY id asc; ",
+    );
     List<Category> categories = [];
     for (var result in results) {
       Category category = Category.fromMap(result);
@@ -227,7 +231,7 @@ class DatabaseHelper {
     return categories;
   }
 
-  // get list of CategoryViews
+  // get list of CategoryViews above id = 1 (None)
   Future<List<CategoryView>> getCategoryViews() async {
     Database db = await instance.database;
     // final List<Map<String, dynamic>> results = await db.query(_vocabularyTableName, orderBy: 'title ASC');
@@ -299,10 +303,27 @@ class DatabaseHelper {
     return project;
   }
 
-  // get list of projects
+  // get list of projects starting at id = 2
   Future<List<Project>> getProjects() async {
     Database db = await instance.database;
-    final List<Map<String, dynamic>> results = await db.query(_projectTableName, orderBy: 'title ASC');
+    final List<Map<String, dynamic>> results = await db.query(
+        _projectTableName,
+        orderBy: 'id ASC');
+    List<Project> projects = [];
+    for (var result in results) {
+      Project project = Project.fromMap(result);
+      projects.add(project);
+    }
+    return projects;
+  }
+
+  // get list of projects starting at id = 2
+  Future<List<Project>> getProjectsAbove(int id) async {
+    Database db = await instance.database;
+    final List<Map<String, dynamic>> results = await db.query(
+        _projectTableName,
+        where: "id > ?", whereArgs: [id],
+        orderBy: 'id ASC');
     List<Project> projects = [];
     for (var result in results) {
       Project project = Project.fromMap(result);
@@ -324,7 +345,7 @@ class DatabaseHelper {
     }
   }
 
-  // get list of Project views
+  // get list of Project views above id = 1
   Future<List<ProjectView>> getProjectViews() async {
     Database db = await instance.database;
     // final List<Map<String, dynamic>> results = await db.query(_vocabularyTableName, orderBy: 'title ASC');
@@ -332,7 +353,8 @@ class DatabaseHelper {
         "SELECT p.id, p.typeId, t.name AS type, p.authorId, a.name AS author, p.title, p.notes "
             "FROM $_projectTableName p "
             "JOIN $_typeTableName t ON p.typeId = t.id "
-            "JOIN $_authorTableName a ON p.authorId = a.id;");
+            "JOIN $_authorTableName a ON p.authorId = a.id "
+            "WHERE p.id > 1 ;");
     List<ProjectView> projectViews = [];
     for (var result in results) {
       ProjectView projectView = ProjectView.fromMap(result);
@@ -350,7 +372,8 @@ class DatabaseHelper {
             "FROM $_projectTableName p "
             "JOIN $_typeTableName t ON p.typeId = t.id "
             "JOIN $_authorTableName a ON p.authorId = a.id "
-            "WHERE p.title like '%$searchTerm%'; "
+            "WHERE p.title like '%$searchTerm%' "
+            "AND p.id > 1 ;"
     );
     List<ProjectView> projectViews = [];
     for (var result in results) {
@@ -655,17 +678,15 @@ String vocabularyWhereClause(String searchTerm, int projectId, int categoryId){
   if (searchTerm.isNotEmpty) {
     whereClause.write("AND v.title like '%$searchTerm%' ");
   }
-  if (projectId > 0) {
+  if (projectId > 1) {
     // always include Library vocabularies (projectId = 1)
     whereClause.write("AND (v.projectId = $projectId OR v.projectId = 1) ");
-  }
-  if (categoryId > 0) {
-    whereClause.write("AND v.categoryId = $categoryId ");
-  }
-  if (projectId > 0 && categoryId > 0){
     orderByClause = "ORDER BY v.projectId desc, v.categoryId asc, v.title asc;";
-  } else if (projectId == 0){
+  } else {
     orderByClause = "ORDER BY v.projectId asc, v.categoryId asc, v.title asc;";
+  }
+  if (categoryId > 1) {
+    whereClause.write("AND v.categoryId = $categoryId ");
   }
   whereClause.write(orderByClause);
   return whereClause.toString();

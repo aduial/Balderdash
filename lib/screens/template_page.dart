@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:nonsense/screens/template_detail.dart';
-import 'package:nonsense/views/template_view.dart';
-import 'package:nonsense/database_helper/database_helper.dart';
-import 'package:nonsense/config/colours.dart';
-import 'package:nonsense/config/config.dart';
+import 'package:balderdash/screens/template_detail.dart';
+import 'package:balderdash/views/template_view.dart';
+import 'package:balderdash/database_helper/database_helper.dart';
+import 'package:balderdash/config/colours.dart';
+import 'package:balderdash/config/config.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
 class TemplatePage extends StatefulWidget {
@@ -62,7 +62,7 @@ class _TemplatePageState extends State<TemplatePage> {
     return Scaffold(
       appBar: AppBar(
           iconTheme: IconThemeData(
-            color: notepaperWhite,
+            color: violetNotePaperColour,
           ),
           backgroundColor: regularResultBGColour,
           title: SizedBox(
@@ -83,124 +83,134 @@ class _TemplatePageState extends State<TemplatePage> {
               ),
             ),
           )),
-      body: FutureBuilder<List<TemplateView>>(
-        future: _templateViews,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No templates found'));
-          }
-          return Scrollbar(
-            controller: _scrollController,
-            child: ListView.builder(
-              itemCount: numItems,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [lightBlueGrey, blueGrey],
+          ),
+        ),
+        child: FutureBuilder<List<TemplateView>>(
+          future: _templateViews,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(child: Text('No templates found'));
+            }
+            return Scrollbar(
               controller: _scrollController,
-              itemBuilder: (context, index) {
-                final templateView = snapshot.data![index];
-                return Container(
-                  height: 40,
-                  padding: EdgeInsets.fromLTRB(5.0 * toScale, 0.0,
-                      5.0 * toScale, 0.0),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                          width: toScale, color: tanteRia),
+              child: ListView.builder(
+                itemCount: numItems,
+                controller: _scrollController,
+                itemBuilder: (context, index) {
+                  final templateView = snapshot.data![index];
+                  return Container(
+                    height: 40,
+                    padding: EdgeInsets.fromLTRB(5.0 * toScale, 0.0,
+                        5.0 * toScale, 0.0),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                            width: toScale, color: tanteRia),
+                      ),
+                      color: notepaperWhite,
                     ),
-                    color: notepaperWhite,
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Expanded(
-                        flex: 3,
-                        child: Padding(
-                          padding:
-                              const EdgeInsetsDirectional.fromSTEB(4, 0, 2, 0),
-                          child: AutoSizeText(
-                            templateView.title ?? "",
-                            style: TextStyle(
-                              color: veryVeryDark,
-                            ),
-                            maxLines: 1,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: Padding(
-                          padding:
-                              const EdgeInsetsDirectional.fromSTEB(2, 0, 2, 0),
-                          child: AutoSizeText(templateView.project!,
-                              maxLines: 1,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Expanded(
+                          flex: 3,
+                          child: Padding(
+                            padding:
+                                const EdgeInsetsDirectional.fromSTEB(4, 0, 2, 0),
+                            child: AutoSizeText(
+                              templateView.title ?? "",
                               style: TextStyle(
-                                color: secondary,
+                                color: veryVeryDark,
                               ),
+                              maxLines: 1,
+                            ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Padding(
-                          padding:
-                              const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                          child: IconButton(
-                            icon: const Icon(Icons.edit),
-                            color: veryVeryDark,
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => TemplateDetail(
-                                      templateView: templateView),
+                        Expanded(
+                          flex: 2,
+                          child: Padding(
+                            padding:
+                                const EdgeInsetsDirectional.fromSTEB(2, 0, 2, 0),
+                            child: AutoSizeText(templateView.project!,
+                                maxLines: 1,
+                                style: TextStyle(
+                                  color: secondary,
                                 ),
-                              ).then((value) {
-                                setState(() {
-                                  _refreshTemplateViewList();
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: Padding(
+                            padding:
+                                const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                            child: IconButton(
+                              icon: const Icon(Icons.edit),
+                              color: violetAppbarColour,
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => TemplateDetail(
+                                        templateView: templateView),
+                                  ),
+                                ).then((value) {
+                                  setState(() {
+                                    _refreshTemplateViewList();
+                                  });
                                 });
-                              });
-                            },
+                              },
+                            ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Padding(
-                          padding:
-                              const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                          child: IconButton(
-                            icon: const Icon(Icons.delete),
-                            color: veryVeryDark,
-                            onPressed: () async {
+                        Expanded(
+                          flex: 1,
+                          child: Padding(
+                            padding:
+                                const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                            child: IconButton(
+                              icon: const Icon(Icons.delete),
+                              color: violetAppbarColour,
+                              onPressed: () async {
 
-                              final bool isDelete = await showConfirmationAlertDialog(
-                                context,
-                                title: 'Delete ${templateView.title!}?',
-                                message: "Do you want to delete ${templateView.title!}? You cannot undo this!" ,
-                                positiveText: 'Delete',
-                                negativeText: 'Cancel',
-                                highlightNegative: true,
-                              );
+                                final bool isDelete = await showConfirmationAlertDialog(
+                                  context,
+                                  title: 'Delete ${templateView.title!}?',
+                                  message: "Do you want to delete ${templateView.title!}? You cannot undo this!" ,
+                                  positiveText: 'Delete',
+                                  negativeText: 'Cancel',
+                                  highlightNegative: true,
+                                );
 
-                              if(isDelete){
-                                await dbHelper.deleteTemplate(templateView);
-                                _refreshTemplateViewList();
-                              }
-                            },
+                                if(isDelete){
+                                  await dbHelper.deleteTemplate(templateView);
+                                  _refreshTemplateViewList();
+                                }
+                              },
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          );
-        },
+                      ],
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: violetNotePaperColour,
         child: const Icon(Icons.add),
         onPressed: () async {
           TemplateView newTemplateView = TemplateView.fromMap({

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:nonsense/screens/vocabulary_page.dart';
-import 'package:nonsense/config/colours.dart';
+import 'package:balderdash/screens/vocabulary_page.dart';
+import 'package:balderdash/config/colours.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 
@@ -165,7 +165,7 @@ class HomeScreenState extends State<HomeScreen> {
                   duration: Duration(milliseconds: 250),
                   child: Semantics(
                     label: 'Menu',
-                    onTapHint: 'go forth and create nonsense',
+                    onTapHint: 'go forth and create balderdash!',
                     child: Icon(
                       value.visible ? Icons.clear : Icons.menu,
                       key: ValueKey<bool>(value.visible),

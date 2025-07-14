@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'package:nonsense/config/colours.dart';
-import 'package:nonsense/config/config.dart';
-import 'package:nonsense/screens/about_voc5.dart';
+import 'package:balderdash/config/colours.dart';
+import 'package:balderdash/config/config.dart';
+import 'package:balderdash/screens/about_voc5.dart';
 
 class AboutVoc4 extends StatelessWidget {
-  const AboutVoc4({Key? key}) : super(key: key);
+  const AboutVoc4({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +98,7 @@ class AboutVoc4 extends StatelessWidget {
                         child: RichText(
                           textAlign: TextAlign.left,
                           text: TextSpan(
-                            text: "Vocabulary START of the example grammar started with: ",
+                            text: "Vocabulary START of the example grammar took off with: ",
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyLarge!

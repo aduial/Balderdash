@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'package:nonsense/config/colours.dart';
-import 'package:nonsense/config/config.dart';
-import 'package:nonsense/screens/how2.dart';
+import 'package:balderdash/config/colours.dart';
+import 'package:balderdash/config/config.dart';
+import 'package:balderdash/screens/how2.dart';
 
 class How1 extends StatelessWidget {
-  const How1({Key? key}) : super(key: key);
+  const How1({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +21,7 @@ class How1 extends StatelessWidget {
         ),
         backgroundColor: mountainBlue,
         title: Text(
-          "How Nonsense! works (1)",
+          "How Balderdash! works (1)",
           style: Theme.of(context).textTheme.bodyLarge!.copyWith(
               color: ithildin,
               fontWeight: FontWeight.w500,
