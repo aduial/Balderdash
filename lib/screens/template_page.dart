@@ -117,7 +117,9 @@ class _TemplatePageState extends State<TemplatePage> {
                         bottom: BorderSide(
                             width: toScale, color: tanteRia),
                       ),
-                      color: notepaperWhite,
+                      color: templateView.isHtml == 1
+                      ? notepaperWhite
+                      : notepaperLinked,
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -130,7 +132,9 @@ class _TemplatePageState extends State<TemplatePage> {
                             child: AutoSizeText(
                               templateView.title ?? "",
                               style: TextStyle(
-                                color: veryVeryDark,
+                                color: templateView.isHtml == 1
+                                    ? greenAppbarColour
+                                    : redAppbarColour,
                               ),
                               maxLines: 1,
                             ),
@@ -144,7 +148,9 @@ class _TemplatePageState extends State<TemplatePage> {
                             child: AutoSizeText(templateView.project!,
                                 maxLines: 1,
                                 style: TextStyle(
-                                  color: secondary,
+                                  color: templateView.isHtml == 1
+                                      ? greenAppbarColour
+                                      : redAppbarColour,
                                 ),
                             ),
                           ),
@@ -218,7 +224,8 @@ class _TemplatePageState extends State<TemplatePage> {
             "projectId": null,
             "project": '',
             "title": newTemplateTitle,
-            "html": '',
+            "content": '',
+            "isHtml": 1,
             "notes": 'comment'});
           Navigator.push(
             context,

@@ -9,6 +9,7 @@ import 'package:balderdash/config/config.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:balderdash/widgets/content_editor.dart';
 import 'package:widgets_easier/widgets_easier.dart';
+import 'package:balderdash/screens/run_page.dart';
 
 class VocabularyDetail extends StatefulWidget {
   final VocabularyView vocabularyView;
@@ -31,6 +32,8 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
   // final ScrollController contentScrollController = ScrollController();
   final TextEditingController commentController =
       TextEditingController(text: '');
+  final TextEditingController testController = TextEditingController(text: '');
+
 
   bool vvListFetched = false;
   bool isExistingVV = false;
@@ -51,16 +54,19 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
     isExistingVV = (null != widget.vocabularyView.id);
     if (isExistingVV) {
       newCategoryId = widget.vocabularyView.categoryId!;
-      dbHelper.getCategory(newCategoryId).then((cat) => _catDDKey.currentState?.changeSelectedItem(cat));
+      dbHelper
+          .getCategory(newCategoryId)
+          .then((cat) => _catDDKey.currentState?.changeSelectedItem(cat));
       newProjectId = widget.vocabularyView.projectId!;
-      dbHelper.getProject(newProjectId).then((prj) => _prjDDKey.currentState?.changeSelectedItem(prj));
+      dbHelper
+          .getProject(newProjectId)
+          .then((prj) => _prjDDKey.currentState?.changeSelectedItem(prj));
     }
     newTitle = widget.vocabularyView.title!;
     newContent = widget.vocabularyView.content!;
-    newComment =
-        widget.vocabularyView.comment == ""
-            ? " "
-            : widget.vocabularyView.comment!;
+    newComment = widget.vocabularyView.comment == ""
+        ? " "
+        : widget.vocabularyView.comment!;
     newUsethis = widget.vocabularyView.useThis!;
   }
 
@@ -119,10 +125,27 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
     newUsethis = useThis;
   }
 
+  Vocabulary makeNewVocabulary(){
+    return Vocabulary.fromMap({
+      "id": widget.vocabularyView.id,
+      "categoryId": newCategoryId,
+      "projectId": newProjectId,
+      "title": newTitle,
+      "content": newContent,
+      "comment": newComment,
+      "useThis": newUsethis,
+    });
+  }
+
+  Future<VocabularyView> getVV(int id) async {
+    return await dbHelper.getVocabularyView(id);
+  }
+
   @override
   Widget build(BuildContext context) {
     var padding = MediaQuery.paddingOf(context);
-    double displayHeight = MediaQuery.of(context).size.height - padding.top - padding.bottom;
+    double displayHeight =
+        MediaQuery.of(context).size.height - padding.top - padding.bottom;
     double deviceScaling = refHeight / displayHeight;
     titleController.text = newTitle;
     contentController.text = newContent;
@@ -137,7 +160,6 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
           "Edit ${widget.vocabularyView.title!}",
           style: TextStyle(color: notepaperWhite),
         ),
-
       ),
       backgroundColor: notepaperWhite,
       body: Container(
@@ -152,8 +174,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
           padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
           child: Form(
             key: _vocabularyFormKey,
-            child: ListView(padding: EdgeInsets.all(4),
-                children: [
+            child: ListView(padding: EdgeInsets.all(4), children: [
               Row(
                 children: [
                   Expanded(
@@ -168,18 +189,16 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                       },
                       decoratorProps: DropDownDecoratorProps(
                         decoration: InputDecoration(
-                          floatingLabelBehavior: FloatingLabelBehavior.always,
-                          isDense: true,
-                          filled: true,
-                          fillColor: offWhite,
+                            floatingLabelBehavior: FloatingLabelBehavior.always,
+                            isDense: true,
+                            filled: true,
+                            fillColor: offWhite,
                             labelText: 'CATEGORY',
-                          // labelText: widget.vocabularyView.category,
-                          labelStyle:
-                              TextStyle(fontSize: 14),
+                            // labelText: widget.vocabularyView.category,
+                            labelStyle: TextStyle(fontSize: 14),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
-                            )
-                        ),
+                            )),
                       ),
                       compareFn: (item, sItem) => item.id == sItem.id,
                       validator: (item) {
@@ -212,13 +231,11 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                             filled: true,
                             fillColor: offWhite,
                             labelText: 'PROJECT',
-                          // labelText: widget.vocabularyView.project,
-                          labelStyle:
-                              TextStyle(fontSize: 14),
+                            // labelText: widget.vocabularyView.project,
+                            labelStyle: TextStyle(fontSize: 14),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
-                            )
-                        ),
+                            )),
                       ),
                       // selectedItem: currentCategory,
                       compareFn: (item, sItem) => item.title == sItem.title,
@@ -239,6 +256,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
               Padding(padding: EdgeInsets.all(8)),
               Row(children: [
                 Expanded(
+                  flex: 3,
                   child: TextFormField(
                     controller: titleController,
                     textCapitalization: TextCapitalization.characters,
@@ -249,11 +267,13 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                         labelText: 'VOCABULARY TITLE',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
-                        )
-                    ),
+                        )),
                     maxLines: 1,
                     onChanged: (value) => onTitleChanged(value),
                     validator: (value) {
+                      if (isExistingVV){
+                        return null;
+                      }
                       if (value == null || value.isEmpty) {
                         return 'Title cannot be empty';
                       }
@@ -262,13 +282,41 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                       }
                       List<VocabularyView> titleVVList =
                           vvList.where((i) => i.title == value).toList();
-                      List<VocabularyView> filterVVList =
-                          titleVVList.where((j) => j.projectId == newProjectId).toList();
+                      List<VocabularyView> filterVVList = titleVVList
+                          .where((j) => j.projectId == newProjectId)
+                          .toList();
                       if (filterVVList.isNotEmpty) {
                         return "Vocabulary ${filterVVList[0].title!} already exist in project '${filterVVList[0].project!}'";
                       }
                       return null;
                     },
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4.0),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      iconColor: greenAppbarColour,
+                      shadowColor: Colors.black,
+                    ),
+                    onPressed: () async {
+                      newVocabulary = makeNewVocabulary();
+                      await dbHelper.upsertVocabulary(newVocabulary);
+                      VocabularyView newVV = await getVV(newVocabulary.id!);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              RunPage(vocabularyView: newVV),
+                          ),
+                        );
+                    },
+                    child: const Text(
+                      "Test",
+                    ),
                   ),
                 ),
               ]),
@@ -281,15 +329,15 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                   height: 460 * deviceScaling,
                   width: double.infinity,
                   child: ContentEditor(
-                    content: widget.vocabularyView.content!,
-                    onContentUpdated: (String updatedContent){
-                      onContentChanged(updatedContent);},
-                      isVocabulary: true
-                    ),
+                      content: widget.vocabularyView.content!,
+                      onContentUpdated: (String updatedContent) {
+                        onContentChanged(updatedContent);
+                      },
+                      isVocabulary: true),
                 ),
               ),
               Padding(
-                  padding: EdgeInsets.all(6),
+                padding: EdgeInsets.all(6),
               ),
               Row(children: [
                 Expanded(
@@ -303,8 +351,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                         labelText: 'COMMENT',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
-                        )
-                    ),
+                        )),
                     maxLines: 1,
                     onChanged: (value) => onCommentChanged(value),
                     validator: (value) {
@@ -319,12 +366,9 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                     child: Text('use?'),
                   ),
                 ),
-                // Padding(
-                //   padding: EdgeInsets.symmetric(horizontal: 4.0),
-                // ),
                 Expanded(
                   flex: 2,
-                  child:  Switch(
+                  child: Switch(
                     value: newUsethis == 1,
                     activeColor: greenNotePaperColour,
                     activeTrackColor: greenAppbarColour,
@@ -340,10 +384,10 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                 ),
                 Expanded(
                   flex: 3,
-                  child:  ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            iconColor: greenAppbarColour,
-                            shadowColor: Colors.black,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      iconColor: greenAppbarColour,
+                      shadowColor: Colors.black,
                     ),
                     onPressed: () async {
                       if (_vocabularyFormKey.currentState!.validate()) {
@@ -352,36 +396,27 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                               backgroundColor: regularResultBGColour,
                               behavior: SnackBarBehavior.fixed,
                               // margin: EdgeInsets.only(bottom: 0.0),
-                              content: Text('Saving vocabulary',
+                              content: Text(
+                                'Saving vocabulary',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 18,
                                 ),
                               ),
-                              dismissDirection: DismissDirection.none
-                          ),
+                              dismissDirection: DismissDirection.none),
                         );
-                        newVocabulary = Vocabulary.fromMap({
-                          "id": widget.vocabularyView.id,
-                          "categoryId": newCategoryId,
-                          "projectId": newProjectId,
-                          "title": newTitle,
-                          "content": newContent,
-                          "comment": newComment,
-                          "useThis": newUsethis,
-                        });
+                        newVocabulary = makeNewVocabulary();
                         await dbHelper.upsertVocabulary(newVocabulary);
                         Navigator.of(context).pop();
                       }
                     },
                     child: const Icon(
-                        Icons.save,
+                      Icons.save,
                     ),
                   ),
                 ),
               ]),
-            ]
-            ),
+            ]),
           ),
         ),
       ),
@@ -407,8 +442,7 @@ Widget categoryModalItem(
         title: Text(
           item.name!,
           style: TextStyle(
-              fontSize: 14,
-              color: isSelected ? offWhite : onPrimaryFixed),
+              fontSize: 14, color: isSelected ? offWhite : onPrimaryFixed),
         )),
   );
 }
@@ -431,8 +465,7 @@ Widget projectModalItem(
         title: Text(
           item.title!,
           style: TextStyle(
-              fontSize: 14,
-              color: isSelected ? offWhite : onPrimaryFixed),
+              fontSize: 14, color: isSelected ? offWhite : onPrimaryFixed),
         )),
   );
 }

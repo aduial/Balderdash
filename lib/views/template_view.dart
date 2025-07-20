@@ -7,7 +7,8 @@ class TemplateView {
   int? projectId;
   String? project;
   String? title;
-  String? html;
+  String? content;
+  int? isHtml;
   String? notes;
 
   TemplateView({
@@ -15,7 +16,8 @@ class TemplateView {
     this.projectId,
     this.project,
     this.title,
-    this.html,
+    this.content,
+    this.isHtml,
     this.notes});
 
   Map<String, dynamic> toMap() {
@@ -24,7 +26,8 @@ class TemplateView {
       "projectId": projectId,
       "project": project,
       "title": title,
-      "html": html,
+      "content": content,
+      "isHtml": isHtml,
       "notes": notes
     };
   }
@@ -35,7 +38,8 @@ class TemplateView {
     templateView.projectId = map['projectId'];
     templateView.project = map['project'];
     templateView.title = map['title'];
-    templateView.html = map['html'];
+    templateView.content = map['content'];
+    templateView.isHtml = map['isHtml'];
     templateView.notes = map['notes'];
     return templateView;
   }

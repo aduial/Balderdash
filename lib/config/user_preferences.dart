@@ -18,8 +18,7 @@ class UserPreferences extends StatefulWidget {
   static final navigatorKey = GlobalKey<NavigatorState>();
 }
 
-class _UserPreferencesState extends State<UserPreferences>{
-
+class _UserPreferencesState extends State<UserPreferences> {
   final _catDDKey = GlobalKey<DropdownSearchState<Category>>();
   final _prjDDKey = GlobalKey<DropdownSearchState<Project>>();
   final _settingsFormKey = GlobalKey<FormState>();
@@ -55,17 +54,15 @@ class _UserPreferencesState extends State<UserPreferences>{
   }
 
   void _getLists() {
-    setState(() {
-    });
+    setState(() {});
   }
 
-  Future<void> _setSelected() async {
-  }
+  Future<void> _setSelected() async {}
 
   storeDefaultCategory(int value) async {
     final prefs = await SharedPreferences.getInstance();
     prefs.setInt(defaultCategory, value);
-   categoryId = value;
+    categoryId = value;
   }
 
   storeDefaultProject(int value) async {
@@ -77,7 +74,8 @@ class _UserPreferencesState extends State<UserPreferences>{
   @override
   Widget build(BuildContext context) {
     var padding = MediaQuery.paddingOf(context);
-    double displayHeight = MediaQuery.of(context).size.height - padding.top - padding.bottom;
+    double displayHeight =
+        MediaQuery.of(context).size.height - padding.top - padding.bottom;
     double deviceScaling = refHeight / displayHeight;
     return Scaffold(
       appBar: AppBar(
@@ -89,7 +87,6 @@ class _UserPreferencesState extends State<UserPreferences>{
           "User Preferences",
           style: TextStyle(color: notepaperWhite),
         ),
-
       ),
       backgroundColor: notepaperWhite,
       body: Container(
@@ -104,148 +101,159 @@ class _UserPreferencesState extends State<UserPreferences>{
           padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
           child: Form(
             key: _settingsFormKey,
-            child: ListView(padding: EdgeInsets.all(4),
+            child: ListView(padding: EdgeInsets.all(4), children: [
+              Row(
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: DropdownSearch<Category>(
-                          key: _catDDKey,
-                          itemAsString: (item) => item.name!,
-                          items: (filter, t) => _categories,
-                          onSelected: (Category? item) {
-                            if (initComplete){
-                              setState(() {
-                                if (item == null){
-                                  storeDefaultCategory(1);
-                                } else {
-                                  storeDefaultCategory(item.id!);
-                                }
-                              });
-                            }
-                          },
-                          decoratorProps: DropDownDecoratorProps(
-                            decoration: InputDecoration(
-                                floatingLabelBehavior: FloatingLabelBehavior.always,
-                                isDense: true,
-                                filled: true,
-                                fillColor: offWhite,
-                                labelText: 'CATEGORY',
-                                // labelText: widget.vocabularyView.category,
-                                labelStyle:
-                                TextStyle(fontSize: 14),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                )
-                            ),
-                          ),
-                          compareFn: (item, sItem) => item.id == sItem.id,
-                          validator: (item) {
+                  Expanded(
+                    child: DropdownSearch<Category>(
+                      key: _catDDKey,
+                      itemAsString: (item) => item.name!,
+                      items: (filter, t) => _categories,
+                      onSelected: (Category? item) {
+                        if (initComplete) {
+                          setState(() {
                             if (item == null) {
-                              return 'please select a Category';
+                              storeDefaultCategory(1);
+                            } else {
+                              storeDefaultCategory(item.id!);
                             }
-                            return null;
-                          },
-                          popupProps: PopupProps.modalBottomSheet(
-                              showSelectedItems: true,
-                              showSearchBox: false,
-                              itemBuilder: categoryModalItem),
-                        ),
+                          });
+                          buildSnackBar(context, 'Saving preference');
+                        }
+                      },
+                      decoratorProps: DropDownDecoratorProps(
+                        decoration: InputDecoration(
+                            floatingLabelBehavior: FloatingLabelBehavior.always,
+                            isDense: true,
+                            filled: true,
+                            fillColor: offWhite,
+                            labelText: 'CATEGORY',
+                            // labelText: widget.vocabularyView.category,
+                            labelStyle: TextStyle(fontSize: 14),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            )),
                       ),
-                      Padding(padding: EdgeInsets.all(4)),
-                      Expanded(
-                        child: DropdownSearch<Project>(
-                          key: _prjDDKey,
-                          itemAsString: (item) => item.title!,
-                          items: (filter, t) => _projects,
-                          onSelected: (Project? item) {
-                            if (initComplete){
-                              setState(() {
-                                if (item == null){
-                                  storeDefaultProject(1);
-                                } else {
-                                  storeDefaultProject(item.id!);
-                                }
-                              });
-                            }
-                          },
-                          decoratorProps: DropDownDecoratorProps(
-                            decoration: InputDecoration(
-                                floatingLabelBehavior: FloatingLabelBehavior.always,
-                                isDense: true,
-                                filled: true,
-                                fillColor: offWhite,
-                                labelText: 'PROJECT',
-                                // labelText: widget.vocabularyView.project,
-                                labelStyle:
-                                TextStyle(fontSize: 14),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                )
-                            ),
-                          ),
-                          // selectedItem: currentCategory,
-                          compareFn: (item, sItem) => item.title == sItem.title,
-                          validator: (item) {
-                            if (item == null ) {
-                              return 'please select a Project';
-                            }
-                            return null;
-                          },
-                          popupProps: PopupProps.modalBottomSheet(
-                              showSelectedItems: true,
-                              showSearchBox: false,
-                              itemBuilder: projectModalItem),
-                        ),
-                      ),
-                    ],
+                      compareFn: (item, sItem) => item.id == sItem.id,
+                      validator: (item) {
+                        if (item == null) {
+                          return 'please select a Category';
+                        }
+                        return null;
+                      },
+                      popupProps: PopupProps.modalBottomSheet(
+                          showSelectedItems: true,
+                          showSearchBox: false,
+                          itemBuilder: categoryModalItem),
+                    ),
                   ),
-                  Padding(padding: EdgeInsets.all(8)),
-                  Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              iconColor: cyanAppbarColour,
-                              shadowColor: Colors.black,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _catDDKey.currentState?.clear();
-                              });
-                            },
-                            child: Text("Clear Category"),
-                            // const Icon(
-                            //   Icons.clear,
-                            // ),
-                          ),
-
-                        ),
-                        Padding(padding: EdgeInsets.all(4)),
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              iconColor: cyanAppbarColour,
-                              shadowColor: Colors.black,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _prjDDKey.currentState?.clear();
-                              });
-                            },
-                            child: Text("Clear Project"),
-                            // const Icon(
-                            //   Icons.clear,
-                            // ),
-                          ),
-                        ),
-                      ]
-                  )
-                ]
-            ),
+                  Padding(padding: EdgeInsets.all(4)),
+                  Expanded(
+                    child: DropdownSearch<Project>(
+                      key: _prjDDKey,
+                      itemAsString: (item) => item.title!,
+                      items: (filter, t) => _projects,
+                      onSelected: (Project? item) {
+                        if (initComplete) {
+                          setState(() {
+                            if (item == null) {
+                              storeDefaultProject(1);
+                            } else {
+                              storeDefaultProject(item.id!);
+                            }
+                          });
+                          buildSnackBar(context, 'Saving preference');
+                        }
+                      },
+                      decoratorProps: DropDownDecoratorProps(
+                        decoration: InputDecoration(
+                            floatingLabelBehavior: FloatingLabelBehavior.always,
+                            isDense: true,
+                            filled: true,
+                            fillColor: offWhite,
+                            labelText: 'PROJECT',
+                            // labelText: widget.vocabularyView.project,
+                            labelStyle: TextStyle(fontSize: 14),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            )),
+                      ),
+                      // selectedItem: currentCategory,
+                      compareFn: (item, sItem) => item.title == sItem.title,
+                      validator: (item) {
+                        if (item == null) {
+                          return 'please select a Project';
+                        }
+                        return null;
+                      },
+                      popupProps: PopupProps.modalBottomSheet(
+                          showSelectedItems: true,
+                          showSearchBox: false,
+                          itemBuilder: projectModalItem),
+                    ),
+                  ),
+                ],
+              ),
+              Padding(padding: EdgeInsets.all(8)),
+              Row(children: [
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      iconColor: cyanAppbarColour,
+                      shadowColor: Colors.black,
+                    ),
+                    onPressed: () {
+                      buildSnackBar(context, 'Clear default Category');
+                      setState(() {
+                        _catDDKey.currentState?.clear();
+                      });
+                    },
+                    child: Text("Clear Category"),
+                  ),
+                ),
+                Padding(padding: EdgeInsets.all(4)),
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      iconColor: cyanAppbarColour,
+                      shadowColor: Colors.black,
+                    ),
+                    onPressed: () {
+                      buildSnackBar(context, 'Clear default project');
+                      setState(() {
+                        _prjDDKey.currentState?.clear();
+                      });
+                    },
+                    child: Text("Clear Project"),
+                    // const Icon(
+                    //   Icons.clear,
+                    // ),
+                  ),
+                ),
+              ])
+            ]),
           ),
         ),
       ),
+    );
+  }
+
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason> buildSnackBar(
+      BuildContext context, String msg) {
+    return ScaffoldMessenger.of(context).showSnackBar(
+       SnackBar(
+          backgroundColor: regularResultBGColour,
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 1),
+          // margin: EdgeInsets.only(bottom: 0.0),
+          content: Text(
+            msg,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 18,
+            ),
+          ),
+          dismissDirection: DismissDirection.up),
     );
   }
 }

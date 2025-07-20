@@ -23,7 +23,7 @@ class _TemplateDetailState extends State<TemplateDetail> {
   late Future<List<Project>> _projects;
   late List<TemplateView> tvList;
   final TextEditingController titleController = TextEditingController(text: '');
-  final TextEditingController htmlController =
+  final TextEditingController contentController =
       TextEditingController(text: '');
   // final ScrollController contentScrollController = ScrollController();
   final TextEditingController notesController =
@@ -31,12 +31,14 @@ class _TemplateDetailState extends State<TemplateDetail> {
 
   bool tvListFetched = false;
   bool isExistingTV = false;
+  late String contentType;
 
   late Template newTemplate;
   late int newProjectId;
   late String newTitle;
-  late String newHtml;
+  late String newContent;
   late String newNotes;
+  late int newIsHtml;
 
   @override
   void initState() {
@@ -49,7 +51,11 @@ class _TemplateDetailState extends State<TemplateDetail> {
       dbHelper.getProject(newProjectId).then((prj) => _prjDDKey.currentState?.changeSelectedItem(prj));
     }
     newTitle = widget.templateView.title!;
-    newHtml = widget.templateView.html!;
+    newContent = widget.templateView.content!;
+    newIsHtml = widget.templateView.isHtml!;
+    contentType = widget.templateView.isHtml == 0
+        ? rdfContent
+        : htmlContent;
     newNotes =
         widget.templateView.notes == ""
             ? " "
@@ -74,12 +80,20 @@ class _TemplateDetailState extends State<TemplateDetail> {
     newTitle = title;
   }
 
-  onHtmlChanged(String html) async {
+  onContentChanged(String content) async {
     if (!tvListFetched) {
       tvList = await dbHelper.getTemplateViews();
       tvListFetched = true;
     }
-    newHtml = html;
+    newContent = content;
+  }
+
+  onIsHtmlChanged(int isHtml) async {
+    if (!tvListFetched) {
+      tvList = await dbHelper.getTemplateViews();
+      tvListFetched = true;
+    }
+    newIsHtml = isHtml;
   }
 
   onNotesChanged(String notes) async {
@@ -96,7 +110,7 @@ class _TemplateDetailState extends State<TemplateDetail> {
     double displayHeight = MediaQuery.of(context).size.height - padding.top - padding.bottom;
     double deviceScaling = refHeight / displayHeight;
     titleController.text = newTitle;
-    htmlController.text = newHtml;
+    contentController.text = newContent;
     notesController.text = newNotes;
     return Scaffold(
       appBar: AppBar(
@@ -171,6 +185,7 @@ class _TemplateDetailState extends State<TemplateDetail> {
               Padding(padding: EdgeInsets.all(8)),
               Row(children: [
                 Expanded(
+                  flex: 4,
                   child: TextFormField(
                     controller: titleController,
                     textCapitalization: TextCapitalization.characters,
@@ -186,6 +201,9 @@ class _TemplateDetailState extends State<TemplateDetail> {
                     maxLines: 1,
                     onChanged: (value) => onTitleChanged(value),
                     validator: (value) {
+                      if (isExistingTV){
+                        return null;
+                      }
                       if (value == null || value.isEmpty) {
                         return 'Title cannot be empty';
                       }
@@ -203,6 +221,30 @@ class _TemplateDetailState extends State<TemplateDetail> {
                     },
                   ),
                 ),
+                Expanded(
+                  flex: 1,
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: Text(
+                        newIsHtml == 0
+                            ? rdfContent
+                            : htmlContent
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: Switch(
+                    value: newIsHtml == 1,
+                    activeColor: greenNotePaperColour,
+                    activeTrackColor: greenAppbarColour,
+                    onChanged: (bool value) {
+                      setState(() {
+                        onIsHtmlChanged(value ? 1 : 0);
+                      });
+                    },
+                  ),
+                ),
               ]),
               Padding(padding: EdgeInsets.all(6)),
               Container(
@@ -213,9 +255,9 @@ class _TemplateDetailState extends State<TemplateDetail> {
                   height: 460 * deviceScaling,
                   width: double.infinity,
                   child: ContentEditor(
-                    content: widget.templateView.html!,
+                    content: widget.templateView.content!,
                     onContentUpdated: (String updatedContent){
-                      onHtmlChanged(updatedContent);},
+                      onContentChanged(updatedContent);},
                       isVocabulary: false
                   ),
                 ),
@@ -261,7 +303,7 @@ class _TemplateDetailState extends State<TemplateDetail> {
                               backgroundColor: regularResultBGColour,
                               behavior: SnackBarBehavior.fixed,
                               // margin: EdgeInsets.only(bottom: 0.0),
-                              content: Text('Saving vocabulary',
+                              content: Text('Saving template',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 18,
@@ -274,7 +316,7 @@ class _TemplateDetailState extends State<TemplateDetail> {
                           "id": widget.templateView.id,
                           "projectId": newProjectId,
                           "title": newTitle,
-                          "html": newHtml,
+                          "content": newContent,
                           "notes": newNotes,
                         });
                         await dbHelper.upsertTemplate(newTemplate);

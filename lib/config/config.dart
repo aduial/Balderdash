@@ -17,13 +17,13 @@ setMenuImg(){
 setHelpImg(){
   _helpImg = getImage();
   do {
-    "set helpimg";
+    "set helpImg";
     _helpImg = getImage();
   } while (_helpImg == _menuImg);
 }
 setDrawerImg(){
   do {
-    "set drawerimg";
+    "set drawerImg";
     _drawerImg = getImage();
   } while (_drawerImg == _menuImg || _drawerImg == _helpImg);
 }
@@ -53,20 +53,26 @@ String getRBDImg(){
 
 
 // reference screen height minus padding (iPhone 15)
-  const double refHeight = 759.0;
-  const String newVocabularyTitle = "NEW";
-  const String newTemplateTitle = "New Template";
-  const String newAuthorName = "New Author";
-  const String newCategoryName = "New Category";
-  const String newProjectTitle = "New Project";
-  const String BootstrapSubTitle = "tap gear to filter on Project & Category";
-  const String noEmptyVocabulary = "Vocabulary without content";
-  const String vocabularyNotFound = "Vocabulary not found";
-  const String endlessLoopDetected = "Endless loop";
-  const String endlessLoopError = "ENDLESS_LOOP_ERROR";
-  const String doubleCurlyBracesError = "DOUBLE_CURLY_BRACES_ERROR";
-  const String defaultProject = "defaultProject";
-  const String defaultCategory = "defaultCategory";
+const double refHeight = 759.0;
+const String newVocabularyTitle = "NEW";
+const String newTemplateTitle = "New Template";
+const String newAuthorName = "New Author";
+const String newCategoryName = "New Category";
+const String newProjectTitle = "New Project";
+const String BootstrapSubTitle = "tap gear to filter on Project & Category";
+const String noEmptyVocabulary = "Vocabulary without content";
+const String vocabularyNotFound = "Vocabulary not found";
+const String endlessLoopDetected = "Endless loop";
+const String endlessLoopError = "ENDLESS_LOOP_ERROR";
+const String doubleCurlyBracesError = "DOUBLE_CURLY_BRACES_ERROR";
+const String emptyFirstLineError = "EMPTY_FIRST_LINE_ERROR";
+const String defaultProject = "defaultProject";
+const String defaultCategory = "defaultCategory";
+const String htmlContent = "HTML";
+const String rdfContent = "RDF";
+const String prjInsertInto = "INSERT INTO project (typeId, authorId, title, notes) VALUES ";
+const String vocInsertInto = "INSERT INTO vocabulary (projectId, categoryId, title, content, comment, useThis) VALUES ";
+const String tplInsertInto = "INSERT INTO template (projectId, title, content, isHtml, notes) VALUES ";
 
   Map<String, String> strfToDart = {
     '%a': 'D',

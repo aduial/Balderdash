@@ -65,7 +65,7 @@ class _SelectVocPageState extends State<SelectVocPage> {
     final prefs = await SharedPreferences.getInstance();
     projectId = prefs.getInt(defaultProject) ?? 1;
     categoryId = prefs.getInt(defaultCategory) ?? 1;
-    print("pid = $projectId; cid = $categoryId");
+    // print("pid = $projectId; cid = $categoryId");
     _projects = dbHelper.getProjects();
     _categories = dbHelper.getCategoriesAbove(0);
     curProject = await dbHelper.getProject(projectId);
@@ -88,7 +88,7 @@ class _SelectVocPageState extends State<SelectVocPage> {
   }
 
   String setSubTitle(){
-    print("subtitles");
+    // print("subtitles");
     final whereTitle = StringBuffer('');
     if (projectId == 1 && categoryId == 1) {
       return BootstrapSubTitle;

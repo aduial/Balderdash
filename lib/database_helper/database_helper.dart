@@ -56,6 +56,20 @@ class DatabaseHelper {
     return await openDatabase(dbPath, version: _dbVersion);
   }
 
+  Future<void> makeBackup(bool withTimestamp) async {
+    io.Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    String dbPath = join(documentsDirectory.path, _dbName);
+    int timestamp = DateTime.now().millisecondsSinceEpoch;
+    // io.File(dbPath).copy("backup/database.db.$timestamp");
+    if (withTimestamp) {
+      io.File(dbPath).copy(
+          "/Users/luthien/git/aduial/balderdash/backup/balderdash.db.$timestamp");
+    } else {
+      io.File(dbPath).copy(
+          "/Users/luthien/git/aduial/balderdash/backup/balderdash.db");
+    }
+  }
+
   // deprecated
   void _onCreate(Database db, int version) async {
     await db.execute('''
@@ -85,7 +99,8 @@ class DatabaseHelper {
       CREATE TABLE $_templateTableName(
         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
         projectId INTEGER,
-        html TEXT NOT NULL DEFAULT "<html><head></head><body></body></html>",
+        content TEXT NOT NULL DEFAULT "<html><head></head><body></body></html>",
+        isHtml INTEGER NOT NULL DEFAULT 1,
         notes TEXT,
         FOREIGN KEY(projectId) REFERENCES $_projectTableName(id)
       )
@@ -303,7 +318,7 @@ class DatabaseHelper {
     return project;
   }
 
-  // get list of projects starting at id = 2
+  // get list of projects
   Future<List<Project>> getProjects() async {
     Database db = await instance.database;
     final List<Map<String, dynamic>> results = await db.query(
@@ -343,6 +358,21 @@ class DatabaseHelper {
     } else {
       throw Exception("Project with ID $id not found");
     }
+  }
+
+  // get a specific project
+  Future<Project?> getProjectByTitle(String title) async {
+    Database db = await instance.database;
+    final map = await db.rawQuery(
+        "SELECT * FROM $_projectTableName WHERE lower(title) = ?",[title]
+    );
+    if (map.isNotEmpty) {
+      return Project.fromMap(map.first);
+    } else {
+      return null;
+      // throw Exception("Project with title $Project not found");
+    }
+    return Project.fromMap(map.first);
   }
 
   // get list of Project views above id = 1
@@ -472,7 +502,7 @@ class DatabaseHelper {
   Future<List<TemplateView>> getTemplateViews() async {
     Database db = await instance.database;
     final List<Map<String, dynamic>> results = await db.rawQuery(
-        "SELECT t.id, t.projectId, p.title AS project, t.title, t.html, t.notes "
+        "SELECT t.id, t.projectId, p.title AS project, t.title, t.content, t.isHtml, t.notes "
             "FROM $_templateTableName t "
             "JOIN $_projectTableName p ON t.projectId = p.id;");
     List<TemplateView> templateViews = [];
@@ -487,7 +517,7 @@ class DatabaseHelper {
   Future<List<TemplateView>> getFilteredTemplateViews(String searchTerm) async {
     Database db = await instance.database;
     final List<Map<String, dynamic>> results = await db.rawQuery(
-        "SELECT t.id, t.projectId, p.title AS project, t.title, t.html, t.notes "
+        "SELECT t.id, t.projectId, p.title AS project, t.title, t.content, t.isHtml, t.notes "
             "FROM $_templateTableName t "
             "JOIN $_projectTableName p ON t.projectId = p.id "
             "WHERE p.title like '%$searchTerm%';");
@@ -497,6 +527,22 @@ class DatabaseHelper {
       templateViews.add(templateView);
     }
     return templateViews;
+  }
+
+
+  // get Vocabulary by title and projectId, Library (projectId = 1) always included
+  Future<List<Template>> getTemplatesByProject(int projectId) async {
+    Database db = await instance.database;
+    final results = await db.rawQuery(
+        "SELECT * FROM $_templateTableName "
+            "WHERE projectId = $projectId "
+            "ORDER BY id asc; ");
+    List<Template> templates = [];
+    for (var result in results) {
+      Template template = Template.fromMap(result);
+      templates.add(template);
+    }
+    return templates;
   }
 
   // Delete Template
@@ -609,6 +655,25 @@ class DatabaseHelper {
     return vocabularyViews;
   }
 
+
+  // get single VocabularyView
+  Future<VocabularyView> getVocabularyView(int id) async {
+    Database db = await instance.database;
+    final map= await db.rawQuery(
+        "SELECT v.id, v.categoryId, c.name AS category, v.projectId, "
+            "p.title AS project, v.title, v.content, v.comment, v.useThis "
+            "FROM $_vocabularyTableName v "
+            "JOIN $_projectTableName p ON v.projectId = p.id "
+            "JOIN $_categoryTableName c ON v.categoryId = c.id "
+            "WHERE v.id = ?;",[id]
+    );
+    if (map.isNotEmpty) {
+      return VocabularyView.fromMap(map.first);
+    } else {
+      throw Exception("VocabularyView with ID $id not found");
+    }
+  }
+
   // get filtered VocabularyView list
   Future<List<VocabularyView>> getFilteredVocabularyViews(String searchTerm) async {
     Database db = await instance.database;
@@ -626,6 +691,21 @@ class DatabaseHelper {
       vocabularyViews.add(vocabularyView);
     }
     return vocabularyViews;
+  }
+
+  // get Vocabulary by title and projectId, Library (projectId = 1) always included
+  Future<List<Vocabulary>> getVocabulariesByProject(int projectId) async {
+    Database db = await instance.database;
+    final results = await db.rawQuery(
+        "SELECT * FROM $_vocabularyTableName "
+            "WHERE projectId = $projectId "
+            "ORDER BY id asc; ");
+    List<Vocabulary> vocabularies = [];
+    for (var result in results) {
+      Vocabulary vocabulary = Vocabulary.fromMap(result);
+      vocabularies.add(vocabulary);
+    }
+    return vocabularies;
   }
 
   // get Vocabulary by title and projectId, Library (projectId = 1) always included
@@ -670,24 +750,32 @@ class DatabaseHelper {
       whereArgs: [vocabularyView.id],
     );
   }
+
+  String vocabularyWhereClause(String searchTerm, int projectId, int categoryId){
+    final whereClause = StringBuffer('WHERE 1 = 1 ');
+    String orderByClause = '';
+    if (searchTerm.isNotEmpty) {
+      whereClause.write("AND v.title like '%$searchTerm%' ");
+    }
+    if (projectId > 1) {
+      // always include Library vocabularies (projectId = 1)
+      whereClause.write("AND (v.projectId = $projectId OR v.projectId = 1) ");
+      orderByClause = "ORDER BY v.projectId desc, v.categoryId asc, v.title asc;";
+    } else {
+      orderByClause = "ORDER BY v.projectId asc, v.categoryId asc, v.title asc;";
+    }
+    if (categoryId > 1) {
+      whereClause.write("AND v.categoryId = $categoryId ");
+    }
+    whereClause.write(orderByClause);
+    return whereClause.toString();
+  }
+
+// insert from import sql
+  Future<void> executeQuery(String sql) async {
+    Database db = await instance.database;
+    await db.rawQuery(sql);
+  }
 }
 
-String vocabularyWhereClause(String searchTerm, int projectId, int categoryId){
-  final whereClause = StringBuffer('WHERE 1 = 1 ');
-  String orderByClause = '';
-  if (searchTerm.isNotEmpty) {
-    whereClause.write("AND v.title like '%$searchTerm%' ");
-  }
-  if (projectId > 1) {
-    // always include Library vocabularies (projectId = 1)
-    whereClause.write("AND (v.projectId = $projectId OR v.projectId = 1) ");
-    orderByClause = "ORDER BY v.projectId desc, v.categoryId asc, v.title asc;";
-  } else {
-    orderByClause = "ORDER BY v.projectId asc, v.categoryId asc, v.title asc;";
-  }
-  if (categoryId > 1) {
-    whereClause.write("AND v.categoryId = $categoryId ");
-  }
-  whereClause.write(orderByClause);
-  return whereClause.toString();
-}
+

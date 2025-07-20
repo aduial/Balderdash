@@ -24,7 +24,6 @@ class RunPage extends StatefulWidget {
 class _RunPageState extends State<RunPage> {
   Map<String, String> stateVariables = {};
   late DatabaseHelper _dbHelper;
-  final ScrollController _scrollController = ScrollController();
   final TextEditingController resultController =
       TextEditingController(text: '');
   String previousLine = '';
@@ -60,7 +59,7 @@ class _RunPageState extends State<RunPage> {
       resultController.text = "Vocabulary '${vc.variableName}' contains double curly "
           "braces ( {{ or }} ) leading to infinite loops. Please fix this first.";
     } else {
-      resultController.text = await parseVocabulary(vc);
+      resultController.text = result;
     }
   }
 
@@ -72,6 +71,9 @@ class _RunPageState extends State<RunPage> {
     List<String> linesToAdd = [];
     LineSplitter ls = LineSplitter();
     uniqueLines = ls.convert(content);
+    if (uniqueLines[0].isEmpty){
+      return [emptyFirstLineError];
+    }
     for (var line in uniqueLines) {
       if (line.isEmpty) {
         break;
@@ -100,6 +102,7 @@ class _RunPageState extends State<RunPage> {
 
   String pickRandomLine(List<String> weightedLines) {
     final random = Random();
+    // print(weightedLines.length);
     return weightedLines[random.nextInt(weightedLines.length)];
   }
 
@@ -143,12 +146,6 @@ class _RunPageState extends State<RunPage> {
       vc = insertStrfTime(vc);
     }
     if (vc.line.isNotEmpty) {
-      // get to the next part of the line
-      // if (vc.line == previousLine){
-      //   print("1");
-      // }
-
-      // await Future.delayed(Duration(milliseconds: 1000));
       return await parseVocabulary(vc);
     } else {
       // end of vc lifecycle, flush child buffer to parent
@@ -276,7 +273,6 @@ class _RunPageState extends State<RunPage> {
     varTitle = vc.line.substring(start + 1, end);
     VocTrace vcn = await retrieveVocabularyVariable(vc, varTitle);
     for (int i = 1; i <= repeat; i++) {
-      // print(i.toString()); // hieronder kan weg
       vcn.line = pickRandomLine(splitVocabulary(vcn.vocabulary.content!));
       String nextResult = await parseVocabulary(vcn);
       if (nextResult.contains(endlessLoopError)){
@@ -429,7 +425,8 @@ class _RunPageState extends State<RunPage> {
             iconColor: Colors.white,
             child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start, children: [
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -503,5 +500,3 @@ class _RunPageState extends State<RunPage> {
     );
   }
 }
-
-

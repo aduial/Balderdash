@@ -1,3 +1,5 @@
+import 'package:balderdash/screens/im_export.dart';
+import 'package:balderdash/database_helper/database_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -14,8 +16,27 @@ import 'package:balderdash/config/colours.dart';
 import 'package:balderdash/config/config.dart';
 import 'package:balderdash/config/user_preferences.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
+import 'package:cron/cron.dart';
 
-void main() => runApp(MyApp());
+
+late DatabaseHelper dbHelper;
+
+void main() {
+  runApp(MyApp());
+
+  dbHelper = DatabaseHelper.instance;
+  final cron = Cron();
+  cron.schedule(Schedule.parse('0 * * * *'), () async {
+    print('backup DB');
+    print(DateTime.now());
+    dbHelper.makeBackup(false);
+  });
+  cron.schedule(Schedule.parse('*/15 * * * *'), () async {
+    print("backup DB");
+    print(DateTime.now());
+    dbHelper.makeBackup(true);
+  });
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -191,7 +212,14 @@ class HomeScreenState extends State<HomeScreen> {
                   title: Text('HTML Templates'),
                 ),
                 ListTile(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          // builder: (context) => const FileDemo()),
+                          builder: (context) => const ImExport()),
+                    );
+                  },
                   leading: Icon(Icons.drive_folder_upload_rounded),
                   title: Text('Export / import project'),
                 ),
