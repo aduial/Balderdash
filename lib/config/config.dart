@@ -1,7 +1,6 @@
-
 import 'dart:math';
-import 'package:flutter/material.dart';
 
+import 'package:flutter/material.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -10,47 +9,47 @@ String _helpImg = 'assets/images/einenhand.png';
 String _drawerImg = 'assets/images/eend.png';
 String _rbdImg = 'assets/images/afwas.png';
 
-setMenuImg(){
-    _menuImg = getImage();
+setMenuImg() {
+  _menuImg = getImage();
 }
 
-setHelpImg(){
+setHelpImg() {
   _helpImg = getImage();
   do {
     "set helpImg";
     _helpImg = getImage();
   } while (_helpImg == _menuImg);
 }
-setDrawerImg(){
+
+setDrawerImg() {
   do {
     "set drawerImg";
     _drawerImg = getImage();
   } while (_drawerImg == _menuImg || _drawerImg == _helpImg);
 }
 
-setRBDImg(){
+setRBDImg() {
   do {
     "set BDimg";
     _rbdImg = getImage();
-  } while (_rbdImg == _menuImg || _rbdImg == _helpImg|| _rbdImg == _drawerImg);
+  } while (_rbdImg == _menuImg || _rbdImg == _helpImg || _rbdImg == _drawerImg);
 }
 
-String getMenuImg(){
+String getMenuImg() {
   return _menuImg;
 }
 
-String getHelpImg(){
+String getHelpImg() {
   return _helpImg;
 }
 
-String getDrawerImg(){
+String getDrawerImg() {
   return _drawerImg;
 }
 
-String getRBDImg(){
+String getRBDImg() {
   return _rbdImg;
 }
-
 
 // reference screen height minus padding (iPhone 15)
 const double refHeight = 759.0;
@@ -70,37 +69,51 @@ const String defaultProject = "defaultProject";
 const String defaultCategory = "defaultCategory";
 const String htmlContent = "HTML";
 const String rdfContent = "RDF";
-const String prjInsertInto = "INSERT INTO project (typeId, authorId, title, notes) VALUES ";
-const String vocInsertInto = "INSERT INTO vocabulary (projectId, categoryId, title, content, comment, useThis) VALUES ";
-const String tplInsertInto = "INSERT INTO template (projectId, title, content, isHtml, notes) VALUES ";
+const String prjInsertInto =
+    "INSERT INTO project (typeId, authorId, title, notes) VALUES ";
+const String vocInsertInto =
+    "INSERT INTO vocabulary (projectId, categoryId, title, content, comment, useThis) VALUES ";
+const String tplInsertInto =
+    "INSERT INTO template (projectId, title, content, isHtml, notes) VALUES ";
+const String pvocMark = "--projectvocabularies";
+const String lvocMark = "--libraryvocabularies";
+const String tmplMark = "--templates";
+const String pidMark = "§@pId@§";
 
-  Map<String, String> strfToDart = {
-    '%a': 'D',
-    '%A': 'DD',
-    '%d': 'dd',
-    '%-d': 'd',
-    '%b': 'M',
-    '%B': 'MM',
-    '%m': 'mm',
-    '%-m': 'm',
-    '%y': 'yy',
-    '%Y': 'yyyy',
-    '%H': 'HH',
-    '%-H': 'H',
-    '%I': 'hh',
-    '%-I': 'h',
-    '%p': 'am',
-    '%M': 'nn',
-    '%-M': 'n',
-    '%S': 'ss',
-    '%-S': 's',
-    '%f': 'SSS',
-    '%g': 'uuu',
-    '%W': 'WW',
-    '%-W': 'W',
-    '%z': 'z',
-    '%Z': 'Z',
-  };
+const String sep1 = "§1§";
+const String sep2 = "§2§";
+const String sep3 = "§3§";
+const String sep4 = "§4§";
+const String sep5 = "§5§";
+const String vocInsert = "INSERT INTO vocabulary (";
+
+Map<String, String> strfToDart = {
+  '%a': 'D',
+  '%A': 'DD',
+  '%d': 'dd',
+  '%-d': 'd',
+  '%b': 'M',
+  '%B': 'MM',
+  '%m': 'mm',
+  '%-m': 'm',
+  '%y': 'yy',
+  '%Y': 'yyyy',
+  '%H': 'HH',
+  '%-H': 'H',
+  '%I': 'hh',
+  '%-I': 'h',
+  '%p': 'am',
+  '%M': 'nn',
+  '%-M': 'n',
+  '%S': 'ss',
+  '%-S': 's',
+  '%f': 'SSS',
+  '%g': 'uuu',
+  '%W': 'WW',
+  '%-W': 'W',
+  '%z': 'z',
+  '%Z': 'Z',
+};
 
 List<String> images = [
   'assets/images/aftershave.png',

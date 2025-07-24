@@ -1,20 +1,18 @@
-import 'package:flutter/material.dart';
-
 import 'package:balderdash/config/colours.dart';
 import 'package:balderdash/config/config.dart';
-import 'package:balderdash/screens/intro.dart';
-import 'package:balderdash/screens/how1.dart';
+import 'package:balderdash/main.dart';
 import 'package:balderdash/screens/about_voc1.dart';
-import 'package:balderdash/screens/usage1.dart';
-import 'package:balderdash/screens/quick.dart';
 import 'package:balderdash/screens/cgi.dart';
 import 'package:balderdash/screens/fixing.dart';
+import 'package:balderdash/screens/how1.dart';
+import 'package:balderdash/screens/intro.dart';
 import 'package:balderdash/screens/prefs.dart';
-import 'package:balderdash/main.dart';
+import 'package:balderdash/screens/quick.dart';
+import 'package:balderdash/screens/usage1.dart';
+import 'package:flutter/material.dart';
 
 class Help extends StatelessWidget {
   const Help({super.key});
-
 
   @override
   Widget build(BuildContext context) {
@@ -129,7 +127,7 @@ class Help extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const Cgi()),
+                    MaterialPageRoute(builder: (context) => Cgi()),
                   );
                 },
                 leading: Icon(Icons.web_rounded),
@@ -168,31 +166,21 @@ class Help extends StatelessWidget {
 
 Route _goHome() {
   return PageRouteBuilder(
-    transitionDuration: const Duration(milliseconds: 500),
-    pageBuilder: (
-        context,
-        animation,
-        secondaryAnimation) => const HomeScreen(),
-      transitionsBuilder: (
-          context,
-          animation,
-          secondaryAnimation,
-          child) {
+      transitionDuration: const Duration(milliseconds: 500),
+      pageBuilder: (context, animation, secondaryAnimation) =>
+          const HomeScreen(),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(0.0, 1.0);
         const end = Offset.zero;
         const curve = Curves.easeInOutQuad;
 
-        final tween = Tween(
-            begin: begin,
-            end: end);
-        final curvedAnimation = CurvedAnimation(
-            parent: animation,
-            curve: curve);
+        final tween = Tween(begin: begin, end: end);
+        final curvedAnimation =
+            CurvedAnimation(parent: animation, curve: curve);
 
         return SlideTransition(
           position: tween.animate(curvedAnimation),
           child: child,
         );
-      }
-  );
+      });
 }

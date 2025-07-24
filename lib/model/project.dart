@@ -1,3 +1,5 @@
+import '../config/config.dart';
+
 /*
   The Project entity group Vocabularies and Templates that are used to
   create Nonsense of a particular kind - eg. Doom Metal band names, Medical
@@ -11,13 +13,7 @@ class Project {
   String? title;
   String? notes;
 
-  Project({
-      this.id,
-      this.typeId,
-      this.authorId,
-      this.title,
-      this.notes
-  });
+  Project({this.id, this.typeId, this.authorId, this.title, this.notes});
 
   Map<String, dynamic> toMap() {
     return {
@@ -37,5 +33,9 @@ class Project {
     project.title = map['title'];
     project.notes = map['notes'];
     return project;
+  }
+
+  String dump() {
+    return "$id$sep1$typeId$sep2$authorId$sep3$title$sep4$notes";
   }
 }

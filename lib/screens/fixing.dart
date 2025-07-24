@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import 'package:balderdash/config/colours.dart';
 import 'package:balderdash/config/config.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class Fixing extends StatelessWidget {
   const Fixing({super.key});
@@ -117,7 +116,7 @@ class Fixing extends StatelessWidget {
                                   "though. A good way to start your search is to isolate the first line "
                                   "in your vocabulary by adding a return after it. Remember you can "
                                   "always run any downstream vocabulary in isolation to see if it works, "
-                                  "except when it contains state variables that have not been set upstream.",
+                                  "except when it contains state variables that have not been set upstream.\n\n",
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyLarge!
@@ -128,7 +127,8 @@ class Fixing extends StatelessWidget {
                               children: <TextSpan>[
                                 TextSpan(
                                     text: "\n\n\n\n",
-                                    style: TextStyle(fontWeight: FontWeight.w600)),
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.w600)),
                               ],
                             ),
                           ),

@@ -1,9 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import 'package:balderdash/config/colours.dart';
 import 'package:balderdash/config/config.dart';
 import 'package:balderdash/screens/help.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class Usage3 extends StatelessWidget {
   const Usage3({super.key});
@@ -137,15 +136,6 @@ class Usage3 extends StatelessWidget {
                                   text: "To be done:\n",
                                   style:
                                       TextStyle(fontWeight: FontWeight.w600)),
-                              TextSpan(
-                                  text:
-                                      "- feature to pack a project as .data and "
-                                      "template file(s), together with a copy of the original "
-                                      "Nonsense.pl script for CGI deployment\n"
-                                      "- feature to share a project with another Balderdash! user\n"
-                                      "- feature to import a shared project",
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.w300)),
                             ],
                           ),
                         ),
@@ -163,11 +153,10 @@ class Usage3 extends StatelessWidget {
           foregroundColor: ithildin,
           backgroundColor: sortOfRed,
           // child: const Icon(Icons.add),
-          onPressed: ()  {
+          onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                  builder: (context) => const Help()),
+              MaterialPageRoute(builder: (context) => const Help()),
             );
           }),
     );

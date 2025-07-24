@@ -1,9 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import 'package:balderdash/config/colours.dart';
 import 'package:balderdash/config/config.dart';
 import 'package:balderdash/screens/usage2.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class Usage1 extends StatelessWidget {
   const Usage1({super.key});
@@ -30,8 +29,7 @@ class Usage1 extends StatelessWidget {
       ),
       backgroundColor: blueTop,
       body: SafeArea(
-        bottom: false
-        ,
+        bottom: false,
         //child: Padding(
         //padding: EdgeInsetsDirectional.fromSTEB(0, 10 * toScale, 0, 0),
         child: Column(
@@ -109,7 +107,8 @@ class Usage1 extends StatelessWidget {
                             children: <TextSpan>[
                               TextSpan(
                                   text: "Vocabularies ",
-                                  style: TextStyle(fontWeight: FontWeight.w600,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
                                       color: greenNotePaperColour)),
                               TextSpan(
                                   text:
@@ -119,7 +118,8 @@ class Usage1 extends StatelessWidget {
                                       TextStyle(fontWeight: FontWeight.w300)),
                               TextSpan(
                                   text: "Templates ",
-                                  style: TextStyle(fontWeight: FontWeight.w600,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
                                       color: violetNotePaperColour)),
                               TextSpan(
                                   text:
@@ -129,24 +129,23 @@ class Usage1 extends StatelessWidget {
                                   style:
                                       TextStyle(fontWeight: FontWeight.w300)),
                               TextSpan(
-                                  text:
-                                  "CGI deployment ",
-                                  style: TextStyle(fontWeight: FontWeight.w400,
+                                  text: "CGI deployment ",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w400,
                                       color: brightGreen)),
                               TextSpan(
                                   text:
-                                  "help page (TBD).\n\nSince Balderdash! uses a SQLite database instead "
-                                  "of plain text .data files, it made sense to add some structure "
-                                  "so you can find your stuff back, share a project with another "
-                                  "Balderdash! user, etcetera. We'll briefly walk you through "
-                                  "that below.\n\n",
+                                      "help page.\n\nSince Balderdash! uses a SQLite database instead "
+                                      "of plain text .data files, it made sense to add some structure "
+                                      "so you can find your stuff back, share a project with another "
+                                      "Balderdash! user, etcetera. We'll briefly walk you through "
+                                      "that below.\n\n",
                                   style:
-                                  TextStyle(fontWeight: FontWeight.w300)),
-
+                                      TextStyle(fontWeight: FontWeight.w300)),
                               TextSpan(
-                                  text:
-                                      "Vocabularies ",
-                                  style: TextStyle(fontWeight: FontWeight.w600,
+                                  text: "Vocabularies ",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
                                       color: greenNotePaperColour)),
                               TextSpan(
                                   text: "have a (one) ",
@@ -154,8 +153,9 @@ class Usage1 extends StatelessWidget {
                                       TextStyle(fontWeight: FontWeight.w300)),
                               TextSpan(
                                   text: "Category ",
-                                  style: TextStyle(fontWeight: FontWeight.w600,
-                                          color: cyanNotePaperColour)),
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: cyanNotePaperColour)),
                               TextSpan(
                                   text:
                                       "(eg. Adjective, Noun, Phrase ...) These are convenience "
@@ -169,16 +169,14 @@ class Usage1 extends StatelessWidget {
                                   style:
                                       TextStyle(fontWeight: FontWeight.w300)),
                               TextSpan(
-                                  text:
-                                      "(continued ...) \n\n\n\n\n\n\n\n",
+                                  text: "(continued ...) \n\n\n\n\n\n\n\n",
                                   style:
                                       TextStyle(fontWeight: FontWeight.w300)),
                             ],
                           ),
                         ),
                       ),
-                    )
-                ),
+                    )),
               ),
             ),
           ],
@@ -191,11 +189,10 @@ class Usage1 extends StatelessWidget {
           foregroundColor: ithildin,
           backgroundColor: sortOfRed,
           // child: const Icon(Icons.add),
-          onPressed: ()  {
+          onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                  builder: (context) => const Usage2()),
+              MaterialPageRoute(builder: (context) => const Usage2()),
             );
           }),
     );

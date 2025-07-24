@@ -1,19 +1,20 @@
-import 'package:balderdash/model/vocabulary.dart';
-import 'package:balderdash/model/template.dart';
-import 'package:dropdown_search/dropdown_search.dart';
-import 'package:flutter/material.dart';
-import 'package:date_format/date_format.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
+import 'dart:convert';
 import 'dart:io';
 
-import '../database_helper/database_helper.dart';
-import '../screens/template_detail.dart';
-import '../model/project.dart';
+import 'package:balderdash/model/template.dart';
+import 'package:balderdash/model/vocabulary.dart';
+import 'package:date_format/date_format.dart';
+import 'package:dropdown_search/dropdown_search.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
 import '../config/colours.dart';
 import '../config/config.dart';
-import 'dart:convert';
+import '../database_helper/database_helper.dart';
+import '../model/project.dart';
+import '../screens/template_detail.dart';
 
 class ImExport extends StatefulWidget {
   const ImExport({super.key});
@@ -23,8 +24,7 @@ class ImExport extends StatefulWidget {
   static final navigatorKey = GlobalKey<NavigatorState>();
 }
 
-class _ImExportState extends State<ImExport>{
-
+class _ImExportState extends State<ImExport> {
   final _prjDDKey = GlobalKey<DropdownSearchState<Project>>();
   final _settingsFormKey = GlobalKey<FormState>();
   late DatabaseHelper dbHelper;
@@ -49,6 +49,13 @@ class _ImExportState extends State<ImExport>{
   // late String directoryPath;
   late final ByteData fileBytes;
   late String importedPath;
+  late int newProjectId;
+  bool mergeLibrary = false;
+  bool initialised = false;
+
+  String impTitle = '';
+
+  List<String> lines = [];
 
   StringBuffer importPrjVoc = StringBuffer();
   StringBuffer importLibVoc = StringBuffer();
@@ -68,16 +75,28 @@ class _ImExportState extends State<ImExport>{
   }
 
   Future<void> saveAsNonsense() async {
-    await saveDataFile(curProject.id!).then((_)
-    => saveDataFile(1)).then((_)
-    => saveTemplateFiles()).then((_)
-    => saveNonsenseScript());
+    if (!initialised) {
+      if (mounted) {
+        await showConfirmationAlertDialog(
+          context,
+          title: "please select a project",
+          message: "",
+          text: 'OK',
+          highlight: true,
+        );
+      }
+    } else {
+      await saveDataFile(curProject.id!)
+          .then((_) => saveDataFile(1))
+          .then((_) => saveTemplateFiles())
+          .then((_) => saveNonsense());
+    }
   }
 
   Future<void> saveDataFile(int projectId) async {
     StringBuffer sbd = StringBuffer();
     _projectVocabularies = await dbHelper.getVocabulariesByProject(projectId);
-    for (Vocabulary voc in _projectVocabularies){
+    for (Vocabulary voc in _projectVocabularies) {
       sbd.write(voc.title?.toUpperCase());
       sbd.write("\n");
       sbd.write(voc.content);
@@ -88,74 +107,78 @@ class _ImExportState extends State<ImExport>{
         ? 'save library as .data file'
         : 'save project as .data file';
     _extension = 'data';
-    _defaultFileNameController.text = projectId == 1
-        ? 'default.data'
-        : "${curProject.title!}.${_extension!}";
+    _defaultFileNameController.text =
+        projectId == 1 ? 'default.data' : "${curProject.title!}.${_extension!}";
     await _saveFile();
   }
 
   Future<void> saveTemplateFiles() async {
     _projectTemplates = await dbHelper.getTemplatesByProject(curProject.id!);
-    if (_projectTemplates.isNotEmpty){
-      for (Template tpl in _projectTemplates){
+    if (_projectTemplates.isNotEmpty) {
+      for (Template tpl in _projectTemplates) {
         String tplType = tpl.isHtml == 1
-          ? htmlContent.toLowerCase()
-          : rdfContent.toLowerCase();
+            ? htmlContent.toLowerCase()
+            : rdfContent.toLowerCase();
         _fileContent = tpl.content ?? '';
         _dialogTitleController.text = 'save $tplType template';
         _extension = 'template';
-        _defaultFileNameController.text = "${curProject.title!}.$tplType.$_extension";
+        _defaultFileNameController.text =
+            "${curProject.title!}.$tplType.$_extension";
         await _saveFile();
       }
     }
   }
 
-  saveNonsenseScript() async {
-    ByteData assetBytes = await rootBundle.load("assets/nonsense.pl");
+  saveNonsense() async {
+    ByteData assetBytes = await rootBundle.load("assets/nonsense.zip");
     final buffer = assetBytes.buffer;
-    var list = buffer.asUint8List(assetBytes.offsetInBytes, assetBytes.lengthInBytes);
+    var list =
+        buffer.asUint8List(assetBytes.offsetInBytes, assetBytes.lengthInBytes);
     _fileContent = utf8.decode(list);
-    _dialogTitleController.text = 'export Nonsense Perl script';
-    _extension = 'pl';
+    _dialogTitleController.text = 'export Nonsense.pl & documentation';
+    _extension = 'zip';
     _defaultFileNameController.text = 'nonsense.$_extension';
     await _saveFile();
   }
 
   Future<void> exportProject() async {
-    StringBuffer sb = StringBuffer();
-    sb.write(createProjectInsert());
-    sb.write(await createVocabularyInserts(curProject.id!));
-    sb.write(await createVocabularyInserts(1));
-    sb.write(await createTemplateInserts(curProject.id!));
-    _fileContent = sb.toString();
-    _dialogTitleController.text = 'export project as .sql file';
-    _extension = 'sql';
-    String fileNameTitle = curProject.title!.toLowerCase().replaceAll(' ', '_');
-    _defaultFileNameController.text = "$fileNameTitle.$_extension";
-    await _saveFile();
-  }
+    if (!initialised) {
+      if (mounted) {
+        await showConfirmationAlertDialog(
+          context,
+          title: "please select a project",
+          message: "",
+          text: 'OK',
+          highlight: true,
+        );
+      }
+    } else {
+      StringBuffer sb = StringBuffer();
+      sb.writeln(curProject.dump());
+      sb.writeln(pvocMark);
+      sb.write(await createVocabularyInserts(curProject.id!));
+      sb.writeln(lvocMark);
+      sb.write(await createVocabularyInserts(1));
+      if (await dbHelper.anyTemplatesForProject(curProject.id!)) {
+        sb.writeln(tmplMark);
+        sb.write(await createTemplateInserts(curProject.id!));
+      }
 
-  String createProjectInsert() {
-    return "$prjInsertInto(0, 0, '${curProject.title}', '${curProject.notes}');\n\n";
+      _fileContent = sb.toString();
+      _dialogTitleController.text = 'export project as .bdd file';
+      _extension = 'bdd';
+      String fileNameTitle =
+          curProject.title!.toLowerCase().replaceAll(' ', '_');
+      _defaultFileNameController.text = "$fileNameTitle.$_extension";
+      await _saveFile();
+    }
   }
 
   Future<String> createVocabularyInserts(int projectId) async {
     List<Vocabulary> vocs = await dbHelper.getVocabulariesByProject(projectId);
-    if (projectId > 1){
-      projectId = 0;
-    }
     StringBuffer sbv = StringBuffer();
-    sbv.writeln(vocInsertInto);
-    final length = vocs.length;
-    int i = 0;
     for (Vocabulary voc in vocs) {
-      i++;
-      sbv.write("($projectId, ${voc.categoryId}, '${voc.title}', '${voc.content}', '${voc.comment}', ${voc.useThis})");
-      if(i == length){
-        sbv.write(";\n\n");
-      } else {
-        sbv.write(",\n");
-      }
+      sbv.writeln(voc.dump());
     }
     return sbv.toString();
   }
@@ -163,17 +186,8 @@ class _ImExportState extends State<ImExport>{
   Future<String> createTemplateInserts(int projectId) async {
     List<Template> tpls = await dbHelper.getTemplatesByProject(projectId);
     StringBuffer sbt = StringBuffer();
-    sbt.writeln(tplInsertInto);
-    final length = tpls.length;
-    int i = 0;
     for (Template tpl in tpls) {
-      i++;
-      sbt.write("(0, '${tpl.title}', '${tpl.content}', ${tpl.isHtml}, '${tpl.notes}')");
-      if(i == length){
-        sbt.write(";\n\n");
-      } else {
-        sbt.write(",\n");
-      }
+      sbt.writeln(tpl.dump());
     }
     return sbt.toString();
   }
@@ -229,11 +243,14 @@ class _ImExportState extends State<ImExport>{
   }
 
   Future<void> importProject() async {
+    int nrPVocs = 0;
+    int nrLVocs = 0;
+    int nrTmpls = 0;
     File importedFile;
     String fileContent;
 
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.any, withData: true);
+    FilePickerResult? result =
+        await FilePicker.platform.pickFiles(type: FileType.any, withData: true);
     if (result != null) {
       importedFile = File(result.files.first.path!);
       importedPath = importedFile.path;
@@ -243,143 +260,269 @@ class _ImExportState extends State<ImExport>{
     }
 
     LineSplitter ls = LineSplitter();
-    List<String> lines = ls.convert(fileContent);
+    lines = ls.convert(fileContent);
+    int userChoice = 1;
 
-    if (lines[0].contains("INSERT INTO project")){
-      await upsertProject(lines[0]);
+    // 2§1§2§2§1§3§Medigoed§4§
+    RegExp prjMatch = RegExp(r'^\d+§1§\d+§2§\d+§3§(\w+)§4§\w+');
+    if (lines[0].contains(prjMatch)) {
+      // retrieve title
+      impTitle = prjMatch.firstMatch(lines[0])?.group(1) ?? '';
+      // remove project line
       lines.removeAt(0);
+      // await user choice
+      userChoice = await upsertProject();
     } else {
+      // nothing to do
       throw NoProjectDataFoundException();
     }
-    if (lines[0].contains("INSERT INTO vocabulary")){
-      lines = assembleVocInserts(lines);
-    } else {
-      throw NoVocabularyDataFoundException();
+    // Project is now created, or existing will be replaced / merged
+    if (userChoice > 1) {
+      if (lines[0].contains(pvocMark)) {
+        print("start project vocs");
+        // remove pvocMark
+        lines.removeAt(0);
+        // if user chose to overwrite: delete existing project vocabularies
+        if (userChoice == 3) {
+          print("`Choice 3: delete vocabularies for project $newProjectId");
+          dbHelper.deleteProjectVocabularies(newProjectId);
+        }
+        // choice 2 = new prj, 3 = emptied prj, 4 = merge vocs
+        nrPVocs = await insertVocs(true, true);
+      } else {
+        // this ain't right
+        throw NoVocabularyDataFoundException();
+      }
+      if (lines[0].contains(lvocMark)) {
+        print("start library vocs");
+        // library section, remove lvocMark
+        lines.removeAt(0);
+        if (mounted) {
+          mergeLibrary = await showConfirmationChoiceDialog(
+            context,
+            title: "Merge imported Library with existing?",
+            message:
+                "Merging will overwrite existing Library vocabularies with those from the "
+                "import. You can choose to Cancel this, but that may cause the imported project "
+                "to fail. You cannot undo a merge!",
+            positiveText: 'Merge',
+            negativeText: 'Cancel',
+            highlightPositive: true,
+          );
+        }
+        nrLVocs = await insertVocs(false, mergeLibrary);
+        if (!mergeLibrary) {
+          if (mounted) {
+            await showConfirmationAlertDialog(
+              context,
+              title: "Library vocabularies will NOT be imported",
+              message:
+                  "This may break the imported project. If you change your mind, "
+                  "import the project again, choose to overwrite, and then accept to "
+                  "merge the library.",
+              text: 'OK',
+              highlight: true,
+            );
+          }
+        }
+      } else {
+        // this ain't right either
+        throw NoLibraryDataFoundException();
+      }
+      // anything left?
+      if (lines.isNotEmpty && lines[0].contains(tmplMark)) {
+        print("start templates");
+        // template section, remove tmplMark
+        lines.removeAt(0);
+        nrTmpls = await insertTmpl();
+      }
     }
-    if (lines[0].contains("INSERT INTO vocabulary")){
-      lines = assembleLibraryInserts(lines);
-    } else {
-      throw NoLibraryDataFoundException();
+    StringBuffer sb = StringBuffer();
+    sb.write("Imported project '$impTitle' with $nrPVocs vocabularies");
+    if (nrTmpls > 0) {
+      sb.write(" and $nrTmpls template");
     }
-    if (lines.isNotEmpty){
-      assembleTemplateInserts(lines);
+    if (nrTmpls > 1) {
+      sb.write("s");
     }
-    print('done');
-  }
-
-  List<String> assembleVocInserts(List<String> lines){
-    importPrjVoc.clear();
-    importPrjVoc.writeln(lines[0]);
-    lines.removeAt(0);
-    final int until = lines.indexWhere((line) => line.startsWith('INSERT INTO vocabulary'));
-    importPrjVoc.writeAll(lines.sublist(0, until), "\n");
-    lines.removeRange(0, until);
-    return lines;
-  }
-
-  List<String> assembleLibraryInserts(List<String> lines){
-    importLibVoc.clear();
-    importLibVoc.writeln(lines[0]);
-    lines.removeAt(0);
-    final int until = lines.indexWhere((line) => line.startsWith('INSERT INTO template'));
-    if (until > 1){
-      importLibVoc.writeAll(lines.sublist(0, until), "\n");
-      lines.removeRange(0, until);
-    } else {
-      importLibVoc.writeAll(lines, "\n");
-      lines.clear();
+    if (nrLVocs > 0) {
+      sb.write("; merged $nrLVocs library vocabularies from the import file.");
     }
-    return lines;
-  }
-
-  void assembleTemplateInserts(List<String> lines){
-    importTemplates.clear();
-    importTemplates.writeAll(lines, "\n");
-  }
-
-  Future<void> upsertProject(String sql) async {
-    //0, 0, 'Medigoed', 'null');
-    int importAction = 1;
-    RegExp pTitle = RegExp(r"0, '([a-zA-Z0-9\s_]+)");
-    var title = pTitle.firstMatch(sql)?.group(1) ?? '';
-
-    Project? prj = await dbHelper.getProjectByTitle(title.toLowerCase());
-
-    if (prj != null) {
-      importAction = await showImportActionDialog(
+    if (mounted) {
+      await showConfirmationAlertDialog(
         context,
-        title: "Project $title exists",
-        message: "A Project $title already exists. You can: cancel the import, rename the "
-            "imported project, replace it (and delete all existing '$title' vocabularies), "
-            "or merge the imported project into the existing one, replacing "
-            "existing vocabularies with the same name:",
-        cancelText: 'Cancel',
-        renameText: 'Rename imported',
-        replaceText: 'Replace existing',
-        mergeText: 'Merge projects',
-        highlightCancel: false,
-        highlightRename: false,
-        highlightReplace: true,
-        highlightMerge: true,
+        title: "Import finished",
+        message: sb.toString(),
+        text: 'OK',
+        highlight: true,
       );
+    }
+  }
 
+  Future<int> upsertProject() async {
+    int importAction = 1;
+    String prjNotes = '';
+    Project? prj = await dbHelper.getProjectByTitle(impTitle.toLowerCase());
+    if (prj == null) {
+      // no existing project with that title. createProject sets newProjectId
+      createProject(impTitle, prjNotes);
+      // treat as renamed
+      return 2;
+    } else {
+      // project with that title exists. First we set newProjectId = existing projectId;
+      // this will be replaced further down if a new project is created
+      newProjectId = prj.id ?? 0;
+      prjNotes = prj.notes ?? '';
+
+      if (mounted) {
+        importAction = await showImportActionDialog(
+          context,
+          title: "Project $impTitle exists",
+          message:
+              "A Project $impTitle already exists. You can: cancel the import; rename the "
+              "imported project; replace it (deleting all existing '$impTitle' vocabularies) "
+              "or merge the imported project into the existing one, replacing "
+              "existing vocabularies with the same name:",
+          cancelText: 'Cancel',
+          renameText: 'Rename imported',
+          replaceText: 'Replace existing',
+          mergeText: 'Merge projects',
+          highlightCancel: false,
+          highlightRename: false,
+          highlightReplace: true,
+          highlightMerge: true,
+        );
+      }
       if (importAction == 1) {
-        // abort
-        return;
+        // abort, do nothing
+        return 1;
       } else if (importAction == 2) {
         int i = 0;
         do {
-          title = await _showTextInputDialog(context, title, i) ?? 'nothing_chosen_abort';
+          if (mounted) {
+            impTitle = await _showTextInputDialog(context, impTitle, i) ??
+                'nothing_chosen_abort';
+          }
           i++;
-        } while (await dbHelper.getProjectByTitle(title.toLowerCase()) != null);
-        if (title == 'nothing_chosen_abort'){
-          // cancelled
-          print("aborted import of $title");
-        } else {
-          createProject(title);
+        } while (
+            await dbHelper.getProjectByTitle(impTitle.toLowerCase()) != null);
+        if (impTitle == 'nothing_chosen_abort') {
+          return 1;
         }
-
+        // sets newProjectId
+        print("create new project $impTitle ");
+        newProjectId = await createProject(impTitle, prjNotes);
+        print("nieuwnieuwnieuw: $newProjectId");
+        return 2;
       } else if (importAction == 3) {
         // await dbHelper.deleteTemplate(templateView);
-        final bool isReplace = await showConfirmationAlertDialog(
-          context,
-          title: "Delete existing Project '$title?'",
-          message: "This deletes '$title' and all its Vocabularies. You cannot undo this!" ,
-          positiveText: 'Delete',
-          negativeText: 'Cancel',
-          highlightPositive: true,
-        );
-        if (isReplace){
-          // go on delete then create
+        bool isReplace = false;
+        if (mounted) {
+          isReplace = await showConfirmationChoiceDialog(
+            context,
+            title: "Replace content of '$impTitle?'",
+            message:
+                "This replaces all current vocabularies of '$impTitle'! You cannot undo this!",
+            positiveText: 'Replace',
+            negativeText: 'Cancel',
+            highlightPositive: true,
+          );
         }
+        if (isReplace) {
+          // don't create new project, but delete and replace vocs
+          return 3;
+        }
+        // rather not, after all
+        return 1;
       } else if (importAction == 4) {
-
-        final bool isMerge = await showConfirmationAlertDialog(
-          context,
-          title: "Overwrite Vocabularies for '$title?'",
-          message: "This will overwrite existing Vocabularies for '$title' with the same "
-              "name as newly imported ones. You cannot undo this!" ,
-          positiveText: 'Delete',
-          negativeText: 'Cancel',
-          highlightPositive: true,
-        );
-        if (isMerge){
-          // go on with voc merge
+        bool isMerge = false;
+        if (mounted) {
+          isMerge = await showConfirmationChoiceDialog(
+            context,
+            title: "Overwrite Vocabularies for '$impTitle?'",
+            message:
+                "This will overwrite Vocabularies for '$impTitle' with the same "
+                "name as imported ones. You cannot undo this!",
+            positiveText: 'Merge',
+            negativeText: 'Cancel',
+            highlightPositive: true,
+          );
+        }
+        if (isMerge) {
+          return 4;
         }
       }
-    } else {
-      // project doesn't exist yet
-      createProject(title);
+      // Aaargh, can't decide
+      return 1;
     }
   }
 
-  void createProject(String title){
-    String notes = "Imported from file $importedPath on ${nowString()}";
-    dbHelper.executeQuery("INSERT INTO project (typeId, authorId, title, notes) VALUES (2, 3, '$title', '$notes');");
+  Future<int> createProject(String title, String existingNotes) async {
+    String newNotes = "Imported from file $importedPath on ${nowString()}";
+    String notes = '';
+    if (existingNotes.isNotEmpty) {
+      notes = "$existingNotes | $newNotes";
+    } else {
+      notes = newNotes;
+    }
+    print("create project $title");
+    return await dbHelper.insertAndGetId(
+        "INSERT INTO project (typeId, authorId, title, notes) VALUES (2, 3, '$title', '$notes');");
   }
 
-  String nowString(){
-    return formatDate(DateTime.now(), [yyyy, '-', mm, '-', dd, ' ', HH, ':', nn, ':', ss]);
+  String nowString() {
+    return formatDate(
+        DateTime.now(), [yyyy, '-', mm, '-', dd, ' ', HH, ':', nn, ':', ss]);
+  }
+
+  Future<int> insertVocs(bool arePrjVocs, bool doInsert) async {
+    List<String> insertLines = [];
+    StringBuffer sb = StringBuffer();
+    RegExp clauseStart = RegExp(r'^\d+§1§');
+    String sectionMark = arePrjVocs == true ? lvocMark : tmplMark;
+    int pid = arePrjVocs == true ? newProjectId : 1;
+    int until = 1;
+    for (int i = 0; i < lines.length; i++) {
+      sb.writeln(lines[i]);
+      if (i == (lines.length - 1) || lines[i + 1].startsWith(clauseStart)) {
+        insertLines.add(sb.toString());
+        sb.clear();
+      }
+      if (lines[i + 1].contains(sectionMark)) {
+        insertLines.add(sb.toString());
+        sb.clear();
+        until = i + 1;
+        break;
+      }
+    }
+    lines.removeRange(0, until);
+    if (doInsert) {
+      print("insert ${insertLines.length} vocs project $pid");
+      for (String dump in insertLines) {
+        await dbHelper.upsertVocabulary(Vocabulary.fromDump(dump, pid));
+      }
+      return insertLines.length;
+    } else {
+      return 0;
+    }
+  }
+
+  Future<int> insertTmpl() async {
+    List<String> insertLines = [];
+    StringBuffer sb = StringBuffer();
+    RegExp clauseStart = RegExp(r'^\d+§1§');
+    for (int i = 0; i < lines.length; i++) {
+      sb.writeln(lines[i]);
+      if (i == (lines.length - 1) || lines[i + 1].startsWith(clauseStart)) {
+        insertLines.add(sb.toString());
+        sb.clear();
+      }
+    }
+    print("insert ${insertLines.length} templated project $newProjectId");
+    for (String dump in insertLines) {
+      await dbHelper.upsertTemplate(Template.fromDump(dump, newProjectId));
+    }
+    return insertLines.length;
   }
 
   void printInDebug(Object object) => debugPrint(object.toString());
@@ -387,7 +530,8 @@ class _ImExportState extends State<ImExport>{
   @override
   Widget build(BuildContext context) {
     var padding = MediaQuery.paddingOf(context);
-    double displayHeight = MediaQuery.of(context).size.height - padding.top - padding.bottom;
+    double displayHeight =
+        MediaQuery.of(context).size.height - padding.top - padding.bottom;
     double deviceScaling = refHeight / displayHeight;
     return Scaffold(
       appBar: AppBar(
@@ -399,7 +543,6 @@ class _ImExportState extends State<ImExport>{
           "Export & Import projects",
           style: TextStyle(color: notepaperWhite),
         ),
-
       ),
       backgroundColor: notepaperWhite,
       body: Container(
@@ -414,197 +557,208 @@ class _ImExportState extends State<ImExport>{
           padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
           child: Form(
             key: _settingsFormKey,
-            child: ListView(padding: EdgeInsets.all(4),
+            child: ListView(padding: EdgeInsets.all(4), children: [
+              Row(
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        flex:3,
-                        child: DropdownSearch<Project>(
-                          key: _prjDDKey,
-                          itemAsString: (item) => item.title!,
-                          items: (filter, t) => _projects,
-                          onSelected: (Project? item) {
-                            setState(() {
-                              curProject = item!;
-                            });
-                          },
-                          decoratorProps: DropDownDecoratorProps(
-                            decoration: InputDecoration(
-                                floatingLabelBehavior: FloatingLabelBehavior.always,
-                                isDense: true,
-                                filled: true,
-                                fillColor: offWhite,
-                                labelText: 'PROJECT',
-                                // labelText: widget.vocabularyView.project,
-                                labelStyle:
-                                TextStyle(fontSize: 14),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                )
-                            ),
-                          ),
-                          // selectedItem: currentCategory,
-                          compareFn: (item, sItem) => item.title == sItem.title,
-                          validator: (item) {
-                            if (item == null ) {
-                              return 'please select a Project';
-                            }
-                            return null;
-                          },
-                          popupProps: PopupProps.modalBottomSheet(
-                              showSelectedItems: true,
-                              showSearchBox: false,
-                              itemBuilder: projectModalItem),
-                        ),
+                  Expanded(
+                    flex: 3,
+                    child: DropdownSearch<Project>(
+                      key: _prjDDKey,
+                      itemAsString: (item) => item.title!,
+                      items: (filter, t) => _projects,
+                      onSelected: (Project? item) {
+                        setState(() {
+                          if (item != null) {
+                            initialised = true;
+                            curProject = item;
+                          }
+                        });
+                      },
+                      decoratorProps: DropDownDecoratorProps(
+                        decoration: InputDecoration(
+                            floatingLabelBehavior: FloatingLabelBehavior.always,
+                            isDense: true,
+                            filled: true,
+                            fillColor: offWhite,
+                            labelText: 'PROJECT',
+                            // labelText: widget.vocabularyView.project,
+                            labelStyle: TextStyle(fontSize: 14),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            )),
                       ),
-                      SizedBox(
-                        height: 16 ,
-                        width: 8,
-                      ),
-                      Expanded(
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            iconColor: cyanAppbarColour,
-                            shadowColor: Colors.black,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _prjDDKey.currentState?.clear();
-                            });
-                          },
-                          child: Text("Clear"),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Padding(padding: const EdgeInsetsDirectional.fromSTEB(
-                      8, 4, 8, 4),
-                  ),
-                  Row(
-                      children: [
-                        Expanded(
-                          flex:2,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              iconColor: cyanAppbarColour,
-                              shadowColor: Colors.black,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                saveAsNonsense();
-                              });
-                            },
-                            child: Text("pack for Nonsense"),
-                          ),
-                        ),
-                        SizedBox(
-                          height: 16 ,
-                          width: 8,
-                        ),
-                        Expanded(
-                          flex:1,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              iconColor: cyanAppbarColour,
-                              shadowColor: Colors.black,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                exportProject();
-                              });
-                            },
-                            child: Text("export"),
-                          ),
-                        ),
-                      ]
-                  ),
-                  Padding(padding: const EdgeInsetsDirectional.fromSTEB(
-                      8, 4, 8, 4),
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                          color: darkerBlueGrey
-                      ),
-                      borderRadius: BorderRadius.circular(10),
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [notepaperWhite, notepaperWhite],
-                      ),
+                      // selectedItem: currentCategory,
+                      compareFn: (item, sItem) => item.title == sItem.title,
+                      validator: (item) {
+                        if (item == null) {
+                          return 'please select a Project';
+                        }
+                        return null;
+                      },
+                      popupProps: PopupProps.modalBottomSheet(
+                          showSelectedItems: true,
+                          showSearchBox: false,
+                          itemBuilder: projectModalItem),
                     ),
-                    padding: EdgeInsets.all(7),
-                    child: Text("Export your project: 'save for Nonsense' saves the selected "
-                        "Project as .data files, template files (if any) and a copy of nonsense.pl "
-                        "that can be deployed on a web server or run as a command-line Perl "
-                        "application. The 'Export' button will save it in a format "
-                        "that can be shared with other Balderdash! users." ),
                   ),
-                  Padding(padding: const EdgeInsetsDirectional.fromSTEB(
-                      8, 8, 8, 8),
+                  SizedBox(
+                    height: 16,
+                    width: 8,
                   ),
-                  Row(
-                      children: [
-                        Expanded(
-                          flex:2,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              iconColor: cyanAppbarColour,
-                              shadowColor: Colors.black,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                importProject();
-                              });
-                            },
-                            child: Text("import"),
-                          ),
-                        ),
-                        SizedBox(
-                          height: 16 ,
-                          width: 8,
-                        ),
-                        Expanded(
-                          flex:1,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              iconColor: cyanAppbarColour,
-                              shadowColor: Colors.black,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                exportProject();
-                              });
-                            },
-                            child: Text("--"),
-                          ),
-                        ),
-                      ]
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        iconColor: cyanAppbarColour,
+                        shadowColor: Colors.black,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          initialised = false;
+                          _prjDDKey.currentState?.clear();
+                        });
+                      },
+                      child: Text("Clear"),
+                    ),
                   ),
-                ]
-            ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(8, 4, 8, 4),
+              ),
+              Row(children: [
+                Expanded(
+                  flex: 3,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      iconColor: cyanAppbarColour,
+                      shadowColor: Colors.black,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        saveAsNonsense();
+                      });
+                    },
+                    child: Text("save for Nonsense"),
+                  ),
+                ),
+                SizedBox(
+                  height: 16,
+                  width: 8,
+                ),
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      iconColor: cyanAppbarColour,
+                      shadowColor: Colors.black,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        exportProject();
+                      });
+                    },
+                    child: Text("export .bdd"),
+                  ),
+                ),
+              ]),
+              Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(8, 4, 8, 4),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: darkerBlueGrey),
+                  borderRadius: BorderRadius.circular(10),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [notepaperWhite, notepaperWhite],
+                  ),
+                ),
+                padding: EdgeInsets.all(7),
+                child: Text(
+                    "'save for Nonsense' saves selected Project + Library as .data files, "
+                    "templates (if any) & nonsense.zip (nonsense.pl + documentation) that "
+                    "can be deployed on a web server or run as a command-line Perl application.\n\n"
+                    "'export .bdd' exports project + library in a single project.bdd file that "
+                    "can be shared with other Balderdash! users."),
+              ),
+              const Divider(
+                  height: 20,
+                  thickness: 1,
+                  indent: 8,
+                  endIndent: 8,
+                  color: blueGrey),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: darkerBlueGrey),
+                  borderRadius: BorderRadius.circular(10),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [notepaperWhite, notepaperWhite],
+                  ),
+                ),
+                padding: EdgeInsets.all(7),
+                child: Text(
+                    "Import a project: tap 'import .bdd', find the project.bdd "
+                    "file and open. If there's an existing project with the same name "
+                    "you'll be prompted to rename the new project, overwrite the existing "
+                    "one or merge the two projects. Library vocabularies in the import "
+                    "can be merged into your existing library. "),
+              ),
+              Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(8, 8, 8, 8),
+              ),
+              Row(children: [
+                SizedBox(
+                  height: 16,
+                  width: 60,
+                ),
+                Expanded(
+                  flex: 1,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      iconColor: cyanAppbarColour,
+                      shadowColor: Colors.black,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        importProject();
+                      });
+                    },
+                    child: Text("import .bdd"),
+                  ),
+                ),
+                SizedBox(
+                  height: 16,
+                  width: 60,
+                ),
+              ]),
+            ]),
           ),
         ),
       ),
     );
   }
-  Future<String?> _showTextInputDialog(BuildContext context, String existingTitle, int i) async {
+
+  Future<String?> _showTextInputDialog(
+      BuildContext context, String existingTitle, int i) async {
     // print(i);
     String msg = "Please enter a new title for '$existingTitle':";
-      if (i > 0 && i < 4){
-        msg = "'$existingTitle' also exists, try again:";
-      } else if (i >= 4) {
-        msg = "Maybe you should look at the list of Projects first?";
-      }
-      return showDialog(
+    if (i > 0 && i < 4) {
+      msg = "'$existingTitle' also exists, try again:";
+    } else if (i >= 4) {
+      msg = "Maybe you should look at the list of Projects first?";
+    }
+    return showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
             title: Text(msg),
             content: TextField(
               controller: _newTitleController,
-              decoration: const InputDecoration(hintText: "Enter a unique title:"),
+              decoration:
+                  const InputDecoration(hintText: "Enter a unique title:"),
             ),
             actions: <Widget>[
               ElevatedButton(
@@ -613,7 +767,8 @@ class _ImExportState extends State<ImExport>{
               ),
               ElevatedButton(
                 child: const Text('OK'),
-                onPressed: () => Navigator.pop(context, _newTitleController.text),
+                onPressed: () =>
+                    Navigator.pop(context, _newTitleController.text),
               ),
             ],
           );
@@ -621,87 +776,115 @@ class _ImExportState extends State<ImExport>{
   }
 }
 
-Future<int> showImportActionDialog(
-    BuildContext context, {
-      required String title,
-      required String message,
-      required String cancelText,
-      required String renameText,
-      required String replaceText,
-      required String mergeText,
-      bool highlightCancel = false,
-      bool highlightRename = false,
-      bool highlightReplace = false,
-      bool highlightMerge = false,
-    }) async {
-  return await showDialog<int>(
-      barrierDismissible: false,
-      context: context,
-      builder: (BuildContext ctx) {
-        return AlertDialog(
-          title: Text(title),
-          content: Text(message),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.pop(context, 1),
-              child: Text(
-              cancelText.toUpperCase(),
-              style: highlightCancel
-                ? const TextStyle(
-                    color: Colors.red)
-                  : const TextStyle(
-                  color: Colors.green)
-              ),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, 2),
-              child: Text(
-                renameText.toUpperCase(),
-                style: highlightRename
-                    ? const TextStyle(
-                    color: Colors.red)
-                    : const TextStyle(
-                    color: Colors.green)
-              ),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, 3),
-              child: Text(
-                replaceText.toUpperCase(),
-                style: highlightReplace
-                    ? const TextStyle(
-                    color: Colors.red)
-                    : const TextStyle(
-                    color: Colors.green)
-              ),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, 4),
-              child: Text(
-                mergeText.toUpperCase(),
-                style: highlightMerge
-                    ? const TextStyle(
-                    color: Colors.red)
-                    : const TextStyle(
-                    color: Colors.green)
-              ),
-            ),
-          ],
-        );
-      },
-  ) ?? 1;
+extension IterableReplaceWhere<E> on List<E> {
+  Iterable<E> replaceWhere(bool Function(E) test, E Function(E) replace) =>
+      map((e) => test(e) ? replace(e) : e);
+  Iterable<E> replaceWhereNot(bool Function(E) test, E Function(E) replace) =>
+      map((e) => test(e) ? e : replace(e));
 }
 
-Future<bool> showConfirmationAlertDialog(
-    BuildContext context, {
-      required String title,
-      required String message,
-      required String positiveText,
-      required String negativeText,
-      bool highlightPositive = false,
-      bool highlightNegative = false,
-    }) async {
+Future<int> showImportActionDialog(
+  BuildContext context, {
+  required String title,
+  required String message,
+  required String cancelText,
+  required String renameText,
+  required String replaceText,
+  required String mergeText,
+  bool highlightCancel = false,
+  bool highlightRename = false,
+  bool highlightReplace = false,
+  bool highlightMerge = false,
+}) async {
+  return await showDialog<int>(
+        barrierDismissible: false,
+        context: context,
+        builder: (BuildContext ctx) {
+          return AlertDialog(
+            title: Text(title),
+            content: Text(message),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.pop(context, 1),
+                child: Text(cancelText.toUpperCase(),
+                    style: highlightCancel
+                        ? const TextStyle(color: Colors.red)
+                        : const TextStyle(color: Colors.green)),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, 2),
+                child: Text(renameText.toUpperCase(),
+                    style: highlightRename
+                        ? const TextStyle(color: Colors.red)
+                        : const TextStyle(color: Colors.green)),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, 3),
+                child: Text(replaceText.toUpperCase(),
+                    style: highlightReplace
+                        ? const TextStyle(color: Colors.red)
+                        : const TextStyle(color: Colors.green)),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, 4),
+                child: Text(mergeText.toUpperCase(),
+                    style: highlightMerge
+                        ? const TextStyle(color: Colors.red)
+                        : const TextStyle(color: Colors.green)),
+              ),
+            ],
+          );
+        },
+      ) ??
+      1;
+}
+
+Future<bool> showConfirmationChoiceDialog(
+  BuildContext context, {
+  required String title,
+  required String message,
+  required String positiveText,
+  required String negativeText,
+  bool highlightPositive = false,
+  bool highlightNegative = false,
+}) async {
   return await showDialog<bool>(
+        barrierDismissible: true,
+        context: context,
+        builder: (BuildContext ctx) {
+          return AlertDialog(
+            title: Text(title),
+            content: Text(message),
+            actions: <Widget>[
+              TextButton(
+                child: Text(negativeText.toUpperCase(),
+                    style: highlightNegative
+                        ? const TextStyle(color: Colors.red)
+                        : const TextStyle(color: Colors.green)),
+                onPressed: () => Navigator.of(ctx).pop(false),
+              ),
+              TextButton(
+                child: Text(positiveText.toUpperCase(),
+                    style: highlightPositive
+                        ? const TextStyle(color: Colors.red)
+                        : const TextStyle(color: Colors.green)),
+                onPressed: () => Navigator.of(ctx).pop(true),
+              ),
+            ],
+          );
+        },
+      ) ??
+      false;
+}
+
+Future<void> showConfirmationAlertDialog(
+  BuildContext context, {
+  required String title,
+  required String message,
+  required String text,
+  bool highlight = false,
+}) async {
+  return await showDialog<void>(
     barrierDismissible: true,
     context: context,
     builder: (BuildContext ctx) {
@@ -710,31 +893,16 @@ Future<bool> showConfirmationAlertDialog(
         content: Text(message),
         actions: <Widget>[
           TextButton(
-            child: Text(
-              negativeText.toUpperCase(),
-              style: highlightNegative
-                  ? const TextStyle(
-                  color: Colors.red)
-                  : const TextStyle(
-                  color: Colors.green)
-            ),
+            child: Text(text.toUpperCase(),
+                style: highlight
+                    ? const TextStyle(color: Colors.red)
+                    : const TextStyle(color: Colors.green)),
             onPressed: () => Navigator.of(ctx).pop(false),
-          ),
-          TextButton(
-            child: Text(
-              positiveText.toUpperCase(),
-              style: highlightPositive
-                  ? const TextStyle(
-                  color: Colors.red)
-                  : const TextStyle(
-                  color: Colors.green)
-            ),
-            onPressed: () => Navigator.of(ctx).pop(true),
-          ),
+          )
         ],
       );
     },
-  ) ?? false;
+  );
 }
 
 class NoProjectDataFoundException implements Exception {
@@ -744,15 +912,11 @@ class NoProjectDataFoundException implements Exception {
 
 class NoVocabularyDataFoundException implements Exception {
   @override
-  String toString() => 'The import does not contain Vocabulary data where expected.';
+  String toString() =>
+      'The import does not contain Vocabulary data where expected.';
 }
 
 class NoLibraryDataFoundException implements Exception {
   @override
   String toString() => 'The import does not contain library data as expected.';
 }
-
-
-
-
-
