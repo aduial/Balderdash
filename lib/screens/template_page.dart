@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:balderdash/screens/template_detail.dart';
-import 'package:balderdash/views/template_view.dart';
-import 'package:balderdash/database_helper/database_helper.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:balderdash/config/colours.dart';
 import 'package:balderdash/config/config.dart';
-import 'package:auto_size_text/auto_size_text.dart';
+import 'package:balderdash/database_helper/database_helper.dart';
+import 'package:balderdash/screens/template_detail.dart';
+import 'package:balderdash/views/template_view.dart';
+import 'package:flutter/material.dart';
 
 class TemplatePage extends StatefulWidget {
   const TemplatePage({super.key});
@@ -56,9 +56,6 @@ class _TemplatePageState extends State<TemplatePage> {
 
   @override
   Widget build(BuildContext context) {
-    var padding = MediaQuery.paddingOf(context);
-    double displayHeight = MediaQuery.of(context).size.height - padding.top - padding.bottom;
-    double toScale = refHeight / displayHeight;
     return Scaffold(
       appBar: AppBar(
           iconTheme: IconThemeData(
@@ -66,9 +63,9 @@ class _TemplatePageState extends State<TemplatePage> {
           ),
           backgroundColor: regularResultBGColour,
           title: SizedBox(
-            height: 30,
+            height: 30 * scaling,
             child: TextField(
-              style: TextStyle(color: offWhite, fontSize: 16),
+              style: TextStyle(color: offWhite, fontSize: 16 * scaling),
               onChanged: (value) => onSearch(value),
               decoration: InputDecoration(
                 filled: true,
@@ -77,9 +74,10 @@ class _TemplatePageState extends State<TemplatePage> {
                 contentPadding: EdgeInsets.all(0),
                 prefixIcon: Icon(Icons.search, color: offWhite),
                 border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(50),
+                    borderRadius: BorderRadius.circular(50 * scaling),
                     borderSide: BorderSide.none),
-                hintStyle: TextStyle(fontSize: 14, color: notepaperWhite),
+                hintStyle:
+                    TextStyle(fontSize: 14 * scaling, color: notepaperWhite),
               ),
             ),
           )),
@@ -109,17 +107,16 @@ class _TemplatePageState extends State<TemplatePage> {
                 itemBuilder: (context, index) {
                   final templateView = snapshot.data![index];
                   return Container(
-                    height: 40,
-                    padding: EdgeInsets.fromLTRB(5.0 * toScale, 0.0,
-                        5.0 * toScale, 0.0),
+                    height: 40 * scaling,
+                    padding: EdgeInsets.fromLTRB(
+                        5.0 * scaling, 0.0, 5.0 * scaling, 0.0),
                     decoration: BoxDecoration(
                       border: Border(
-                        bottom: BorderSide(
-                            width: toScale, color: tanteRia),
+                        bottom: BorderSide(width: scaling, color: tanteRia),
                       ),
                       color: templateView.isHtml == 1
-                      ? notepaperWhite
-                      : notepaperLinked,
+                          ? notepaperWhite
+                          : notepaperLinked,
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -127,8 +124,8 @@ class _TemplatePageState extends State<TemplatePage> {
                         Expanded(
                           flex: 3,
                           child: Padding(
-                            padding:
-                                const EdgeInsetsDirectional.fromSTEB(4, 0, 2, 0),
+                            padding: EdgeInsetsDirectional.fromSTEB(
+                                4 * scaling, 0, 2 * scaling, 0),
                             child: AutoSizeText(
                               templateView.title ?? "",
                               style: TextStyle(
@@ -143,67 +140,61 @@ class _TemplatePageState extends State<TemplatePage> {
                         Expanded(
                           flex: 2,
                           child: Padding(
-                            padding:
-                                const EdgeInsetsDirectional.fromSTEB(2, 0, 2, 0),
-                            child: AutoSizeText(templateView.project!,
-                                maxLines: 1,
-                                style: TextStyle(
-                                  color: templateView.isHtml == 1
-                                      ? greenAppbarColour
-                                      : redAppbarColour,
+                            padding: EdgeInsetsDirectional.fromSTEB(
+                                2 * scaling, 0, 2 * scaling, 0),
+                            child: AutoSizeText(
+                              templateView.project!,
+                              maxLines: 1,
+                              style: TextStyle(
+                                color: templateView.isHtml == 1
+                                    ? greenAppbarColour
+                                    : redAppbarColour,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: IconButton(
+                            icon: const Icon(Icons.edit),
+                            color: violetAppbarColour,
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => TemplateDetail(
+                                      templateView: templateView),
                                 ),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          flex: 1,
-                          child: Padding(
-                            padding:
-                                const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                            child: IconButton(
-                              icon: const Icon(Icons.edit),
-                              color: violetAppbarColour,
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => TemplateDetail(
-                                        templateView: templateView),
-                                  ),
-                                ).then((value) {
-                                  setState(() {
-                                    _refreshTemplateViewList();
-                                  });
-                                });
-                              },
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          flex: 1,
-                          child: Padding(
-                            padding:
-                                const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                            child: IconButton(
-                              icon: const Icon(Icons.delete),
-                              color: violetAppbarColour,
-                              onPressed: () async {
-
-                                final bool isDelete = await showConfirmationAlertDialog(
-                                  context,
-                                  title: 'Delete ${templateView.title!}?',
-                                  message: "Do you want to delete ${templateView.title!}? You cannot undo this!" ,
-                                  positiveText: 'Delete',
-                                  negativeText: 'Cancel',
-                                  highlightNegative: true,
-                                );
-
-                                if(isDelete){
-                                  await dbHelper.deleteTemplate(templateView);
+                              ).then((value) {
+                                setState(() {
                                   _refreshTemplateViewList();
-                                }
-                              },
-                            ),
+                                });
+                              });
+                            },
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: IconButton(
+                            icon: const Icon(Icons.delete),
+                            color: violetAppbarColour,
+                            onPressed: () async {
+                              final bool isDelete =
+                                  await showConfirmationAlertDialog(
+                                context,
+                                title: 'Delete ${templateView.title!}?',
+                                message:
+                                    "Do you want to delete ${templateView.title!}? You cannot undo this!",
+                                positiveText: 'Delete',
+                                negativeText: 'Cancel',
+                                highlightNegative: true,
+                              );
+
+                              if (isDelete) {
+                                await dbHelper.deleteTemplate(templateView);
+                                _refreshTemplateViewList();
+                              }
+                            },
                           ),
                         ),
                       ],
@@ -226,12 +217,13 @@ class _TemplatePageState extends State<TemplatePage> {
             "title": newTemplateTitle,
             "content": '',
             "isHtml": 1,
-            "notes": 'comment'});
+            "notes": 'comment'
+          });
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => TemplateDetail(
-                  templateView: newTemplateView),
+              builder: (context) =>
+                  TemplateDetail(templateView: newTemplateView),
             ),
           ).then((value) {
             setState(() {
@@ -245,42 +237,43 @@ class _TemplatePageState extends State<TemplatePage> {
 }
 
 Future<bool> showConfirmationAlertDialog(
-    BuildContext context, {
-      required String title,
-      required String message,
-      required String positiveText,
-      required String negativeText,
-      bool highlightPositive = false,
-      bool highlightNegative = false,
-    }) async {
+  BuildContext context, {
+  required String title,
+  required String message,
+  required String positiveText,
+  required String negativeText,
+  bool highlightPositive = false,
+  bool highlightNegative = false,
+}) async {
   return await showDialog<bool>(
-    barrierDismissible: true,
-    context: context,
-    builder: (BuildContext ctx) {
-      return AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: <Widget>[
-          TextButton(
-            child: Text(
-              negativeText.toUpperCase(),
-              style: highlightNegative
-                  ? const TextStyle(color: darkAnyMatchColour)
-                  : null,
-            ),
-            onPressed: () => Navigator.of(ctx).pop(false),
-          ),
-          TextButton(
-            child: Text(
-              positiveText.toUpperCase(),
-              style: highlightPositive
-                  ? const TextStyle(color: Colors.red)
-                  : null,
-            ),
-            onPressed: () => Navigator.of(ctx).pop(true),
-          ),
-        ],
-      );
-    },
-  ) ?? false;
+        barrierDismissible: true,
+        context: context,
+        builder: (BuildContext ctx) {
+          return AlertDialog(
+            title: Text(title),
+            content: Text(message),
+            actions: <Widget>[
+              TextButton(
+                child: Text(
+                  negativeText.toUpperCase(),
+                  style: highlightNegative
+                      ? const TextStyle(color: darkAnyMatchColour)
+                      : null,
+                ),
+                onPressed: () => Navigator.of(ctx).pop(false),
+              ),
+              TextButton(
+                child: Text(
+                  positiveText.toUpperCase(),
+                  style: highlightPositive
+                      ? const TextStyle(color: Colors.red)
+                      : null,
+                ),
+                onPressed: () => Navigator.of(ctx).pop(true),
+              ),
+            ],
+          );
+        },
+      ) ??
+      false;
 }

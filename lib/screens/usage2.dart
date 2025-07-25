@@ -1,19 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import 'package:balderdash/config/colours.dart';
 import 'package:balderdash/config/config.dart';
 import 'package:balderdash/screens/usage3.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class Usage2 extends StatelessWidget {
   const Usage2({super.key});
 
   @override
   Widget build(BuildContext context) {
-    var padding = MediaQuery.paddingOf(context);
-    double displayHeight =
-        MediaQuery.of(context).size.height - padding.top - padding.bottom;
-    double toScale = refHeight / displayHeight;
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(
@@ -25,15 +20,14 @@ class Usage2 extends StatelessWidget {
           style: Theme.of(context).textTheme.bodyLarge!.copyWith(
               color: ithildin,
               fontWeight: FontWeight.w500,
-              fontSize: 18 * toScale),
+              fontSize: 18 * scaling),
         ),
       ),
       backgroundColor: blueTop,
       body: SafeArea(
-        bottom: false
-        ,
+        bottom: false,
         //child: Padding(
-        //padding: EdgeInsetsDirectional.fromSTEB(0, 10 * toScale, 0, 0),
+        //padding: EdgeInsetsDirectional.fromSTEB(0, 10 * scaling, 0, 0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -41,20 +35,20 @@ class Usage2 extends StatelessWidget {
             Center(
               child: Container(
                 padding: EdgeInsets.fromLTRB(
-                    10 * toScale, 10 * toScale, 10 * toScale, 10 * toScale),
+                    10 * scaling, 10 * scaling, 10 * scaling, 10 * scaling),
                 child: Text(
                   "What & How",
                   style: GoogleFonts.playfairDisplay(
                       textStyle: Theme.of(context).textTheme.displayLarge,
                       fontWeight: FontWeight.w200,
-                      fontSize: 50 * toScale,
+                      fontSize: 50 * scaling,
                       color: ithildin),
                 ),
               ),
             ),
             SizedBox(
               width: double.infinity,
-              height: 25.0 * toScale,
+              height: 25.0 * scaling,
               child: const DecoratedBox(
                 decoration: BoxDecoration(
                   color: yellowGrey,
@@ -63,7 +57,7 @@ class Usage2 extends StatelessWidget {
             ),
             SizedBox(
               width: double.infinity,
-              height: 10.0 * toScale,
+              height: 10.0 * scaling,
               child: const DecoratedBox(
                 decoration: BoxDecoration(
                   color: sortOfRed,
@@ -72,7 +66,7 @@ class Usage2 extends StatelessWidget {
             ),
             SizedBox(
               width: double.infinity,
-              height: 18.0 * toScale,
+              height: 18.0 * scaling,
               child: const DecoratedBox(
                 decoration: BoxDecoration(
                   color: iceBlue,
@@ -92,7 +86,7 @@ class Usage2 extends StatelessWidget {
                 width: double.infinity,
                 child: Padding(
                     padding: EdgeInsetsDirectional.fromSTEB(
-                        20 * toScale, 0, 20 * toScale, 30 * toScale),
+                        20 * scaling, 0, 20 * scaling, 30 * scaling),
                     child: Scrollbar(
                       child: SingleChildScrollView(
                         child: RichText(
@@ -105,65 +99,66 @@ class Usage2 extends StatelessWidget {
                                 .copyWith(
                                     color: ithildin,
                                     fontWeight: FontWeight.w300,
-                                    fontSize: 13 * toScale),
+                                    fontSize: 13 * scaling),
                             children: <TextSpan>[
                               TextSpan(
                                   text: "Category",
-                                  style: TextStyle(fontWeight: FontWeight.w600,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
                                       color: cyanNotePaperColour)),
                               TextSpan(
-                                  text:
-                                  ", ",
+                                  text: ", ",
                                   style:
-                                  TextStyle(fontWeight: FontWeight.w300)),
+                                      TextStyle(fontWeight: FontWeight.w300)),
                               TextSpan(
                                   text: "Vocabularies ",
-                                  style: TextStyle(fontWeight: FontWeight.w600,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
                                       color: greenNotePaperColour)),
                               TextSpan(
-                                  text:
-                                      "also belong to a ",
+                                  text: "also belong to a ",
                                   style:
                                       TextStyle(fontWeight: FontWeight.w300)),
                               TextSpan(
                                   text: "Project",
-                                  style: TextStyle(fontWeight: FontWeight.w600,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
                                       color: orangeNotePaperColour)),
                               TextSpan(
                                   text:
-                                  ". That's not just a label; it defines the scope "
+                                      ". That's not just a label; it defines the scope "
                                       "of a Vocabulary. If you run Balderdash, it can find "
                                       "all Vocabularies under the same Project - AND - "
                                       "those from the project called 'Library' (#ID=1). "
                                       "There are several demo projects available in the app "
                                       "and you can add as many as device space permits. ",
                                   style:
-                                  TextStyle(fontWeight: FontWeight.w300)),
+                                      TextStyle(fontWeight: FontWeight.w300)),
                               TextSpan(
                                   text: "Projects",
-                                  style: TextStyle(fontWeight: FontWeight.w600,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
                                       color: orangeNotePaperColour)),
                               TextSpan(
-                                  text:
-                                  ", in their turn, have an ",
+                                  text: ", in their turn, have an ",
                                   style:
-                                  TextStyle(fontWeight: FontWeight.w300)),
+                                      TextStyle(fontWeight: FontWeight.w300)),
                               TextSpan(
                                   text: "Author ",
-                                  style: TextStyle(fontWeight: FontWeight.w600,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
                                       color: blueNotePaperColour)),
                               TextSpan(
-                                  text:
-                                  "(ie. you), and a ",
+                                  text: "(ie. you), and a ",
                                   style:
-                                  TextStyle(fontWeight: FontWeight.w300)),
+                                      TextStyle(fontWeight: FontWeight.w300)),
                               TextSpan(
                                   text: "Type ",
-                                  style: TextStyle(fontWeight: FontWeight.w600,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
                                       color: yellowNotePaperColour)),
                               TextSpan(
-                                  text:
-                                      "(Legacy, Examples ...).\n\n"
+                                  text: "(Legacy, Examples ...).\n\n"
                                       "You'll find screens to manage all that listed in the main "
                                       "menu. These look very similar for the most part: there's "
                                       "a list view that can be filtered by entering text in "
@@ -176,14 +171,11 @@ class Usage2 extends StatelessWidget {
                                       "form.\n\n\n(continued ...)\n\n\n\n\n\n",
                                   style:
                                       TextStyle(fontWeight: FontWeight.w300)),
-
-
                             ],
                           ),
                         ),
                       ),
-                    )
-                ),
+                    )),
               ),
             ),
           ],
@@ -196,11 +188,10 @@ class Usage2 extends StatelessWidget {
           foregroundColor: ithildin,
           backgroundColor: sortOfRed,
           // child: const Icon(Icons.add),
-          onPressed: ()  {
+          onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                  builder: (context) => Usage3()),
+              MaterialPageRoute(builder: (context) => Usage3()),
             );
           }),
     );

@@ -1,12 +1,14 @@
-import 'package:flutter/material.dart';
+import 'package:balderdash/config/balderdash_theme_colours.dart';
+import 'package:balderdash/config/colours.dart';
+import 'package:balderdash/config/config.dart';
+import 'package:balderdash/database_helper/database_helper.dart';
+import 'package:balderdash/language/balderdash_template.dart';
 import 'package:balderdash/model/project.dart';
 import 'package:balderdash/model/template.dart';
 import 'package:balderdash/views/template_view.dart';
-import 'package:balderdash/database_helper/database_helper.dart';
-import 'package:balderdash/config/colours.dart';
-import 'package:balderdash/config/config.dart';
 import 'package:dropdown_search/dropdown_search.dart';
-import 'package:balderdash/widgets/content_editor.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_code_editor/flutter_code_editor.dart';
 import 'package:widgets_easier/widgets_easier.dart';
 
 class TemplateDetail extends StatefulWidget {
@@ -23,11 +25,8 @@ class _TemplateDetailState extends State<TemplateDetail> {
   late Future<List<Project>> _projects;
   late List<TemplateView> tvList;
   final TextEditingController titleController = TextEditingController(text: '');
-  final TextEditingController contentController =
-      TextEditingController(text: '');
-  // final ScrollController contentScrollController = ScrollController();
-  final TextEditingController notesController =
-      TextEditingController(text: '');
+  final contentController = CodeController();
+  final TextEditingController notesController = TextEditingController(text: '');
 
   bool tvListFetched = false;
   bool isExistingTV = false;
@@ -35,9 +34,6 @@ class _TemplateDetailState extends State<TemplateDetail> {
 
   late Template newTemplate;
   late int newProjectId;
-  late String newTitle;
-  late String newContent;
-  late String newNotes;
   late int newIsHtml;
 
   @override
@@ -48,18 +44,17 @@ class _TemplateDetailState extends State<TemplateDetail> {
     isExistingTV = (null != widget.templateView.id);
     if (isExistingTV) {
       newProjectId = widget.templateView.projectId!;
-      dbHelper.getProject(newProjectId).then((prj) => _prjDDKey.currentState?.changeSelectedItem(prj));
+      dbHelper
+          .getProject(newProjectId)
+          .then((prj) => _prjDDKey.currentState?.changeSelectedItem(prj));
     }
-    newTitle = widget.templateView.title!;
-    newContent = widget.templateView.content!;
+    titleController.text = widget.templateView.title!;
+    contentController.language = balderdashTemplate;
+    contentController.text = widget.templateView.content!;
     newIsHtml = widget.templateView.isHtml!;
-    contentType = widget.templateView.isHtml == 0
-        ? rdfContent
-        : htmlContent;
-    newNotes =
-        widget.templateView.notes == ""
-            ? " "
-            : widget.templateView.notes!;
+    contentType = widget.templateView.isHtml == 0 ? rdfContent : htmlContent;
+    notesController.text =
+        widget.templateView.notes == "" ? " " : widget.templateView.notes ?? '';
   }
 
   void _refreshLists() {
@@ -77,41 +72,14 @@ class _TemplateDetailState extends State<TemplateDetail> {
       tvList = await dbHelper.getTemplateViews();
       tvListFetched = true;
     }
-    newTitle = title;
-  }
-
-  onContentChanged(String content) async {
-    if (!tvListFetched) {
-      tvList = await dbHelper.getTemplateViews();
-      tvListFetched = true;
-    }
-    newContent = content;
   }
 
   onIsHtmlChanged(int isHtml) async {
-    if (!tvListFetched) {
-      tvList = await dbHelper.getTemplateViews();
-      tvListFetched = true;
-    }
     newIsHtml = isHtml;
-  }
-
-  onNotesChanged(String notes) async {
-    if (!tvListFetched) {
-      tvList = await dbHelper.getTemplateViews();
-      tvListFetched = true;
-    }
-    newNotes = notes;
   }
 
   @override
   Widget build(BuildContext context) {
-    var padding = MediaQuery.paddingOf(context);
-    double displayHeight = MediaQuery.of(context).size.height - padding.top - padding.bottom;
-    double deviceScaling = refHeight / displayHeight;
-    titleController.text = newTitle;
-    contentController.text = newContent;
-    notesController.text = newNotes;
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(
@@ -122,7 +90,6 @@ class _TemplateDetailState extends State<TemplateDetail> {
           "Edit ${widget.templateView.title!}",
           style: TextStyle(color: notepaperWhite),
         ),
-
       ),
       backgroundColor: notepaperWhite,
       body: Container(
@@ -134,11 +101,11 @@ class _TemplateDetailState extends State<TemplateDetail> {
           ),
         ),
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+          padding: EdgeInsets.symmetric(
+              vertical: 12 * scaling, horizontal: 8 * scaling),
           child: Form(
             key: _templateFormKey,
-            child: ListView(padding: EdgeInsets.all(4),
-                children: [
+            child: ListView(padding: EdgeInsets.all(4 * scaling), children: [
               Row(
                 children: [
                   Expanded(
@@ -158,13 +125,11 @@ class _TemplateDetailState extends State<TemplateDetail> {
                             filled: true,
                             fillColor: offWhite,
                             labelText: 'PROJECT',
-                          // labelText: widget.templateView.project,
-                          labelStyle:
-                              TextStyle(fontSize: 14),
+                            // labelText: widget.templateView.project,
+                            labelStyle: TextStyle(fontSize: 14 * scaling),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            )
-                        ),
+                              borderRadius: BorderRadius.circular(10 * scaling),
+                            )),
                       ),
                       // selectedItem: currentCategory,
                       compareFn: (item, sItem) => item.title == sItem.title,
@@ -182,7 +147,7 @@ class _TemplateDetailState extends State<TemplateDetail> {
                   ),
                 ],
               ),
-              Padding(padding: EdgeInsets.all(8)),
+              Padding(padding: EdgeInsets.all(8 * scaling)),
               Row(children: [
                 Expanded(
                   flex: 4,
@@ -195,13 +160,12 @@ class _TemplateDetailState extends State<TemplateDetail> {
                         fillColor: offWhite,
                         labelText: 'TEMPLATE TITLE',
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        )
-                    ),
+                          borderRadius: BorderRadius.circular(10 * scaling),
+                        )),
                     maxLines: 1,
                     onChanged: (value) => onTitleChanged(value),
                     validator: (value) {
-                      if (isExistingTV){
+                      if (isExistingTV && value == widget.templateView.title) {
                         return null;
                       }
                       if (value == null || value.isEmpty) {
@@ -212,8 +176,9 @@ class _TemplateDetailState extends State<TemplateDetail> {
                       }
                       List<TemplateView> titleTVList =
                           tvList.where((i) => i.title == value).toList();
-                      List<TemplateView> filterTVList =
-                          titleTVList.where((j) => j.projectId == newProjectId).toList();
+                      List<TemplateView> filterTVList = titleTVList
+                          .where((j) => j.projectId == newProjectId)
+                          .toList();
                       if (filterTVList.isNotEmpty) {
                         return "Template ${filterTVList[0].title!} already exist in project '${filterTVList[0].project!}'";
                       }
@@ -225,11 +190,7 @@ class _TemplateDetailState extends State<TemplateDetail> {
                   flex: 1,
                   child: Align(
                     alignment: Alignment.center,
-                    child: Text(
-                        newIsHtml == 0
-                            ? rdfContent
-                            : htmlContent
-                    ),
+                    child: Text(newIsHtml == 0 ? rdfContent : htmlContent),
                   ),
                 ),
                 Expanded(
@@ -248,22 +209,44 @@ class _TemplateDetailState extends State<TemplateDetail> {
               ]),
               Padding(padding: EdgeInsets.all(6)),
               Container(
-                decoration: const ShapeDecoration(
-                  shape: InsetBorder(width: 3),
+                decoration: ShapeDecoration(
+                  shape: InsetBorder(width: 3 * scaling),
                 ),
                 child: SizedBox(
-                  height: 460 * deviceScaling,
+                  height: 460 * scaling,
                   width: double.infinity,
-                  child: ContentEditor(
-                    content: widget.templateView.content!,
-                    onContentUpdated: (String updatedContent){
-                      onContentChanged(updatedContent);},
-                      isVocabulary: false
+                  child: CodeTheme(
+                    data: CodeThemeData(styles: balderdashTheme),
+                    child: SingleChildScrollView(
+                      child: CodeField(
+                        background: offWhite,
+                        cursorColor: darkVerbatimMatchColour,
+                        controller: contentController,
+                        textStyle: TextStyle(
+                            fontSize: 12 * scaling,
+                            fontFamily: "Courier",
+                            fontWeight: FontWeight.normal),
+                        gutterStyle: GutterStyle(
+                            margin: 5 * scaling,
+                            textStyle: TextStyle(
+                              height: 1.5,
+                              fontSize: 12,
+                              fontFamily: "Courier",
+                              fontWeight: FontWeight.bold,
+                              color: lightAnyMatchColour,
+                            ),
+                            showErrors: false,
+                            showFoldingHandles: false,
+                            showLineNumbers: true,
+                            width: 66 * scaling,
+                            background: offWhite),
+                      ),
+                    ),
                   ),
                 ),
               ),
               Padding(
-                  padding: EdgeInsets.all(6),
+                padding: EdgeInsets.all(6 * scaling),
               ),
               Row(children: [
                 Expanded(
@@ -276,22 +259,18 @@ class _TemplateDetailState extends State<TemplateDetail> {
                         fillColor: offWhite,
                         labelText: 'NOTES',
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        )
-                    ),
+                          borderRadius: BorderRadius.circular(10 * scaling),
+                        )),
                     maxLines: 1,
-                    onChanged: (value) => onNotesChanged(value),
                     validator: (value) {
                       return null;
                     },
                   ),
                 ),
-                SizedBox(
-                    width: 10,
-                    height: 4),
+                SizedBox(width: 10 * scaling, height: 4 * scaling),
                 Expanded(
                   flex: 3,
-                  child:  ElevatedButton(
+                  child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       iconColor: violetAppbarColour,
                       shadowColor: Colors.black,
@@ -299,38 +278,37 @@ class _TemplateDetailState extends State<TemplateDetail> {
                     onPressed: () async {
                       if (_templateFormKey.currentState!.validate()) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
+                          SnackBar(
                               backgroundColor: regularResultBGColour,
                               behavior: SnackBarBehavior.fixed,
                               // margin: EdgeInsets.only(bottom: 0.0),
-                              content: Text('Saving template',
+                              content: Text(
+                                'Saving template',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 18 * scaling,
                                 ),
                               ),
-                              dismissDirection: DismissDirection.none
-                          ),
+                              dismissDirection: DismissDirection.none),
                         );
                         newTemplate = Template.fromMap({
                           "id": widget.templateView.id,
                           "projectId": newProjectId,
-                          "title": newTitle,
-                          "content": newContent,
-                          "notes": newNotes,
+                          "title": titleController.text,
+                          "content": contentController.text,
+                          "notes": notesController.text,
                         });
                         await dbHelper.upsertTemplate(newTemplate);
                         Navigator.of(context).pop();
                       }
                     },
                     child: const Icon(
-                        Icons.save,
+                      Icons.save,
                     ),
                   ),
                 ),
               ]),
-            ]
-            ),
+            ]),
           ),
         ),
       ),
@@ -341,12 +319,12 @@ class _TemplateDetailState extends State<TemplateDetail> {
 Widget projectModalItem(
     BuildContext context, Project item, bool isDisabled, bool isSelected) {
   return Container(
-    margin: EdgeInsets.symmetric(horizontal: 8),
+    margin: EdgeInsets.symmetric(horizontal: 8 * scaling),
     decoration: !isSelected
         ? null
         : BoxDecoration(
             border: Border.all(color: Theme.of(context).primaryColor),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20 * scaling),
             color: inActiveMinimalSetColour,
           ),
     child: ListTile(
@@ -356,7 +334,7 @@ Widget projectModalItem(
         title: Text(
           item.title!,
           style: TextStyle(
-              fontSize: 14,
+              fontSize: 14 * scaling,
               color: isSelected ? offWhite : onPrimaryFixed),
         )),
   );

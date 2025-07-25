@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:balderdash/screens/project_detail.dart';
-import 'package:balderdash/views/project_view.dart';
-import 'package:balderdash/database_helper/database_helper.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:balderdash/config/colours.dart';
 import 'package:balderdash/config/config.dart';
-import 'package:auto_size_text/auto_size_text.dart';
+import 'package:balderdash/database_helper/database_helper.dart';
+import 'package:balderdash/screens/project_detail.dart';
+import 'package:balderdash/views/project_view.dart';
+import 'package:flutter/material.dart';
 
 class ProjectPage extends StatefulWidget {
   const ProjectPage({super.key});
@@ -56,9 +56,6 @@ class _ProjectPageState extends State<ProjectPage> {
 
   @override
   Widget build(BuildContext context) {
-    var padding = MediaQuery.paddingOf(context);
-    double displayHeight = MediaQuery.of(context).size.height - padding.top - padding.bottom;
-    double toScale = refHeight / displayHeight;
     return Scaffold(
       appBar: AppBar(
           iconTheme: IconThemeData(
@@ -66,9 +63,9 @@ class _ProjectPageState extends State<ProjectPage> {
           ),
           backgroundColor: inActiveLargeSetColour,
           title: SizedBox(
-            height: 30,
+            height: 30 * scaling,
             child: TextField(
-              style: TextStyle(color: darkerBlueGrey, fontSize: 16),
+              style: TextStyle(color: darkerBlueGrey, fontSize: 16 * scaling),
               onChanged: (value) => onSearch(value),
               decoration: InputDecoration(
                 filled: true,
@@ -77,9 +74,10 @@ class _ProjectPageState extends State<ProjectPage> {
                 contentPadding: EdgeInsets.all(0),
                 prefixIcon: Icon(Icons.search, color: darkerBlueGrey),
                 border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(50),
+                    borderRadius: BorderRadius.circular(50 * scaling),
                     borderSide: BorderSide.none),
-                hintStyle: TextStyle(fontSize: 14, color: darkerBlueGrey),
+                hintStyle:
+                    TextStyle(fontSize: 14 * scaling, color: darkerBlueGrey),
               ),
             ),
           )),
@@ -109,13 +107,12 @@ class _ProjectPageState extends State<ProjectPage> {
                 itemBuilder: (context, index) {
                   final projectView = snapshot.data![index];
                   return Container(
-                    height: 40,
-                    padding: EdgeInsets.fromLTRB(5.0 * toScale, 0.0,
-                        5.0 * toScale, 0.0),
+                    height: 40 * scaling,
+                    padding: EdgeInsets.fromLTRB(
+                        5.0 * scaling, 0.0, 5.0 * scaling, 0.0),
                     decoration: BoxDecoration(
                       border: Border(
-                        bottom: BorderSide(
-                            width: toScale, color: tanteRia),
+                        bottom: BorderSide(width: scaling, color: tanteRia),
                       ),
                       color: notepaperWhite,
                     ),
@@ -125,13 +122,11 @@ class _ProjectPageState extends State<ProjectPage> {
                         Expanded(
                           flex: 2,
                           child: Padding(
-                            padding:
-                                const EdgeInsetsDirectional.fromSTEB(4, 0, 2, 0),
+                            padding: EdgeInsetsDirectional.fromSTEB(
+                                4 * scaling, 0, 2 * scaling, 0),
                             child: AutoSizeText(
                               projectView.type!,
-                              style: TextStyle(
-                                color: veryVeryDark
-                              ),
+                              style: TextStyle(color: veryVeryDark),
                               maxLines: 1,
                             ),
                           ),
@@ -140,79 +135,68 @@ class _ProjectPageState extends State<ProjectPage> {
                           flex: 2,
                           child: Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
-                                2, 0, 2 * toScale, 0),
+                                2 * scaling, 0, 2 * scaling, 0),
                             child: AutoSizeText(
                               projectView.author!,
-                                maxLines: 1,
-                                style: TextStyle(
-                                    color: veryVeryDark
-                                ),
+                              maxLines: 1,
+                              style: TextStyle(color: veryVeryDark),
                             ),
                           ),
                         ),
                         Expanded(
                           flex: 4,
                           child: Padding(
-                            padding:
-                                const EdgeInsetsDirectional.fromSTEB(2, 0, 2, 0),
+                            padding: EdgeInsetsDirectional.fromSTEB(
+                                2 * scaling, 0, 2 * scaling, 0),
                             child: AutoSizeText(
                               projectView.title!,
-                                maxLines: 1,
-                                style: TextStyle(
-                                    color: veryVeryDark
+                              maxLines: 1,
+                              style: TextStyle(color: veryVeryDark),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: IconButton(
+                            icon: const Icon(Icons.edit),
+                            color: orangeAppbarColour,
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      ProjectDetail(projectView: projectView),
                                 ),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          flex: 1,
-                          child: Padding(
-                            padding:
-                                const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                            child: IconButton(
-                              icon: const Icon(Icons.edit),
-                              color: orangeAppbarColour,
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ProjectDetail(
-                                        projectView: projectView),
-                                  ),
-                                ).then((value) {
-                                  setState(() {
-                                    _refreshProjectViewList();
-                                  });
-                                });
-                              },
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          flex: 1,
-                          child: Padding(
-                            padding:
-                                const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                            child: IconButton(
-                              icon: const Icon(Icons.delete),
-                              color: orangeAppbarColour,
-                              onPressed: () async {
-
-                                final bool isDelete = await showConfirmationAlertDialog(
-                                  context,
-                                  title: 'Delete ${projectView.title!}?',
-                                  message: "Do you want to delete project '${projectView.title!}'? You cannot undo this!" ,
-                                  positiveText: 'Delete',
-                                  negativeText: 'Cancel',
-                                  highlightNegative: true,
-                                );
-
-                                if(isDelete){
-                                  await dbHelper.deleteProject(projectView);
+                              ).then((value) {
+                                setState(() {
                                   _refreshProjectViewList();
-                                }
-                              },
-                            ),
+                                });
+                              });
+                            },
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: IconButton(
+                            icon: const Icon(Icons.delete),
+                            color: orangeAppbarColour,
+                            onPressed: () async {
+                              final bool isDelete =
+                                  await showConfirmationAlertDialog(
+                                context,
+                                title: 'Delete ${projectView.title!}?',
+                                message:
+                                    "Do you want to delete project '${projectView.title!}'? You cannot undo this!",
+                                positiveText: 'Delete',
+                                negativeText: 'Cancel',
+                                highlightNegative: true,
+                              );
+
+                              if (isDelete) {
+                                await dbHelper.deleteProject(projectView);
+                                _refreshProjectViewList();
+                              }
+                            },
                           ),
                         ),
                       ],
@@ -235,12 +219,12 @@ class _ProjectPageState extends State<ProjectPage> {
             "authorId": null,
             "author": '',
             "title": newProjectTitle,
-            "notes": 'notes'});
+            "notes": 'notes'
+          });
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ProjectDetail(
-                  projectView: newProjectView),
+              builder: (context) => ProjectDetail(projectView: newProjectView),
             ),
           ).then((value) {
             setState(() {
@@ -254,42 +238,43 @@ class _ProjectPageState extends State<ProjectPage> {
 }
 
 Future<bool> showConfirmationAlertDialog(
-    BuildContext context, {
-      required String title,
-      required String message,
-      required String positiveText,
-      required String negativeText,
-      bool highlightPositive = false,
-      bool highlightNegative = false,
-    }) async {
+  BuildContext context, {
+  required String title,
+  required String message,
+  required String positiveText,
+  required String negativeText,
+  bool highlightPositive = false,
+  bool highlightNegative = false,
+}) async {
   return await showDialog<bool>(
-    barrierDismissible: true,
-    context: context,
-    builder: (BuildContext ctx) {
-      return AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: <Widget>[
-          TextButton(
-            child: Text(
-              negativeText.toUpperCase(),
-              style: highlightNegative
-                  ? const TextStyle(color: darkAnyMatchColour)
-                  : null,
-            ),
-            onPressed: () => Navigator.of(ctx).pop(false),
-          ),
-          TextButton(
-            child: Text(
-              positiveText.toUpperCase(),
-              style: highlightPositive
-                  ? const TextStyle(color: Colors.red)
-                  : null,
-            ),
-            onPressed: () => Navigator.of(ctx).pop(true),
-          ),
-        ],
-      );
-    },
-  ) ?? false;
+        barrierDismissible: true,
+        context: context,
+        builder: (BuildContext ctx) {
+          return AlertDialog(
+            title: Text(title),
+            content: Text(message),
+            actions: <Widget>[
+              TextButton(
+                child: Text(
+                  negativeText.toUpperCase(),
+                  style: highlightNegative
+                      ? const TextStyle(color: darkAnyMatchColour)
+                      : null,
+                ),
+                onPressed: () => Navigator.of(ctx).pop(false),
+              ),
+              TextButton(
+                child: Text(
+                  positiveText.toUpperCase(),
+                  style: highlightPositive
+                      ? const TextStyle(color: Colors.red)
+                      : null,
+                ),
+                onPressed: () => Navigator.of(ctx).pop(true),
+              ),
+            ],
+          );
+        },
+      ) ??
+      false;
 }

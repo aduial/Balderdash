@@ -529,10 +529,6 @@ class _ImExportState extends State<ImExport> {
 
   @override
   Widget build(BuildContext context) {
-    var padding = MediaQuery.paddingOf(context);
-    double displayHeight =
-        MediaQuery.of(context).size.height - padding.top - padding.bottom;
-    double deviceScaling = refHeight / displayHeight;
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(
@@ -554,10 +550,11 @@ class _ImExportState extends State<ImExport> {
           ),
         ),
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+          padding: EdgeInsets.symmetric(
+              vertical: 12 * scaling, horizontal: 8 * scaling),
           child: Form(
             key: _settingsFormKey,
-            child: ListView(padding: EdgeInsets.all(4), children: [
+            child: ListView(padding: EdgeInsets.all(4 * scaling), children: [
               Row(
                 children: [
                   Expanded(
@@ -582,9 +579,9 @@ class _ImExportState extends State<ImExport> {
                             fillColor: offWhite,
                             labelText: 'PROJECT',
                             // labelText: widget.vocabularyView.project,
-                            labelStyle: TextStyle(fontSize: 14),
+                            labelStyle: TextStyle(fontSize: 14 * scaling),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(10 * scaling),
                             )),
                       ),
                       // selectedItem: currentCategory,
@@ -602,8 +599,8 @@ class _ImExportState extends State<ImExport> {
                     ),
                   ),
                   SizedBox(
-                    height: 16,
-                    width: 8,
+                    height: 16 * scaling,
+                    width: 8 * scaling,
                   ),
                   Expanded(
                     child: ElevatedButton(
@@ -623,7 +620,8 @@ class _ImExportState extends State<ImExport> {
                 ],
               ),
               Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(8, 4, 8, 4),
+                padding: EdgeInsetsDirectional.fromSTEB(
+                    8 * scaling, 4 * scaling, 8 * scaling, 4 * scaling),
               ),
               Row(children: [
                 Expanded(
@@ -642,8 +640,8 @@ class _ImExportState extends State<ImExport> {
                   ),
                 ),
                 SizedBox(
-                  height: 16,
-                  width: 8,
+                  height: 16 * scaling,
+                  width: 8 * scaling,
                 ),
                 Expanded(
                   flex: 2,
@@ -662,12 +660,13 @@ class _ImExportState extends State<ImExport> {
                 ),
               ]),
               Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(8, 4, 8, 4),
+                padding: EdgeInsetsDirectional.fromSTEB(
+                    8 * scaling, 4 * scaling, 8 * scaling, 4 * scaling),
               ),
               Container(
                 decoration: BoxDecoration(
                   border: Border.all(color: darkerBlueGrey),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(10 * scaling),
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
@@ -682,11 +681,11 @@ class _ImExportState extends State<ImExport> {
                     "'export .bdd' exports project + library in a single project.bdd file that "
                     "can be shared with other Balderdash! users."),
               ),
-              const Divider(
-                  height: 20,
-                  thickness: 1,
-                  indent: 8,
-                  endIndent: 8,
+              Divider(
+                  height: 20 * scaling,
+                  thickness: 1 * scaling,
+                  indent: 8 * scaling,
+                  endIndent: 8 * scaling,
                   color: blueGrey),
               Container(
                 decoration: BoxDecoration(
@@ -698,7 +697,7 @@ class _ImExportState extends State<ImExport> {
                     colors: [notepaperWhite, notepaperWhite],
                   ),
                 ),
-                padding: EdgeInsets.all(7),
+                padding: EdgeInsets.all(7 * scaling),
                 child: Text(
                     "Import a project: tap 'import .bdd', find the project.bdd "
                     "file and open. If there's an existing project with the same name "
@@ -707,12 +706,13 @@ class _ImExportState extends State<ImExport> {
                     "can be merged into your existing library. "),
               ),
               Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(8, 8, 8, 8),
+                padding: EdgeInsetsDirectional.fromSTEB(
+                    8 * scaling, 8 * scaling, 8 * scaling, 8 * scaling),
               ),
               Row(children: [
                 SizedBox(
-                  height: 16,
-                  width: 60,
+                  height: 16 * scaling,
+                  width: 60 * scaling,
                 ),
                 Expanded(
                   flex: 1,
@@ -730,8 +730,8 @@ class _ImExportState extends State<ImExport> {
                   ),
                 ),
                 SizedBox(
-                  height: 16,
-                  width: 60,
+                  height: 16 * scaling,
+                  width: 60 * scaling,
                 ),
               ]),
             ]),

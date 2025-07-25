@@ -1,19 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import 'package:balderdash/config/colours.dart';
 import 'package:balderdash/config/config.dart';
 import 'package:balderdash/screens/about_voc7.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AboutVoc6 extends StatelessWidget {
   const AboutVoc6({super.key});
 
   @override
   Widget build(BuildContext context) {
-    var padding = MediaQuery.paddingOf(context);
-    double displayHeight =
-        MediaQuery.of(context).size.height - padding.top - padding.bottom;
-    double toScale = refHeight / displayHeight;
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(
@@ -25,15 +20,14 @@ class AboutVoc6 extends StatelessWidget {
           style: Theme.of(context).textTheme.bodyLarge!.copyWith(
               color: ithildin,
               fontWeight: FontWeight.w500,
-              fontSize: 18 * toScale),
+              fontSize: 18 * scaling),
         ),
       ),
       backgroundColor: blueTop,
       body: SafeArea(
-        bottom: false
-        ,
+        bottom: false,
         //child: Padding(
-        //padding: EdgeInsetsDirectional.fromSTEB(0, 10 * toScale, 0, 0),
+        //padding: EdgeInsetsDirectional.fromSTEB(0, 10 * scaling, 0, 0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -41,20 +35,20 @@ class AboutVoc6 extends StatelessWidget {
             Center(
               child: Container(
                 padding: EdgeInsets.fromLTRB(
-                    10 * toScale, 10 * toScale, 10 * toScale, 10 * toScale),
+                    10 * scaling, 10 * scaling, 10 * scaling, 10 * scaling),
                 child: Text(
                   "What & How",
                   style: GoogleFonts.playfairDisplay(
                       textStyle: Theme.of(context).textTheme.displayLarge,
                       fontWeight: FontWeight.w200,
-                      fontSize: 50 * toScale,
+                      fontSize: 50 * scaling,
                       color: ithildin),
                 ),
               ),
             ),
             SizedBox(
               width: double.infinity,
-              height: 25.0 * toScale,
+              height: 25.0 * scaling,
               child: const DecoratedBox(
                 decoration: BoxDecoration(
                   color: yellowGrey,
@@ -63,7 +57,7 @@ class AboutVoc6 extends StatelessWidget {
             ),
             SizedBox(
               width: double.infinity,
-              height: 10.0 * toScale,
+              height: 10.0 * scaling,
               child: const DecoratedBox(
                 decoration: BoxDecoration(
                   color: sortOfRed,
@@ -72,7 +66,7 @@ class AboutVoc6 extends StatelessWidget {
             ),
             SizedBox(
               width: double.infinity,
-              height: 18.0 * toScale,
+              height: 18.0 * scaling,
               child: const DecoratedBox(
                 decoration: BoxDecoration(
                   color: iceBlue,
@@ -92,54 +86,48 @@ class AboutVoc6 extends StatelessWidget {
                 width: double.infinity,
                 child: Padding(
                     padding: EdgeInsetsDirectional.fromSTEB(
-                        20 * toScale, 0, 20 * toScale, 30 * toScale),
+                        20 * scaling, 0, 20 * scaling, 30 * scaling),
                     child: Scrollbar(
                       child: SingleChildScrollView(
                         child: RichText(
                           textAlign: TextAlign.left,
                           text: TextSpan(
-                            text: "Nonsense! will replace this command:\n",
+                            text: "Balderdash! will replace this command:\n",
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyLarge!
                                 .copyWith(
                                     color: ithildin,
                                     fontWeight: FontWeight.w300,
-                                    fontSize: 13 * toScale),
+                                    fontSize: 13 * scaling),
                             children: <TextSpan>[
                               TextSpan(
-                                  text:
-                                  "{",
+                                  text: "{",
                                   style: GoogleFonts.notoSansMono(
                                       fontWeight: FontWeight.w700,
                                       color: brightGreen)),
                               TextSpan(
-                                  text:
-                                  "#",
+                                  text: "#",
                                   style: GoogleFonts.notoSansMono(
                                       fontWeight: FontWeight.w600,
                                       color: lightPink)),
                               TextSpan(
-                                  text:
-                                  "number1",
+                                  text: "number1",
                                   style: GoogleFonts.notoSansMono(
                                       fontWeight: FontWeight.w600,
                                       color: activeCompleteSetColour)),
                               TextSpan(
-                                  text:
-                                  "-",
+                                  text: "-",
                                   style: GoogleFonts.notoSansMono(
                                       fontWeight: FontWeight.w700,
                                       color: limeAccent)),
                               TextSpan(
-                                  text:
-                                  "number2",
+                                  text: "number2",
                                   style: GoogleFonts.notoSansMono(
                                       fontWeight: FontWeight.w600,
                                       color: activeCompleteSetColour)),
                               TextSpan(
-                                  text:
-                                  "}",
+                                  text: "}",
                                   style: GoogleFonts.notoSansMono(
                                       fontWeight: FontWeight.w500)),
                               TextSpan(
@@ -147,8 +135,7 @@ class AboutVoc6 extends StatelessWidget {
                                   style:
                                       TextStyle(fontWeight: FontWeight.w300)),
                               TextSpan(
-                                  text:
-                                      "with a random whole number between ",
+                                  text: "with a random whole number between ",
                                   style:
                                       TextStyle(fontWeight: FontWeight.w300)),
                               TextSpan(
@@ -171,14 +158,13 @@ class AboutVoc6 extends StatelessWidget {
                                       TextStyle(fontWeight: FontWeight.w300)),
                               TextSpan(
                                   text:
-                                      "When processing a vocabulary, Nonsense! randomly picks "
+                                      "When processing a vocabulary, Balderdash! randomly picks "
                                       "one of the lines. However, you can influence the odds a line "
                                       "is selected by prefixing the line with a weight factor ",
                                   style:
                                       TextStyle(fontWeight: FontWeight.w300)),
                               TextSpan(
-                                  text:
-                                  "#",
+                                  text: "#",
                                   style: GoogleFonts.notoSansMono(
                                       fontWeight: FontWeight.w600,
                                       color: lightPink)),
@@ -188,8 +174,7 @@ class AboutVoc6 extends StatelessWidget {
                                       fontWeight: FontWeight.w600,
                                       color: activeCompleteSetColour)),
                               TextSpan(
-                                  text:
-                                  "#",
+                                  text: "#",
                                   style: GoogleFonts.notoSansMono(
                                       fontWeight: FontWeight.w600,
                                       color: lightPink)),
@@ -220,7 +205,6 @@ class AboutVoc6 extends StatelessWidget {
                                   text: "twice as {often}\n",
                                   style: GoogleFonts.notoSansMono(
                                       fontWeight: FontWeight.w500)),
-
                               TextSpan(
                                   text: "#",
                                   style: GoogleFonts.notoSansMono(
@@ -244,50 +228,45 @@ class AboutVoc6 extends StatelessWidget {
                               TextSpan(
                                   text:
                                       "This goes for all lines regardless their content.\n\n"
-                                      "You can have Nonsense! evaluate a command multiple "
+                                      "You can have Balderdash! evaluate a command multiple "
                                       "times using this format:\n",
                                   style:
                                       TextStyle(fontWeight: FontWeight.w300)),
                               TextSpan(
-                                  text:
-                                  "{command",
+                                  text: "{command",
                                   style: GoogleFonts.notoSansMono(
                                       fontWeight: FontWeight.w700,
                                       color: brightGreen)),
                               TextSpan(
-                                  text:
-                                  "#",
+                                  text: "#",
                                   style: GoogleFonts.notoSansMono(
                                       fontWeight: FontWeight.w600,
                                       color: lightPink)),
                               TextSpan(
-                                  text:
-                                  "number1",
+                                  text: "number1",
                                   style: GoogleFonts.notoSansMono(
                                       fontWeight: FontWeight.w600,
                                       color: activeCompleteSetColour)),
                               TextSpan(
-                                  text:
-                                  "-",
+                                  text: "-",
                                   style: GoogleFonts.notoSansMono(
                                       fontWeight: FontWeight.w700,
                                       color: limeAccent)),
                               TextSpan(
-                                  text:
-                                  "number2",
+                                  text: "number2",
                                   style: GoogleFonts.notoSansMono(
                                       fontWeight: FontWeight.w600,
                                       color: activeCompleteSetColour)),
                               TextSpan(
-                                  text:
-                                  "}",
+                                  text: "}",
                                   style: GoogleFonts.notoSansMono(
                                       fontWeight: FontWeight.w500)),
                               TextSpan(
-                                  text: "(whole numbers only!)\nwhich will repeat it a random "
+                                  text:
+                                      "(whole numbers only!)\nwhich will repeat it a random "
                                       "whole number between ",
                                   style:
-                                  TextStyle(fontWeight: FontWeight.w300)),
+                                      TextStyle(fontWeight: FontWeight.w300)),
                               TextSpan(
                                   text: "number1 ",
                                   style: GoogleFonts.notoSansMono(
@@ -296,17 +275,18 @@ class AboutVoc6 extends StatelessWidget {
                               TextSpan(
                                   text: "and ",
                                   style:
-                                  TextStyle(fontWeight: FontWeight.w300)),
+                                      TextStyle(fontWeight: FontWeight.w300)),
                               TextSpan(
                                   text: "number2 ",
                                   style: GoogleFonts.notoSansMono(
                                       fontWeight: FontWeight.w600,
                                       color: activeCompleteSetColour)),
                               TextSpan(
-                                  text: "(inclusive) times. This is especially useful "
+                                  text:
+                                      "(inclusive) times. This is especially useful "
                                       "in starting (bootstrap) vocabularies.\n\n\n\n\n\n\n\n",
                                   style:
-                                  TextStyle(fontWeight: FontWeight.w300)),
+                                      TextStyle(fontWeight: FontWeight.w300)),
                             ],
                           ),
                         ),
@@ -323,11 +303,10 @@ class AboutVoc6 extends StatelessWidget {
           foregroundColor: ithildin,
           backgroundColor: sortOfRed,
           // child: const Icon(Icons.add),
-          onPressed: ()  {
+          onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                  builder: (context) => const AboutVoc7()),
+              MaterialPageRoute(builder: (context) => const AboutVoc7()),
             );
           }),
     );

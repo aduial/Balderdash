@@ -16,10 +16,6 @@ class Help extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var padding = MediaQuery.paddingOf(context);
-    double displayHeight =
-        MediaQuery.of(context).size.height - padding.top - padding.bottom;
-    double toScale = refHeight / displayHeight;
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -35,7 +31,7 @@ class Help extends StatelessWidget {
           style: Theme.of(context).textTheme.bodyLarge!.copyWith(
               color: ithildin,
               fontWeight: FontWeight.w500,
-              fontSize: 18 * toScale),
+              fontSize: 18 * scaling),
         ),
       ),
       backgroundColor: mountainBlue,
@@ -48,11 +44,11 @@ class Help extends StatelessWidget {
             mainAxisSize: MainAxisSize.max,
             children: [
               Container(
-                width: 128.0,
-                height: 128.0,
-                margin: const EdgeInsets.only(
-                  top: 6.0,
-                  bottom: 10.0,
+                width: 128.0 * scaling,
+                height: 128.0 * scaling,
+                margin: EdgeInsets.only(
+                  top: 6.0 * scaling,
+                  bottom: 10.0 * scaling,
                 ),
                 clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
@@ -120,7 +116,7 @@ class Help extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => const Prefs()),
                   );
                 },
-                leading: Icon(Icons.category_rounded),
+                leading: Icon(Icons.settings_applications_rounded),
                 title: Text('Preferences'),
               ),
               ListTile(
@@ -146,12 +142,12 @@ class Help extends StatelessWidget {
               Spacer(),
               DefaultTextStyle(
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 12 * scaling,
                   color: Colors.white54,
                 ),
                 child: Container(
-                  margin: const EdgeInsets.symmetric(
-                    vertical: 16.0,
+                  margin: EdgeInsets.symmetric(
+                    vertical: 16.0 * scaling,
                   ),
                   child: Text('Terms of Service | Privacy Policy'),
                 ),

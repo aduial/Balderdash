@@ -4,7 +4,7 @@ import '../config/config.dart';
   The Template entity contains HTML templates that can be used together
   with .data files (the original Nonsense files with vocabularies containing
   entries) and the nonsense.pl perl executable to generate dynamic web pages
-  containing Nonsense
+  containing balderdash
  */
 class Template {
   int? id;

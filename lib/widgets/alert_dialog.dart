@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../config/config.dart';
+
 class AlertDialogWidget extends StatelessWidget {
   final String headingText;
   final String contentText;
@@ -20,8 +22,8 @@ class AlertDialogWidget extends StatelessWidget {
       title: Text(
         headingText,
         textAlign: TextAlign.center,
-        style: const TextStyle(
-          fontSize: 21,
+        style: TextStyle(
+          fontSize: 21 * scaling,
           fontWeight: FontWeight.bold,
         ),
       ),

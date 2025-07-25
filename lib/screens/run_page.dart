@@ -1,16 +1,16 @@
-import 'package:flutter/material.dart';
-import 'package:balderdash/database_helper/database_helper.dart';
+import 'dart:convert';
+import 'dart:math';
+
 import 'package:balderdash/config/colours.dart';
 import 'package:balderdash/config/config.dart';
 import 'package:balderdash/config/user_preferences.dart';
-import 'package:balderdash/views/vocabulary_view.dart';
+import 'package:balderdash/database_helper/database_helper.dart';
 import 'package:balderdash/model/vocabulary.dart';
-import 'dart:convert';
-import 'dart:math';
-import 'package:balderdash/widgets/voc_trace.dart';
 import 'package:balderdash/utils/string_utils.dart';
+import 'package:balderdash/views/vocabulary_view.dart';
+import 'package:balderdash/widgets/voc_trace.dart';
 import 'package:date_format/date_format.dart';
-
+import 'package:flutter/material.dart';
 
 class RunPage extends StatefulWidget {
   final VocabularyView _vocabularyView;
@@ -55,8 +55,9 @@ class _RunPageState extends State<RunPage> {
         line: pickRandomLine(splitVocabulary(voc.content!)),
         variableName: StringUtils.capitalise(voc.title!.toLowerCase()));
     String result = await parseVocabulary(vc);
-    if (result.contains(doubleCurlyBracesError)){
-      resultController.text = "Vocabulary '${vc.variableName}' contains double curly "
+    if (result.contains(doubleCurlyBracesError)) {
+      resultController.text =
+          "Vocabulary '${vc.variableName}' contains double curly "
           "braces ( {{ or }} ) leading to infinite loops. Please fix this first.";
     } else {
       resultController.text = result;
@@ -71,7 +72,7 @@ class _RunPageState extends State<RunPage> {
     List<String> linesToAdd = [];
     LineSplitter ls = LineSplitter();
     uniqueLines = ls.convert(content);
-    if (uniqueLines[0].isEmpty){
+    if (uniqueLines[0].isEmpty) {
       return [emptyFirstLineError];
     }
     for (var line in uniqueLines) {
@@ -109,10 +110,10 @@ class _RunPageState extends State<RunPage> {
   Future<String> parseVocabulary(VocTrace vc) async {
     // remove weighting factor
     vc.line = vc.line.replaceAll(RegExp(r'^#\d+#'), '');
-    if (vc.line.isNotEmpty && vc.line == previousLine){
+    if (vc.line.isNotEmpty && vc.line == previousLine) {
       return "$endlessLoopError in ${vc.line}";
     }
-    if (vc.line.contains("{{") || vc.line.contains("}}")){
+    if (vc.line.contains("{{") || vc.line.contains("}}")) {
       return "$doubleCurlyBracesError in ${vc.line}";
     }
     previousLine = vc.line;
@@ -125,17 +126,23 @@ class _RunPageState extends State<RunPage> {
     } else if (vc.line.startsWith('{\\')) {
       // line break, { } or null
       vc = parseSpecial(vc);
-    } else if (vc.getNormaLine().contains(RegExp(r'^\{\w+:=[\x27\w\s\\^@|()<>%*_";:?!\-+,.]+\}'))) {
+    } else if (vc
+        .getNormaLine()
+        .contains(RegExp(r'^\{\w+:=[\x27\w\s\\^@|()<>%*_";:?!\-+,.]+\}'))) {
       // evaluate command and store as state variable
       vc = await parseStateVariable(vc);
-    } else if (vc.getNormaLine().contains(RegExp(r'^\{\w*=([\w\s\\@()<>%*_";:?!\-+,.])+\}'))) {
+    } else if (vc
+        .getNormaLine()
+        .contains(RegExp(r'^\{\w*=([\w\s\\@()<>%*_";:?!\-+,.])+\}'))) {
       // add literal string as state variable
       vc = parseStateLiteral(vc);
     } else if (vc.getNormaLine().contains(RegExp(r'^\{\^?\w+(#\d+-\d+)?\}'))) {
       // variable
       vc = await parseVariable(vc);
-    // } else if (vc.line.contains(RegExp(r'^[\w\s\\@()<>%*_";:?!\-+,.]'))) {
-    } else if (vc.getNormaLine().contains(RegExp(r'^[\x27\w\s\\@()&<>%*_"/;:?!\-+,.]'))) {
+      // } else if (vc.line.contains(RegExp(r'^[\w\s\\@()<>%*_";:?!\-+,.]'))) {
+    } else if (vc
+        .getNormaLine()
+        .contains(RegExp(r'^[\x27\w\s\\@()&<>%*_"/;:?!\-+,.]'))) {
       // literal
       vc = parseLiteral(vc);
     } else if (vc.getNormaLine().contains(RegExp(r'^\{\$\^?\w*\}'))) {
@@ -174,7 +181,7 @@ class _RunPageState extends State<RunPage> {
     }
     DateTime someTimeAgo = DateTime.now().subtract(Duration(seconds: between));
     begin = vc.line.indexOf('@') + 1;
-    if (vc.line.contains('|')){
+    if (vc.line.contains('|')) {
       end = vc.line.indexOf('|');
     } else {
       end = vc.line.indexOf('}');
@@ -185,12 +192,12 @@ class _RunPageState extends State<RunPage> {
     RegExp azAZ = RegExp(r'([a-zA-Z]+)');
     RegExp rest = RegExp(r'([^a-zA-Z]+)');
     List<String> dtFormat = [];
-    for (String token in strfTokens){
-      if (token.isNotEmpty){
+    for (String token in strfTokens) {
+      if (token.isNotEmpty) {
         var key = azAZ.firstMatch(token)?.group(0) ?? '';
         dtFormat.add(strfToDart["%$key"] ?? '');
         var fuzz = rest.firstMatch(token)?.group(0) ?? '';
-        if (fuzz.isNotEmpty){
+        if (fuzz.isNotEmpty) {
           dtFormat.add(fuzz);
         }
       }
@@ -246,16 +253,19 @@ class _RunPageState extends State<RunPage> {
     return vc;
   }
 
-  Future<VocTrace> parseStateVariable (VocTrace vc) async {
+  Future<VocTrace> parseStateVariable(VocTrace vc) async {
     int start = vc.line.indexOf('{');
     int equals = vc.line.indexOf(':=', start + 1);
     int end = vc.line.indexOf('}');
-    String key = vc.line.substring(start + 1, equals).toLowerCase().replaceFirst('^', '');
+    String key = vc.line
+        .substring(start + 1, equals)
+        .toLowerCase()
+        .replaceFirst('^', '');
     String varTitle = vc.line.substring(equals + 2, end);
     VocTrace vcn = await retrieveVocabularyVariable(vc, varTitle);
     await parseVocabulary(vcn);
     // vcn.localResult.write(await parseVocabulary(vcn));
-    stateVariables.addAll({key : vcn.getResult()});
+    stateVariables.addAll({key: vcn.getResult()});
     // chop state var from current line
     vc.line = vc.line.substring(end + 1);
     return vc;
@@ -275,8 +285,9 @@ class _RunPageState extends State<RunPage> {
     for (int i = 1; i <= repeat; i++) {
       vcn.line = pickRandomLine(splitVocabulary(vcn.vocabulary.content!));
       String nextResult = await parseVocabulary(vcn);
-      if (nextResult.contains(endlessLoopError)){
-        vc.localResult.write("Endless loop detected parsing '${vcn.line}', please review the syntax");
+      if (nextResult.contains(endlessLoopError)) {
+        vc.localResult.write(
+            "Endless loop detected parsing '${vcn.line}', please review the syntax");
         break;
       } else {
         vc.localResult.write(await parseVocabulary(vcn));
@@ -288,26 +299,21 @@ class _RunPageState extends State<RunPage> {
     return vc;
   }
 
-  Future<VocTrace> retrieveVocabularyVariable(VocTrace vc, String varTitle) async {
+  Future<VocTrace> retrieveVocabularyVariable(
+      VocTrace vc, String varTitle) async {
     late Vocabulary next;
     late VocTrace vcn;
     if (varTitle.contains(RegExp(r'\^?\w+(#\d+-\d+)?'))) {
       try {
-        next = await getVocabulary(
-            varTitle.replaceFirst('^', '').toUpperCase(),
+        next = await getVocabulary(varTitle.replaceFirst('^', '').toUpperCase(),
             widget._vocabularyView.projectId!);
       } on Exception {
         showError(vocabularyNotFound,
-            "Vocabulary '${varTitle
-                .replaceFirst('^', '')
-                .toUpperCase()}' called in '${vc.variableName}' not found");
+            "Vocabulary '${varTitle.replaceFirst('^', '').toUpperCase()}' called in '${vc.variableName}' not found");
       }
       if (next.content!.isEmpty) {
         showError(noEmptyVocabulary,
-            "Vocabulary '${varTitle
-                .replaceFirst('^', '')
-                .toUpperCase()}' called in '${vc
-                .variableName}' has no content");
+            "Vocabulary '${varTitle.replaceFirst('^', '').toUpperCase()}' called in '${vc.variableName}' has no content");
       }
       vcn = VocTrace(
           vocabulary: next,
@@ -315,9 +321,7 @@ class _RunPageState extends State<RunPage> {
           variableName: varTitle);
     } else {
       vcn = VocTrace(
-          vocabulary: vc.vocabulary,
-          line: varTitle,
-          variableName: varTitle);
+          vocabulary: vc.vocabulary, line: varTitle, variableName: varTitle);
     }
     return vcn;
   }
@@ -334,25 +338,26 @@ class _RunPageState extends State<RunPage> {
     return small + random.nextInt(large - small);
   }
 
-  VocTrace parseStateLiteral (VocTrace vc) {
+  VocTrace parseStateLiteral(VocTrace vc) {
     int start = vc.line.indexOf('{');
     int equals = vc.line.indexOf('=', start + 1);
     int end = vc.line.indexOf('}');
     String key = vc.line.substring(start + 1, equals).toLowerCase();
     String value = vc.line.substring(equals + 1, end);
-    stateVariables.addAll({key : value});
+    stateVariables.addAll({key: value});
     vc.line = vc.line.substring(end + 1);
     return vc;
   }
 
   // casing of state vars
-  VocTrace readStateVariable (VocTrace vc) {
+  VocTrace readStateVariable(VocTrace vc) {
     int start = vc.line.indexOf('{\$') + 2;
     int end = vc.line.indexOf('}', start + 2);
     String variableName = vc.line.substring(start, end);
     String key = variableName.toLowerCase().replaceFirst('^', '');
-    if (stateVariables.containsKey(key)){
-      vc.localResult.write(StringUtils.getCasey(variableName, stateVariables[key]!));
+    if (stateVariables.containsKey(key)) {
+      vc.localResult
+          .write(StringUtils.getCasey(variableName, stateVariables[key]!));
     } else {
       vc.localResult.write("[in line ${vc.line}, variable '$key' not found]");
     }
@@ -371,9 +376,8 @@ class _RunPageState extends State<RunPage> {
   }
 
   void showError(String title, String msg) => showDialog<String>(
-    context: UserPreferences.navigatorKey.currentContext!,
-      builder:
-          (BuildContext context) => AlertDialog(
+      context: UserPreferences.navigatorKey.currentContext!,
+      builder: (BuildContext context) => AlertDialog(
             title: Text(title),
             content: Text(msg),
             actions: <Widget>[
@@ -389,15 +393,10 @@ class _RunPageState extends State<RunPage> {
                 child: const Text('OK'),
               ),
             ],
-          )
-  );
+          ));
 
   @override
   Widget build(BuildContext context) {
-    var padding = MediaQuery.paddingOf(context);
-    double displayHeight =
-        MediaQuery.of(context).size.height - padding.top - padding.bottom;
-    double deviceScaling = refHeight / displayHeight;
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(
@@ -410,91 +409,86 @@ class _RunPageState extends State<RunPage> {
         ),
       ),
       backgroundColor: notepaperWhite,
-      body: Padding(
-        padding: EdgeInsets.symmetric(vertical: 0, horizontal: 0),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [lightBlueGrey, blueGrey],
-            ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [lightBlueGrey, blueGrey],
           ),
-          child: ListTileTheme(
-            textColor: Colors.white,
-            iconColor: Colors.white,
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 128.0,
-                    height: 128.0,
-                    margin: const EdgeInsets.only(
-                      top: 24.0,
-                      bottom: 8.0,
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    decoration: BoxDecoration(
-                      // color: Colors.black12,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Image.asset(
-                      getRBDImg(),
-                      // 'assets/images/shampoo.png',
-                    ),
-                  ),
-                  ElevatedButton(
-                      style: const ButtonStyle(
-                        iconAlignment: IconAlignment.end,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          doThings();
-                        });
-                      },
-                      child: const Icon(
-                        Icons.play_arrow_rounded,
-                      ))
-                ],
-              ),
-              Padding(padding: EdgeInsets.all(6)),
-              Expanded(
-                flex: 8,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        ),
+        child: ListTileTheme(
+          textColor: Colors.white,
+          iconColor: Colors.white,
+          child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    SizedBox(
-                      width: 16.0,
-                      height: 8.0,
-                    ),
-                    Expanded(
-                      child: TextField(
-                        controller: resultController,
-                        decoration: InputDecoration(
-                            isDense: true,
-                            filled: true,
-                            fillColor: offWhite,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            )),
-                        maxLines: null,
+                    Container(
+                      width: 128.0 * scaling,
+                      height: 128.0 * scaling,
+                      margin: EdgeInsets.only(
+                        top: 24.0 * scaling,
+                        bottom: 8.0 * scaling,
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      decoration: BoxDecoration(
+                        // color: Colors.black12,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Image.asset(
+                        getRBDImg(),
+                        // 'assets/images/shampoo.png',
                       ),
                     ),
-                    SizedBox(
-                      width: 16.0,
-                      height: 8.0,
-                    ),
+                    ElevatedButton(
+                        style: const ButtonStyle(
+                          iconAlignment: IconAlignment.end,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            doThings();
+                          });
+                        },
+                        child: const Icon(
+                          Icons.play_arrow_rounded,
+                        ))
                   ],
                 ),
-              ),
-              Padding(padding: EdgeInsets.all(12)),
-            ]),
-          ),
+                Padding(padding: EdgeInsets.all(6)),
+                Expanded(
+                  flex: 8,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: 16.0 * scaling,
+                        height: 8.0 * scaling,
+                      ),
+                      Expanded(
+                        child: TextField(
+                          controller: resultController,
+                          decoration: InputDecoration(
+                              isDense: true,
+                              filled: true,
+                              fillColor: offWhite,
+                              border: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.circular(10 * scaling),
+                              )),
+                          maxLines: null,
+                        ),
+                      ),
+                      SizedBox(width: 16.0 * scaling, height: 8.0 * scaling),
+                    ],
+                  ),
+                ),
+                Padding(padding: EdgeInsets.all(12 * scaling)),
+              ]),
         ),
       ),
     );

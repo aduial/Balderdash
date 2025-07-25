@@ -50,7 +50,7 @@ class DatabaseHelper {
       // Write and flush the bytes written
       await io.File(dbPath).writeAsBytes(bytes, flush: true);
     }
-    // print('DB location: $dbPath');
+    print('DB location: $dbPath');
     return await openDatabase(dbPath, version: _dbVersion);
   }
 
@@ -469,9 +469,9 @@ class DatabaseHelper {
       await db.insert(_templateTableName, template.toMap(),
           conflictAlgorithm: ConflictAlgorithm.replace);
     } else {
-      await db.update(_vocabularyTableName, template.toMap(),
-          where: 'projectId = ? AND "title" = ?',
-          whereArgs: [template.projectId, 'template.title']);
+      await db.update(_templateTableName, template.toMap(),
+          where: 'projectId = ? AND title = ?',
+          whereArgs: [template.projectId, template.title]);
     }
     return template;
   }
@@ -629,8 +629,8 @@ class DatabaseHelper {
           conflictAlgorithm: ConflictAlgorithm.replace);
     } else {
       await db.update(_vocabularyTableName, vocabulary.toMap(),
-          where: 'projectId = ? AND "title" = ?',
-          whereArgs: [vocabulary.projectId, 'vocabulary.title']);
+          where: 'projectId = ? AND title = ?',
+          whereArgs: [vocabulary.projectId, vocabulary.title]);
       // db.query('table', columns: ['group'], where: '"group" = ?', whereArgs:['my_group']);
     }
   }

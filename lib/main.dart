@@ -1,23 +1,22 @@
-import 'package:balderdash/screens/im_export.dart';
-import 'package:balderdash/database_helper/database_helper.dart';
-import 'package:flutter/material.dart';
-import 'package:flex_color_scheme/flex_color_scheme.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:balderdash/screens/vocabulary_page.dart';
-import 'package:balderdash/screens/author_page.dart';
-import 'package:balderdash/screens/type_page.dart';
-import 'package:balderdash/screens/category_page.dart';
-import 'package:balderdash/screens/project_page.dart';
-import 'package:balderdash/screens/select_voc_page.dart';
-import 'package:balderdash/screens/template_page.dart';
-import 'package:balderdash/screens/help.dart';
 import 'package:balderdash/config/colours.dart';
 import 'package:balderdash/config/config.dart';
 import 'package:balderdash/config/user_preferences.dart';
-import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
+import 'package:balderdash/database_helper/database_helper.dart';
+import 'package:balderdash/screens/author_page.dart';
+import 'package:balderdash/screens/category_page.dart';
+import 'package:balderdash/screens/help.dart';
+import 'package:balderdash/screens/im_export.dart';
+import 'package:balderdash/screens/project_page.dart';
+import 'package:balderdash/screens/select_voc_page.dart';
+import 'package:balderdash/screens/template_page.dart';
+import 'package:balderdash/screens/type_page.dart';
+import 'package:balderdash/screens/vocabulary_page.dart';
 import 'package:cron/cron.dart';
-
+import 'package:flex_color_scheme/flex_color_scheme.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 late DatabaseHelper dbHelper;
 
@@ -50,7 +49,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       navigatorKey: UserPreferences.navigatorKey,
       theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
+      darkTheme: AppTheme.light,
       home: HomeScreen(),
     );
   }
@@ -70,7 +69,7 @@ class HomeScreenState extends State<HomeScreen> {
     var padding = MediaQuery.paddingOf(context);
     double displayHeight =
         MediaQuery.of(context).size.height - padding.top - padding.bottom;
-    double toScale = refHeight / displayHeight;
+    scaling = displayHeight / refHeight;
     return AdvancedDrawer(
       backdrop: Container(
         width: double.infinity,
@@ -137,7 +136,7 @@ class HomeScreenState extends State<HomeScreen> {
                     );
                   },
                   leading: Icon(Icons.auto_awesome_rounded,
-                  color: redNotePaperColour),
+                      color: redNotePaperColour),
                   title: Text('Create Balderdash!'),
                 ),
                 ListTile(
@@ -148,9 +147,8 @@ class HomeScreenState extends State<HomeScreen> {
                           builder: (context) => const ProjectPage()),
                     );
                   },
-                  leading: Icon(
-                      Icons.my_library_books_rounded,
-                  color: orangeNotePaperColour),
+                  leading: Icon(Icons.my_library_books_rounded,
+                      color: orangeNotePaperColour),
                   title: Text('Projects'),
                 ),
                 ListTile(
@@ -161,7 +159,7 @@ class HomeScreenState extends State<HomeScreen> {
                     );
                   },
                   leading: Icon(Icons.theater_comedy_rounded,
-                  color: yellowNotePaperColour),
+                      color: yellowNotePaperColour),
                   title: Text('Project types'),
                 ),
                 ListTile(
@@ -172,8 +170,8 @@ class HomeScreenState extends State<HomeScreen> {
                           builder: (context) => const VocabularyPage()),
                     );
                   },
-                  leading: Icon(Icons.article_rounded,
-                  color: greenNotePaperColour),
+                  leading:
+                      Icon(Icons.article_rounded, color: greenNotePaperColour),
                   title: Text('Vocabularies'),
                 ),
                 ListTile(
@@ -184,8 +182,8 @@ class HomeScreenState extends State<HomeScreen> {
                           builder: (context) => const CategoryPage()),
                     );
                   },
-                  leading: Icon(Icons.category_rounded,
-                  color: cyanNotePaperColour),
+                  leading:
+                      Icon(Icons.category_rounded, color: cyanNotePaperColour),
                   title: Text('Categories'),
                 ),
                 ListTile(
@@ -196,8 +194,8 @@ class HomeScreenState extends State<HomeScreen> {
                           builder: (context) => const AuthorPage()),
                     );
                   },
-                  leading: Icon(Icons.people_rounded,
-                  color: blueNotePaperColour),
+                  leading:
+                      Icon(Icons.people_rounded, color: blueNotePaperColour),
                   title: Text('Authors'),
                 ),
                 ListTile(
@@ -208,7 +206,8 @@ class HomeScreenState extends State<HomeScreen> {
                           builder: (context) => const TemplatePage()),
                     );
                   },
-                  leading: Icon(Icons.web_rounded, color: violetNotePaperColour),
+                  leading:
+                      Icon(Icons.web_rounded, color: violetNotePaperColour),
                   title: Text('HTML Templates'),
                 ),
                 ListTile(
@@ -256,7 +255,7 @@ class HomeScreenState extends State<HomeScreen> {
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: blueTop,
-          // title: const Text('Nonsense!'),
+          // title: const Text('Balderdash!'),
           leading: IconButton(
             color: ithildin,
             onPressed: _handleMenuButtonPressed,
@@ -290,7 +289,7 @@ class HomeScreenState extends State<HomeScreen> {
                   color: ithildin,
                   textStyle: Theme.of(context).textTheme.displayLarge,
                   fontWeight: FontWeight.w200,
-                  fontSize: 60 * toScale,
+                  fontSize: 60 * scaling,
                 ),
               ),
               Text(
@@ -299,15 +298,15 @@ class HomeScreenState extends State<HomeScreen> {
                     color: ithildin,
                     fontWeight: FontWeight.w300,
                     // fontStyle: FontStyle.italic,
-                    fontSize: 22 * toScale),
+                    fontSize: 22 * scaling),
               ),
               SizedBox(
                 width: double.infinity,
-                height: 30.0 * toScale,
+                height: 30.0 * scaling,
               ),
               SizedBox(
                 width: double.infinity,
-                height: 50.0 * toScale,
+                height: 50.0 * scaling,
                 child: const DecoratedBox(
                   decoration: BoxDecoration(
                     color: yellowGrey,
@@ -316,7 +315,7 @@ class HomeScreenState extends State<HomeScreen> {
               ),
               SizedBox(
                 width: double.infinity,
-                height: 20.0 * toScale,
+                height: 20.0 * scaling,
                 child: const DecoratedBox(
                   decoration: BoxDecoration(
                     color: sortOfRed,
@@ -325,7 +324,7 @@ class HomeScreenState extends State<HomeScreen> {
               ),
               SizedBox(
                 width: double.infinity,
-                height: 35.0 * toScale,
+                height: 35.0 * scaling,
                 child: const DecoratedBox(
                   decoration: BoxDecoration(
                     color: iceBlue,
@@ -347,7 +346,7 @@ class HomeScreenState extends State<HomeScreen> {
                   // color: mountainBlue,
                   child: Padding(
                     padding: EdgeInsetsDirectional.fromSTEB(
-                        20 * toScale, 0 * toScale, 20 * toScale, 0 * toScale),
+                        20 * scaling, 0 * scaling, 20 * scaling, 0 * scaling),
                     child: Text(
                       "Did you ever wish you had a million monkeys with typewriters in your pocket? "
                       "Your wish has been granted - without the need to supply bananas and ink ribbons! ",
@@ -356,7 +355,7 @@ class HomeScreenState extends State<HomeScreen> {
                           color: ithildin,
                           fontWeight: FontWeight.w300,
                           fontStyle: FontStyle.italic,
-                          fontSize: 15 * toScale),
+                          fontSize: 15 * scaling),
                     ),
                   ),
                 ),
@@ -377,7 +376,7 @@ class HomeScreenState extends State<HomeScreen> {
                   // color: mountainBlue,
                   child: Padding(
                     padding: EdgeInsetsDirectional.fromSTEB(
-                        20 * toScale, 0, 20 * toScale, 0),
+                        20 * scaling, 0, 20 * scaling, 0),
                     child: Text(
                       "Balderdash! is a re-implementation of the 2001 context-free-grammar text generator 'Nonsense' by James Baughn, Fred Hirsch and Peter Suschlik "
                       "(nonsense.sourceforge.net) and is dedicated to the memory of James Baughn (†2020)",
@@ -385,7 +384,7 @@ class HomeScreenState extends State<HomeScreen> {
                       style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                           color: ithildin,
                           fontWeight: FontWeight.w300,
-                          fontSize: 13 * toScale),
+                          fontSize: 13 * scaling),
                     ),
                   ),
                 ),
@@ -398,7 +397,7 @@ class HomeScreenState extends State<HomeScreen> {
                     colors: [mountainBlue, mountainBlue],
                   ),
                 ),
-                height: 80.0 * toScale,
+                height: 80.0 * scaling,
                 // color: mountainBlue,
                 child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -413,7 +412,7 @@ class HomeScreenState extends State<HomeScreen> {
                               borderRadius:
                                   BorderRadius.all(Radius.circular(16)),
                             ),
-                            elevation: 5,
+                            elevation: 5 * scaling,
                             iconAlignment: IconAlignment.end,
                           ),
                           onPressed: () {
@@ -442,15 +441,15 @@ class HomeScreenState extends State<HomeScreen> {
                   width: double.infinity,
                   child: Padding(
                     padding: EdgeInsetsDirectional.fromSTEB(
-                        20 * toScale, 0, 20 * toScale, 0),
+                        20 * scaling, 0, 20 * scaling, 0),
                     child: Text(
                       "Tap the menu icon top left to start creating balderdash. For instructions "
-                          "how to use the app and write a context-free grammar, tap the help (?) button.",
+                      "how to use the app and write a context-free grammar, tap the help (?) button.",
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                           color: ithildin,
                           fontWeight: FontWeight.w300,
-                          fontSize: 13 * toScale),
+                          fontSize: 13 * scaling),
                     ),
                   ),
                 ),
@@ -462,14 +461,14 @@ class HomeScreenState extends State<HomeScreen> {
                   color: blueBottom,
                   child: Padding(
                     padding: EdgeInsetsDirectional.fromSTEB(
-                        30 * toScale, 10 * toScale, 30 * toScale, 10 * toScale),
+                        30 * scaling, 10 * scaling, 30 * scaling, 10 * scaling),
                     child: Text(
-                        "Balderdash! was built by Lúthien Dulk\n(https://animatrice.nl)",
+                      "Balderdash! was built by Lúthien Dulk\n(https://animatrice.nl)",
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                           color: ithildin,
                           fontWeight: FontWeight.w300,
-                          fontSize: 12 * toScale),
+                          fontSize: 12 * scaling),
                     ),
                   ),
                 ),

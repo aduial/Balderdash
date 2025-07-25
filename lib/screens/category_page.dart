@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:balderdash/screens/category_detail.dart';
-import 'package:balderdash/views/category_view.dart';
-import 'package:balderdash/database_helper/database_helper.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:balderdash/config/colours.dart';
 import 'package:balderdash/config/config.dart';
-import 'package:auto_size_text/auto_size_text.dart';
+import 'package:balderdash/database_helper/database_helper.dart';
+import 'package:balderdash/screens/category_detail.dart';
+import 'package:balderdash/views/category_view.dart';
+import 'package:flutter/material.dart';
 
 class CategoryPage extends StatefulWidget {
   const CategoryPage({super.key});
@@ -56,10 +56,6 @@ class _CategoryPageState extends State<CategoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    var padding = MediaQuery.paddingOf(context);
-    double displayHeight =
-        MediaQuery.of(context).size.height - padding.top - padding.bottom;
-    double toScale = refHeight / displayHeight;
     return Scaffold(
       appBar: AppBar(
           iconTheme: IconThemeData(
@@ -67,9 +63,9 @@ class _CategoryPageState extends State<CategoryPage> {
           ),
           backgroundColor: regularResultBGColour,
           title: SizedBox(
-            height: 30,
+            height: 30 * scaling,
             child: TextField(
-              style: TextStyle(color: offWhite, fontSize: 16),
+              style: TextStyle(color: offWhite, fontSize: 16 * scaling),
               onChanged: (value) => onSearch(value),
               decoration: InputDecoration(
                 filled: true,
@@ -78,9 +74,10 @@ class _CategoryPageState extends State<CategoryPage> {
                 contentPadding: EdgeInsets.all(0),
                 prefixIcon: Icon(Icons.search, color: offWhite),
                 border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(50),
+                    borderRadius: BorderRadius.circular(50 * scaling),
                     borderSide: BorderSide.none),
-                hintStyle: TextStyle(fontSize: 14, color: notepaperWhite),
+                hintStyle:
+                    TextStyle(fontSize: 14 * scaling, color: notepaperWhite),
               ),
             ),
           )),
@@ -110,12 +107,12 @@ class _CategoryPageState extends State<CategoryPage> {
                 itemBuilder: (context, index) {
                   final categoryView = snapshot.data![index];
                   return Container(
-                    height: 40,
-                    padding: EdgeInsets.fromLTRB(5.0 * toScale, 0.0,
-                        5.0 * toScale, 0.0),
+                    height: 40 * scaling,
+                    padding: EdgeInsets.fromLTRB(
+                        5.0 * scaling, 0.0, 5.0 * scaling, 0.0),
                     decoration: BoxDecoration(
                       border: Border(
-                        bottom: BorderSide(width: toScale, color: tanteRia),
+                        bottom: BorderSide(width: scaling, color: tanteRia),
                       ),
                       color: notepaperWhite,
                     ),
@@ -125,8 +122,8 @@ class _CategoryPageState extends State<CategoryPage> {
                         Expanded(
                           flex: 3,
                           child: Padding(
-                            padding:
-                                const EdgeInsetsDirectional.fromSTEB(4, 0, 2, 0),
+                            padding: EdgeInsetsDirectional.fromSTEB(
+                                4 * scaling, 0, 2 * scaling, 0),
                             child: AutoSizeText(
                               categoryView.parent!,
                               style: TextStyle(color: veryVeryDark),
@@ -138,7 +135,7 @@ class _CategoryPageState extends State<CategoryPage> {
                           flex: 6,
                           child: Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
-                                2, 0, 2 * toScale, 0),
+                                2 * scaling, 0, 2 * scaling, 0),
                             child: AutoSizeText(
                               categoryView.name!,
                               maxLines: 1,
@@ -148,54 +145,46 @@ class _CategoryPageState extends State<CategoryPage> {
                         ),
                         Expanded(
                           flex: 2,
-                          child: Padding(
-                            padding:
-                                const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                            child: IconButton(
-                              icon: const Icon(Icons.edit),
-                              color: cyanAppbarColour,
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => CategoryDetail(
-                                        categoryView: categoryView),
-                                  ),
-                                ).then((value) {
-                                  setState(() {
-                                    _refreshCategoryViewList();
-                                  });
+                          child: IconButton(
+                            icon: const Icon(Icons.edit),
+                            color: cyanAppbarColour,
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CategoryDetail(
+                                      categoryView: categoryView),
+                                ),
+                              ).then((value) {
+                                setState(() {
+                                  _refreshCategoryViewList();
                                 });
-                              },
-                            ),
+                              });
+                            },
                           ),
                         ),
                         Expanded(
                           flex: 2,
-                          child: Padding(
-                            padding:
-                                const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                            child: IconButton(
-                              icon: const Icon(Icons.delete),
-                              color: cyanAppbarColour,
-                              onPressed: () async {
-                                final bool isDelete =
-                                    await showConfirmationAlertDialog(
-                                  context,
-                                  title: 'Delete ${categoryView.name!}?',
-                                  message:
-                                      "Do you want to delete category ${categoryView.name!}? You cannot undo this!",
-                                  positiveText: 'Delete',
-                                  negativeText: 'Cancel',
-                                  highlightNegative: true,
-                                );
+                          child: IconButton(
+                            icon: const Icon(Icons.delete),
+                            color: cyanAppbarColour,
+                            onPressed: () async {
+                              final bool isDelete =
+                                  await showConfirmationAlertDialog(
+                                context,
+                                title: 'Delete ${categoryView.name!}?',
+                                message:
+                                    "Do you want to delete category ${categoryView.name!}? You cannot undo this!",
+                                positiveText: 'Delete',
+                                negativeText: 'Cancel',
+                                highlightNegative: true,
+                              );
 
-                                if (isDelete) {
-                                  await dbHelper.deleteCategory(categoryView);
-                                  _refreshCategoryViewList();
-                                }
-                              },
-                            ),
+                              if (isDelete) {
+                                await dbHelper.deleteCategory(categoryView);
+                                _refreshCategoryViewList();
+                              }
+                            },
                           ),
                         ),
                       ],

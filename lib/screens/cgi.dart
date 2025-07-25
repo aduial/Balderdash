@@ -13,10 +13,6 @@ class Cgi extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var padding = MediaQuery.paddingOf(context);
-    double displayHeight =
-        MediaQuery.of(context).size.height - padding.top - padding.bottom;
-    double toScale = refHeight / displayHeight;
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(
@@ -28,14 +24,14 @@ class Cgi extends StatelessWidget {
           style: Theme.of(context).textTheme.bodyLarge!.copyWith(
               color: ithildin,
               fontWeight: FontWeight.w500,
-              fontSize: 18 * toScale),
+              fontSize: 18 * scaling),
         ),
       ),
       backgroundColor: blueTop,
       body: SafeArea(
         bottom: false,
         //child: Padding(
-        //padding: EdgeInsetsDirectional.fromSTEB(0, 10 * toScale, 0, 0),
+        //padding: EdgeInsetsDirectional.fromSTEB(0, 10 * scaling, 0, 0),
         child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -43,20 +39,20 @@ class Cgi extends StatelessWidget {
               Center(
                 child: Container(
                   padding: EdgeInsets.fromLTRB(
-                      10 * toScale, 10 * toScale, 10 * toScale, 10 * toScale),
+                      10 * scaling, 10 * scaling, 10 * scaling, 10 * scaling),
                   child: Text(
                     "What & How",
                     style: GoogleFonts.playfairDisplay(
                         textStyle: Theme.of(context).textTheme.displayLarge,
                         fontWeight: FontWeight.w200,
-                        fontSize: 50 * toScale,
+                        fontSize: 50 * scaling,
                         color: ithildin),
                   ),
                 ),
               ),
               SizedBox(
                 width: double.infinity,
-                height: 25.0 * toScale,
+                height: 25.0 * scaling,
                 child: const DecoratedBox(
                   decoration: BoxDecoration(
                     color: yellowGrey,
@@ -65,7 +61,7 @@ class Cgi extends StatelessWidget {
               ),
               SizedBox(
                 width: double.infinity,
-                height: 10.0 * toScale,
+                height: 10.0 * scaling,
                 child: const DecoratedBox(
                   decoration: BoxDecoration(
                     color: sortOfRed,
@@ -74,7 +70,7 @@ class Cgi extends StatelessWidget {
               ),
               SizedBox(
                 width: double.infinity,
-                height: 18.0 * toScale,
+                height: 18.0 * scaling,
                 child: const DecoratedBox(
                   decoration: BoxDecoration(
                     color: iceBlue,
@@ -95,7 +91,7 @@ class Cgi extends StatelessWidget {
                   alignment: Alignment.topCenter,
                   child: Padding(
                       padding: EdgeInsetsDirectional.fromSTEB(
-                          20 * toScale, 0, 20 * toScale, 30 * toScale),
+                          20 * scaling, 0, 20 * scaling, 30 * scaling),
                       child: Scrollbar(
                         child: SingleChildScrollView(
                           child: RichText(
@@ -113,7 +109,7 @@ class Cgi extends StatelessWidget {
                                   .copyWith(
                                       color: ithildin,
                                       fontWeight: FontWeight.w300,
-                                      fontSize: 13 * toScale),
+                                      fontSize: 13 * scaling),
                               children: <TextSpan>[
                                 TextSpan(
                                     text: "project.data",
@@ -149,7 +145,7 @@ class Cgi extends StatelessWidget {
                                     text: "nonsense.pl -F garble\n\n",
                                     style: GoogleFonts.notoSansMono(
                                         color: ithildin,
-                                        fontSize: 13 * toScale,
+                                        fontSize: 13 * scaling,
                                         fontWeight: FontWeight.w500)),
                                 TextSpan(
                                     text:
@@ -163,7 +159,7 @@ class Cgi extends StatelessWidget {
                                     text: "./nonsense.pl -F garble\n",
                                     style: GoogleFonts.notoSansMono(
                                         color: ithildin,
-                                        fontSize: 13 * toScale,
+                                        fontSize: 13 * scaling,
                                         fontWeight: FontWeight.w500)),
                                 TextSpan(
                                     text: "- or -\n",
@@ -173,7 +169,7 @@ class Cgi extends StatelessWidget {
                                     text: "perl nonsense.pl -F garble\n\n",
                                     style: GoogleFonts.notoSansMono(
                                         color: ithildin,
-                                        fontSize: 13 * toScale,
+                                        fontSize: 13 * scaling,
                                         fontWeight: FontWeight.w500)),
                                 TextSpan(
                                     text: "If you want to create a balderdash/"
@@ -231,7 +227,7 @@ class Cgi extends StatelessWidget {
                                         "cgi-bin/project/nonsense.pl?template=project.html.template&allfiles=1\n\n",
                                     style: GoogleFonts.notoSansMono(
                                         color: ithildin,
-                                        fontSize: 13 * toScale,
+                                        fontSize: 13 * scaling,
                                         fontWeight: FontWeight.w500)),
                               ],
                             ),

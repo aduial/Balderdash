@@ -1,19 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import 'package:balderdash/config/colours.dart';
 import 'package:balderdash/config/config.dart';
 import 'package:balderdash/screens/about_voc5.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AboutVoc4 extends StatelessWidget {
   const AboutVoc4({super.key});
 
   @override
   Widget build(BuildContext context) {
-    var padding = MediaQuery.paddingOf(context);
-    double displayHeight =
-        MediaQuery.of(context).size.height - padding.top - padding.bottom;
-    double toScale = refHeight / displayHeight;
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(
@@ -25,15 +20,14 @@ class AboutVoc4 extends StatelessWidget {
           style: Theme.of(context).textTheme.bodyLarge!.copyWith(
               color: ithildin,
               fontWeight: FontWeight.w500,
-              fontSize: 18 * toScale),
+              fontSize: 18 * scaling),
         ),
       ),
       backgroundColor: blueTop,
       body: SafeArea(
-        bottom: false
-        ,
+        bottom: false,
         //child: Padding(
-        //padding: EdgeInsetsDirectional.fromSTEB(0, 10 * toScale, 0, 0),
+        //padding: EdgeInsetsDirectional.fromSTEB(0, 10 * scaling, 0, 0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -41,20 +35,20 @@ class AboutVoc4 extends StatelessWidget {
             Center(
               child: Container(
                 padding: EdgeInsets.fromLTRB(
-                    10 * toScale, 10 * toScale, 10 * toScale, 10 * toScale),
+                    10 * scaling, 10 * scaling, 10 * scaling, 10 * scaling),
                 child: Text(
                   "What & How",
                   style: GoogleFonts.playfairDisplay(
                       textStyle: Theme.of(context).textTheme.displayLarge,
                       fontWeight: FontWeight.w200,
-                      fontSize: 50 * toScale,
+                      fontSize: 50 * scaling,
                       color: ithildin),
                 ),
               ),
             ),
             SizedBox(
               width: double.infinity,
-              height: 25.0 * toScale,
+              height: 25.0 * scaling,
               child: const DecoratedBox(
                 decoration: BoxDecoration(
                   color: yellowGrey,
@@ -63,7 +57,7 @@ class AboutVoc4 extends StatelessWidget {
             ),
             SizedBox(
               width: double.infinity,
-              height: 10.0 * toScale,
+              height: 10.0 * scaling,
               child: const DecoratedBox(
                 decoration: BoxDecoration(
                   color: sortOfRed,
@@ -72,7 +66,7 @@ class AboutVoc4 extends StatelessWidget {
             ),
             SizedBox(
               width: double.infinity,
-              height: 18.0 * toScale,
+              height: 18.0 * scaling,
               child: const DecoratedBox(
                 decoration: BoxDecoration(
                   color: iceBlue,
@@ -92,20 +86,21 @@ class AboutVoc4 extends StatelessWidget {
                 width: double.infinity,
                 child: Padding(
                     padding: EdgeInsetsDirectional.fromSTEB(
-                        20 * toScale, 0, 20 * toScale, 30 * toScale),
+                        20 * scaling, 0, 20 * scaling, 30 * scaling),
                     child: Scrollbar(
                       child: SingleChildScrollView(
                         child: RichText(
                           textAlign: TextAlign.left,
                           text: TextSpan(
-                            text: "Vocabulary START of the example grammar took off with: ",
+                            text:
+                                "Vocabulary START of the example grammar took off with: ",
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyLarge!
                                 .copyWith(
                                     color: ithildin,
                                     fontWeight: FontWeight.w300,
-                                    fontSize: 13 * toScale),
+                                    fontSize: 13 * scaling),
                             children: <TextSpan>[
                               TextSpan(
                                   text: "{^Whoknows}",
@@ -117,10 +112,10 @@ class AboutVoc4 extends StatelessWidget {
                                       " referring to vocabulary WHOKNOWS. Vocabulary titles are "
                                       "UPPERCASE, but the case of the {commands} referring to them "
                                       "determines the case of the text they return:\n\n",
-                                  style: TextStyle(fontWeight: FontWeight.w300,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w300,
                                       color: ithildin,
-                                      fontSize: 13 * toScale
-                                  )),
+                                      fontSize: 13 * scaling)),
                               TextSpan(
                                   text: "{Whoknows}",
                                   style: GoogleFonts.notoSansMono(
@@ -129,12 +124,13 @@ class AboutVoc4 extends StatelessWidget {
                               TextSpan(
                                   text:
                                       " (mixed case) returns the text unchanged re. case: ",
-                                  style: TextStyle(fontWeight: FontWeight.w300,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w300,
                                       color: ithildin,
-                                      fontSize: 13 * toScale
-                                  )),
+                                      fontSize: 13 * scaling)),
                               TextSpan(
-                                  text: "'If we don't fix that stereo set,' \n\n",
+                                  text:
+                                      "'If we don't fix that stereo set,' \n\n",
                                   style:
                                       TextStyle(fontWeight: FontWeight.w600)),
                               TextSpan(
@@ -145,10 +141,10 @@ class AboutVoc4 extends StatelessWidget {
                               TextSpan(
                                   text:
                                       " (all lowercase) returns the text in lowercase: ",
-                                  style: TextStyle(fontWeight: FontWeight.w300,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w300,
                                       color: ithildin,
-                                      fontSize: 13 * toScale
-                                  )),
+                                      fontSize: 13 * scaling)),
                               TextSpan(
                                   text: "'maybe'\n\n",
                                   style:
@@ -161,15 +157,15 @@ class AboutVoc4 extends StatelessWidget {
                               TextSpan(
                                   text:
                                       " (all UPPERCASE) returns the text in UPPERCASE:",
-                                  style: TextStyle(fontWeight: FontWeight.w300,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w300,
                                       color: ithildin,
-                                      fontSize: 13 * toScale
-                                  )),
+                                      fontSize: 13 * scaling)),
                               TextSpan(
                                   text: "'MAYBE'\n\n",
-                                  style: TextStyle(fontWeight: FontWeight.w600,
-                                      fontSize: 13 * toScale
-                                  )),
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13 * scaling)),
                               TextSpan(
                                   text: "{^Whoknows}",
                                   style: GoogleFonts.notoSansMono(
@@ -178,21 +174,22 @@ class AboutVoc4 extends StatelessWidget {
                               TextSpan(
                                   text:
                                       " (prefixed with ^) returns the text with the first letter capitalised:\n",
-                                  style: TextStyle(fontWeight: FontWeight.w300,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w300,
                                       color: ithildin,
-                                      fontSize: 13 * toScale
-                                  )),
+                                      fontSize: 13 * scaling)),
                               TextSpan(
                                   text: "'If nothing comes between,'\n\n",
-                                  style:
-                                  TextStyle(fontWeight: FontWeight.w600,)),
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                  )),
                               TextSpan(
                                   text:
                                       "So, the example grammar might result in: \n",
-                                  style: TextStyle(fontWeight: FontWeight.w300,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w300,
                                       color: ithildin,
-                                      fontSize: 13 * toScale
-                                  )),
+                                      fontSize: 13 * scaling)),
                               TextSpan(
                                   text:
                                       "'If nothing comes between, Charles might slap neighbour Todd "
@@ -200,15 +197,16 @@ class AboutVoc4 extends StatelessWidget {
                                       "'Maybe neighbour Todd could drop by tomorrow'\n"
                                       "'If we don't fix that stereo set, auntie Bertha might start "
                                       "playing her electric wah-wah guitar very loudly one of these days'\n",
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.w500,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
                                       color: laurelin)),
                               TextSpan(
-                                  text: "... or some variation thereof.\n\n\n\n\n",
-                                  style: TextStyle(fontWeight: FontWeight.w300,
+                                  text:
+                                      "... or some variation thereof.\n\n\n\n\n",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w300,
                                       color: ithildin,
-                                      fontSize: 13 * toScale
-                                  ))
+                                      fontSize: 13 * scaling))
                             ],
                           ),
                         ),
@@ -225,11 +223,10 @@ class AboutVoc4 extends StatelessWidget {
           foregroundColor: ithildin,
           backgroundColor: sortOfRed,
           // child: const Icon(Icons.add),
-          onPressed: ()  {
+          onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                  builder: (context) => const AboutVoc5()),
+              MaterialPageRoute(builder: (context) => const AboutVoc5()),
             );
           }),
     );

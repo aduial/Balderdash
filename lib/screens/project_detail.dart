@@ -1,12 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:balderdash/model/project.dart';
-import 'package:balderdash/model/type.dart';
-import 'package:balderdash/model/author.dart';
-import 'package:balderdash/views/project_view.dart';
-import 'package:balderdash/database_helper/database_helper.dart';
 import 'package:balderdash/config/colours.dart';
 import 'package:balderdash/config/config.dart';
+import 'package:balderdash/database_helper/database_helper.dart';
+import 'package:balderdash/model/author.dart';
+import 'package:balderdash/model/project.dart';
+import 'package:balderdash/model/type.dart';
+import 'package:balderdash/views/project_view.dart';
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:flutter/material.dart';
 
 class ProjectDetail extends StatefulWidget {
   final ProjectView projectView;
@@ -23,11 +23,9 @@ class _ProjectDetailState extends State<ProjectDetail> {
   late Future<List<Type>> _types;
   late Future<List<Author>> _authors;
   late List<ProjectView> pvList;
-  final TextEditingController titleController =
-      TextEditingController(text: '');
+  final TextEditingController titleController = TextEditingController(text: '');
   // final ScrollController contentScrollController = ScrollController();
-  final TextEditingController notesController =
-      TextEditingController(text: '');
+  final TextEditingController notesController = TextEditingController(text: '');
 
   bool pvListFetched = false;
   bool isExistingPV = false;
@@ -48,14 +46,15 @@ class _ProjectDetailState extends State<ProjectDetail> {
     if (isExistingPV) {
       newId = widget.projectView.id!;
       newTypeId = widget.projectView.typeId!;
-      dbHelper.getType(newTypeId).then((type) => _typeDDKey.currentState?.changeSelectedItem(type as Type?));
+      dbHelper.getType(newTypeId).then(
+          (type) => _typeDDKey.currentState?.changeSelectedItem(type as Type?));
       newAuthorId = widget.projectView.authorId!;
-      dbHelper.getAuthor(newAuthorId).then((auth) => _authDDKey.currentState?.changeSelectedItem(auth as Author?));
+      dbHelper.getAuthor(newAuthorId).then((auth) =>
+          _authDDKey.currentState?.changeSelectedItem(auth as Author?));
     }
-    newTitle = widget.projectView.title??"";
-    newNotes = widget.projectView.notes??"";
+    newTitle = widget.projectView.title ?? "";
+    newNotes = widget.projectView.notes ?? "";
   }
-
 
   // _catDDKey.currentState.changeSelectedItem(currentCategory)
 
@@ -99,9 +98,6 @@ class _ProjectDetailState extends State<ProjectDetail> {
 
   @override
   Widget build(BuildContext context) {
-    var padding = MediaQuery.paddingOf(context);
-    double displayHeight = MediaQuery.of(context).size.height - padding.top - padding.bottom;
-    double deviceScaling = refHeight / displayHeight;
     titleController.text = newTitle;
     notesController.text = newNotes;
     initialisePvList();
@@ -115,7 +111,6 @@ class _ProjectDetailState extends State<ProjectDetail> {
           "Edit ${widget.projectView.title!}",
           style: TextStyle(color: notepaperWhite),
         ),
-
       ),
       backgroundColor: orangeNotePaperColour,
       body: Container(
@@ -127,11 +122,11 @@ class _ProjectDetailState extends State<ProjectDetail> {
           ),
         ),
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+          padding: EdgeInsets.symmetric(
+              vertical: 12 * scaling, horizontal: 8 * scaling),
           child: Form(
             key: _projectFormKey,
-            child: ListView(padding: EdgeInsets.all(4),
-                children: [
+            child: ListView(padding: EdgeInsets.all(4 * scaling), children: [
               Row(
                 children: [
                   Expanded(
@@ -149,18 +144,16 @@ class _ProjectDetailState extends State<ProjectDetail> {
                       // },
                       decoratorProps: DropDownDecoratorProps(
                         decoration: InputDecoration(
-                          floatingLabelBehavior: FloatingLabelBehavior.always,
-                          isDense: true,
-                          filled: true,
-                          fillColor: offWhite,
+                            floatingLabelBehavior: FloatingLabelBehavior.always,
+                            isDense: true,
+                            filled: true,
+                            fillColor: offWhite,
                             labelText: 'TYPE',
-                          // labelText: widget.projectView.category,
-                          labelStyle:
-                              TextStyle(fontSize: 14),
+                            // labelText: widget.projectView.category,
+                            labelStyle: TextStyle(fontSize: 14 * scaling),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            )
-                        ),
+                              borderRadius: BorderRadius.circular(10 * scaling),
+                            )),
                       ),
                       compareFn: (item, sItem) => item.id == sItem.id,
                       validator: (item) {
@@ -175,7 +168,7 @@ class _ProjectDetailState extends State<ProjectDetail> {
                           itemBuilder: typeModalItem),
                     ),
                   ),
-                  Padding(padding: EdgeInsets.all(4)),
+                  Padding(padding: EdgeInsets.all(4 * scaling)),
                   Expanded(
                     child: DropdownSearch<Author>(
                       key: _authDDKey,
@@ -193,13 +186,11 @@ class _ProjectDetailState extends State<ProjectDetail> {
                             filled: true,
                             fillColor: offWhite,
                             labelText: 'AUTHOR',
-                          // labelText: widget.projectView.project,
-                          labelStyle:
-                              TextStyle(fontSize: 14),
+                            // labelText: widget.projectView.project,
+                            labelStyle: TextStyle(fontSize: 14 * scaling),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            )
-                        ),
+                              borderRadius: BorderRadius.circular(10 * scaling),
+                            )),
                       ),
                       // selectedItem: currentCategory,
                       compareFn: (item, sItem) => item.name == sItem.name,
@@ -217,7 +208,7 @@ class _ProjectDetailState extends State<ProjectDetail> {
                   ),
                 ],
               ),
-              Padding(padding: EdgeInsets.all(8)),
+              Padding(padding: EdgeInsets.all(8 * scaling)),
               Row(children: [
                 Expanded(
                   child: TextFormField(
@@ -228,9 +219,8 @@ class _ProjectDetailState extends State<ProjectDetail> {
                         fillColor: offWhite,
                         labelText: 'PROJECT TITLE',
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        )
-                    ),
+                          borderRadius: BorderRadius.circular(10 * scaling),
+                        )),
                     maxLines: 1,
                     onChanged: (value) => onTitleChanged(value),
                     validator: (value) {
@@ -250,75 +240,71 @@ class _ProjectDetailState extends State<ProjectDetail> {
                   ),
                 ),
               ]),
-              Padding(padding: EdgeInsets.all(6)),
-                  Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                    Expanded(
-                      flex: 8,
-                      child: TextFormField(
-                        controller: notesController,
-                        decoration: InputDecoration(
-                            isDense: true,
-                            filled: true,
-                            fillColor: offWhite,
-                            labelText: 'NOTES',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            )
-                        ),
-                        maxLines: 20,
-                        onChanged: (value) => onNotesChanged(value),
-                        validator: (value) {
-                          return null;
-                        },
-                      ),
+              Padding(padding: EdgeInsets.all(6 * scaling)),
+              Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                Expanded(
+                  flex: 8,
+                  child: TextFormField(
+                    controller: notesController,
+                    decoration: InputDecoration(
+                        isDense: true,
+                        filled: true,
+                        fillColor: offWhite,
+                        labelText: 'NOTES',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10 * scaling),
+                        )),
+                    maxLines: 20,
+                    onChanged: (value) => onNotesChanged(value),
+                    validator: (value) {
+                      return null;
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4.0 * scaling),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      iconColor: orangeAppbarColour,
+                      shadowColor: Colors.black,
                     ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 4.0),
-                    ),
-                    Expanded(
-                      flex: 2,
-                      child:  ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          iconColor: orangeAppbarColour,
-                          shadowColor: Colors.black,
-                        ),
-                        onPressed: () async {
-                          if (_projectFormKey.currentState!.validate()) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  backgroundColor: regularResultBGColour,
-                                  behavior: SnackBarBehavior.fixed,
-                                  // margin: EdgeInsets.only(bottom: 0.0),
-                                  content: Text('Saving project',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                    ),
-                                  ),
-                                  dismissDirection: DismissDirection.none
+                    onPressed: () async {
+                      if (_projectFormKey.currentState!.validate()) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              backgroundColor: regularResultBGColour,
+                              behavior: SnackBarBehavior.fixed,
+                              // margin: EdgeInsets.only(bottom: 0.0),
+                              content: Text(
+                                'Saving project',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 18 * scaling,
+                                ),
                               ),
-                            );
-                            newProject = Project.fromMap({
-                              "id": widget.projectView.id,
-                              "typeId": newTypeId,
-                              "authorId": newAuthorId,
-                              "title": newTitle,
-                              "notes": newNotes,
-                            });
-                            await dbHelper.upsertProject(newProject);
-                            Navigator.of(context).pop();
-                          }
-                        },
-                        child: const Icon(
-                          Icons.save,
-                        ),
-                      ),
+                              dismissDirection: DismissDirection.none),
+                        );
+                        newProject = Project.fromMap({
+                          "id": widget.projectView.id,
+                          "typeId": newTypeId,
+                          "authorId": newAuthorId,
+                          "title": newTitle,
+                          "notes": newNotes,
+                        });
+                        await dbHelper.upsertProject(newProject);
+                        Navigator.of(context).pop();
+                      }
+                    },
+                    child: const Icon(
+                      Icons.save,
                     ),
-                  ]),
-                ]
-            ),
+                  ),
+                ),
+              ]),
+            ]),
           ),
         ),
       ),
@@ -326,16 +312,15 @@ class _ProjectDetailState extends State<ProjectDetail> {
   }
 }
 
-
 Widget typeModalItem(
     BuildContext context, Type item, bool isDisabled, bool isSelected) {
   return Container(
-    margin: EdgeInsets.symmetric(horizontal: 8),
+    margin: EdgeInsets.symmetric(horizontal: 8 * scaling),
     decoration: !isSelected
         ? null
         : BoxDecoration(
             border: Border.all(color: Theme.of(context).primaryColor),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20 * scaling),
             color: inActiveMinimalSetColour,
           ),
     child: ListTile(
@@ -345,7 +330,7 @@ Widget typeModalItem(
         title: Text(
           item.name!,
           style: TextStyle(
-              fontSize: 14,
+              fontSize: 14 * scaling,
               color: isSelected ? offWhite : onPrimaryFixed),
         )),
   );
@@ -354,12 +339,12 @@ Widget typeModalItem(
 Widget authorModalItem(
     BuildContext context, Author item, bool isDisabled, bool isSelected) {
   return Container(
-    margin: EdgeInsets.symmetric(horizontal: 8),
+    margin: EdgeInsets.symmetric(horizontal: 8 * scaling),
     decoration: !isSelected
         ? null
         : BoxDecoration(
             border: Border.all(color: Theme.of(context).primaryColor),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20 * scaling),
             color: inActiveMinimalSetColour,
           ),
     child: ListTile(
@@ -369,7 +354,7 @@ Widget authorModalItem(
         title: Text(
           item.name!,
           style: TextStyle(
-              fontSize: 14,
+              fontSize: 14 * scaling,
               color: isSelected ? offWhite : onPrimaryFixed),
         )),
   );

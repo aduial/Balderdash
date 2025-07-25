@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
+double scaling = 1.0;
+
 String _menuImg = 'assets/images/shampoo.png';
 String _helpImg = 'assets/images/einenhand.png';
 String _drawerImg = 'assets/images/eend.png';

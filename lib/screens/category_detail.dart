@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:balderdash/model/category.dart';
-import 'package:balderdash/views/category_view.dart';
-import 'package:balderdash/database_helper/database_helper.dart';
 import 'package:balderdash/config/colours.dart';
 import 'package:balderdash/config/config.dart';
+import 'package:balderdash/database_helper/database_helper.dart';
+import 'package:balderdash/model/category.dart';
+import 'package:balderdash/views/category_view.dart';
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class CategoryDetail extends StatefulWidget {
   final CategoryView categoryView;
@@ -44,13 +44,12 @@ class _CategoryDetailState extends State<CategoryDetail> {
     newParent = widget.categoryView.parent!;
     newName = widget.categoryView.name!;
     newComment =
-    widget.categoryView.comment == ""
-        ? " "
-        : widget.categoryView.comment!;
+        widget.categoryView.comment == "" ? " " : widget.categoryView.comment!;
     if (isExistingCV) {
       newCategoryId = widget.categoryView.id!;
-      dbHelper.getCategory(newParentId).then((parent) => _parentDDKey.currentState?.changeSelectedItem(parent));
-      }
+      dbHelper.getCategory(newParentId).then(
+          (parent) => _parentDDKey.currentState?.changeSelectedItem(parent));
+    }
   }
 
   void _refreshLists() {
@@ -80,9 +79,6 @@ class _CategoryDetailState extends State<CategoryDetail> {
 
   @override
   Widget build(BuildContext context) {
-    var padding = MediaQuery.paddingOf(context);
-    double displayHeight = MediaQuery.of(context).size.height - padding.top - padding.bottom;
-    double deviceScaling = refHeight / displayHeight;
     nameController.text = newName;
     commentController.text = newComment;
     initialiseCvList();
@@ -106,7 +102,8 @@ class _CategoryDetailState extends State<CategoryDetail> {
           ),
         ),
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+          padding: EdgeInsets.symmetric(
+              vertical: 12 * scaling, horizontal: 8 * scaling),
           child: Form(
             key: _categoryFormKey,
             child: ListView(padding: EdgeInsets.all(4), children: [
@@ -124,17 +121,15 @@ class _CategoryDetailState extends State<CategoryDetail> {
                       },
                       decoratorProps: DropDownDecoratorProps(
                         decoration: InputDecoration(
-                          floatingLabelBehavior: FloatingLabelBehavior.always,
-                          isDense: true,
-                          filled: true,
-                          fillColor: offWhite,
+                            floatingLabelBehavior: FloatingLabelBehavior.always,
+                            isDense: true,
+                            filled: true,
+                            fillColor: offWhite,
                             labelText: 'PARENT CATEGORY',
-                          labelStyle:
-                              TextStyle(fontSize: 14),
+                            labelStyle: TextStyle(fontSize: 14 * scaling),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            )
-                        ),
+                              borderRadius: BorderRadius.circular(10 * scaling),
+                            )),
                       ),
                       compareFn: (item, sItem) => item.id == sItem.id,
                       validator: (item) {
@@ -149,45 +144,45 @@ class _CategoryDetailState extends State<CategoryDetail> {
                           itemBuilder: categoryModalItem),
                     ),
                   ),
-                  Padding(padding: EdgeInsets.all(4)),
+                  Padding(padding: EdgeInsets.all(4 * scaling)),
                   Expanded(
-                      child: TextFormField(
-                        controller: nameController,
-                        textCapitalization: TextCapitalization.sentences,
-                        decoration: InputDecoration(
-                            isDense: true,
-                            filled: true,
-                            fillColor: offWhite,
-                            labelText: 'NAME',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            )
-                        ),
-                        maxLines: 1,
-                        onChanged: (value) => onNameChanged(value),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Name cannot be empty';
-                          }
-                          if (value == newCategoryName) {
-                            return "Something else?";
-                          }
-                          // first find category with the same name
-                          List<CategoryView> nameCVList =
-                          cvList.where((i) => i.name == value).toList();
-                          // of those, take the ones with a different id
-                          List<CategoryView> filterCVList =
-                          nameCVList.where((j) => j.id != newCategoryId).toList();
-                          if (filterCVList.isNotEmpty) {
-                            return "'${filterCVList[0].name!}' exist, try again";
-                          }
-                          return null;
-                        },
-                      ),
+                    child: TextFormField(
+                      controller: nameController,
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: InputDecoration(
+                          isDense: true,
+                          filled: true,
+                          fillColor: offWhite,
+                          labelText: 'NAME',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10 * scaling),
+                          )),
+                      maxLines: 1,
+                      onChanged: (value) => onNameChanged(value),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Name cannot be empty';
+                        }
+                        if (value == newCategoryName) {
+                          return "Something else?";
+                        }
+                        // first find category with the same name
+                        List<CategoryView> nameCVList =
+                            cvList.where((i) => i.name == value).toList();
+                        // of those, take the ones with a different id
+                        List<CategoryView> filterCVList = nameCVList
+                            .where((j) => j.id != newCategoryId)
+                            .toList();
+                        if (filterCVList.isNotEmpty) {
+                          return "'${filterCVList[0].name!}' exist, try again";
+                        }
+                        return null;
+                      },
                     ),
+                  ),
                 ],
               ),
-              Padding(padding: EdgeInsets.all(8)),
+              Padding(padding: EdgeInsets.all(8 * scaling)),
               Row(children: [
                 Expanded(
                   flex: 8,
@@ -199,9 +194,8 @@ class _CategoryDetailState extends State<CategoryDetail> {
                         fillColor: offWhite,
                         labelText: 'COMMENT',
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        )
-                    ),
+                          borderRadius: BorderRadius.circular(10 * scaling),
+                        )),
                     maxLines: 1,
                     onChanged: (value) => onCommentChanged(value),
                     validator: (value) {
@@ -210,11 +204,11 @@ class _CategoryDetailState extends State<CategoryDetail> {
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4.0),
+                  padding: EdgeInsets.symmetric(horizontal: 4.0 * scaling),
                 ),
                 Expanded(
                   flex: 3,
-                  child:  ElevatedButton(
+                  child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       iconColor: cyanAppbarColour,
                       shadowColor: Colors.black,
@@ -222,18 +216,18 @@ class _CategoryDetailState extends State<CategoryDetail> {
                     onPressed: () async {
                       if (_categoryFormKey.currentState!.validate()) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
+                          SnackBar(
                               backgroundColor: regularResultBGColour,
                               behavior: SnackBarBehavior.fixed,
                               // margin: EdgeInsets.only(bottom: 0.0),
-                              content: Text('Saving category',
+                              content: Text(
+                                'Saving category',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 18 * scaling,
                                 ),
                               ),
-                              dismissDirection: DismissDirection.none
-                          ),
+                              dismissDirection: DismissDirection.none),
                         );
                         newCategory = Category.fromMap({
                           "id": widget.categoryView.id,
@@ -246,13 +240,12 @@ class _CategoryDetailState extends State<CategoryDetail> {
                       }
                     },
                     child: const Icon(
-                        Icons.save,
+                      Icons.save,
                     ),
                   ),
                 ),
               ]),
-            ]
-            ),
+            ]),
           ),
         ),
       ),
@@ -263,12 +256,12 @@ class _CategoryDetailState extends State<CategoryDetail> {
 Widget categoryModalItem(
     BuildContext context, Category item, bool isDisabled, bool isSelected) {
   return Container(
-    margin: EdgeInsets.symmetric(horizontal: 8),
+    margin: EdgeInsets.symmetric(horizontal: 8 * scaling),
     decoration: !isSelected
         ? null
         : BoxDecoration(
             border: Border.all(color: Theme.of(context).primaryColor),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20 * scaling),
             color: inActiveMinimalSetColour,
           ),
     child: ListTile(
@@ -278,17 +271,15 @@ Widget categoryModalItem(
         title: Text(
           item.name!,
           style: TextStyle(
-              fontSize: 14,
-              color: isSelected ? offWhite : onPrimaryFixed),
+              fontSize: 14, color: isSelected ? offWhite : onPrimaryFixed),
         )),
   );
 }
 
-class LowerCaseTextFormatter extends TextInputFormatter{
+class LowerCaseTextFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue,
-      TextEditingValue newValue){
+      TextEditingValue oldValue, TextEditingValue newValue) {
     return TextEditingValue(
       text: newValue.text.toLowerCase(),
       selection: newValue.selection,

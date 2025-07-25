@@ -1,12 +1,12 @@
 import 'package:dropdown_search/dropdown_search.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../database_helper/database_helper.dart';
-import '../screens/category_detail.dart';
-import '../screens/template_detail.dart';
 import '../model/category.dart';
 import '../model/project.dart';
+import '../screens/category_detail.dart';
+import '../screens/template_detail.dart';
 import 'colours.dart';
 import 'config.dart';
 
@@ -76,7 +76,7 @@ class _UserPreferencesState extends State<UserPreferences> {
     var padding = MediaQuery.paddingOf(context);
     double displayHeight =
         MediaQuery.of(context).size.height - padding.top - padding.bottom;
-    double deviceScaling = refHeight / displayHeight;
+    double scaling = displayHeight / refHeight;
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(
@@ -98,10 +98,11 @@ class _UserPreferencesState extends State<UserPreferences> {
           ),
         ),
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+          padding: EdgeInsets.symmetric(
+              vertical: 12 * scaling, horizontal: 8 * scaling),
           child: Form(
             key: _settingsFormKey,
-            child: ListView(padding: EdgeInsets.all(4), children: [
+            child: ListView(padding: EdgeInsets.all(4 * scaling), children: [
               Row(
                 children: [
                   Expanded(
@@ -129,9 +130,9 @@ class _UserPreferencesState extends State<UserPreferences> {
                             fillColor: offWhite,
                             labelText: 'CATEGORY',
                             // labelText: widget.vocabularyView.category,
-                            labelStyle: TextStyle(fontSize: 14),
+                            labelStyle: TextStyle(fontSize: 14 * scaling),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(10 * scaling),
                             )),
                       ),
                       compareFn: (item, sItem) => item.id == sItem.id,
@@ -147,7 +148,7 @@ class _UserPreferencesState extends State<UserPreferences> {
                           itemBuilder: categoryModalItem),
                     ),
                   ),
-                  Padding(padding: EdgeInsets.all(4)),
+                  Padding(padding: EdgeInsets.all(4 * scaling)),
                   Expanded(
                     child: DropdownSearch<Project>(
                       key: _prjDDKey,
@@ -173,9 +174,9 @@ class _UserPreferencesState extends State<UserPreferences> {
                             fillColor: offWhite,
                             labelText: 'PROJECT',
                             // labelText: widget.vocabularyView.project,
-                            labelStyle: TextStyle(fontSize: 14),
+                            labelStyle: TextStyle(fontSize: 14 * scaling),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(10 * scaling),
                             )),
                       ),
                       // selectedItem: currentCategory,
@@ -194,7 +195,7 @@ class _UserPreferencesState extends State<UserPreferences> {
                   ),
                 ],
               ),
-              Padding(padding: EdgeInsets.all(8)),
+              Padding(padding: EdgeInsets.all(8 * scaling)),
               Row(children: [
                 Expanded(
                   child: ElevatedButton(
@@ -211,7 +212,7 @@ class _UserPreferencesState extends State<UserPreferences> {
                     child: Text("Clear Category"),
                   ),
                 ),
-                Padding(padding: EdgeInsets.all(4)),
+                Padding(padding: EdgeInsets.all(4 * scaling)),
                 Expanded(
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
@@ -241,7 +242,7 @@ class _UserPreferencesState extends State<UserPreferences> {
   ScaffoldFeatureController<SnackBar, SnackBarClosedReason> buildSnackBar(
       BuildContext context, String msg) {
     return ScaffoldMessenger.of(context).showSnackBar(
-       SnackBar(
+      SnackBar(
           backgroundColor: regularResultBGColour,
           behavior: SnackBarBehavior.floating,
           duration: Duration(seconds: 1),
