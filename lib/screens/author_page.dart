@@ -104,29 +104,30 @@ class _AuthorPageState extends State<AuthorPage> {
     double toScale = displayHeight / refHeight;
     return Scaffold(
       appBar: AppBar(
-          iconTheme: IconThemeData(
-            color: blueNotePaperColour,
-          ),
-          backgroundColor: regularResultBGColour,
-          title: SizedBox(
-            height: 30 * toScale,
-            child: TextField(
-              style: TextStyle(color: offWhite, fontSize: 16 * toScale),
-              onChanged: (value) => onSearch(value),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: inActiveLargeSetColour,
-                hintText: "filter authors",
-                contentPadding: EdgeInsets.all(0),
-                prefixIcon: Icon(Icons.search, color: offWhite),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(50 * toScale),
-                    borderSide: BorderSide.none),
-                hintStyle:
-                    TextStyle(fontSize: 14 * toScale, color: notepaperWhite),
-              ),
+        iconTheme: IconThemeData(
+          color: blueNotePaperColour,
+        ),
+        backgroundColor: regularResultBGColour,
+        title: SizedBox(
+          height: 30 * toScale,
+          child: TextField(
+            style: TextStyle(color: offWhite, fontSize: 16 * toScale),
+            onChanged: (value) => onSearch(value),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: inActiveLargeSetColour,
+              hintText: "filter authors",
+              contentPadding: EdgeInsets.all(0),
+              prefixIcon: Icon(Icons.search, color: offWhite),
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(50 * toScale),
+                  borderSide: BorderSide.none),
+              hintStyle:
+                  TextStyle(fontSize: 14 * toScale, color: notepaperWhite),
             ),
-          )),
+          ),
+        ),
+      ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -166,7 +167,7 @@ class _AuthorPageState extends State<AuthorPage> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: <Widget>[
                         Expanded(
-                          flex: 3,
+                          flex: 6,
                           child: Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 4 * toScale, 0, 2, 0),

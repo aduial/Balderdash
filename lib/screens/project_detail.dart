@@ -111,6 +111,41 @@ class _ProjectDetailState extends State<ProjectDetail> {
           "Edit ${widget.projectView.title!}",
           style: TextStyle(color: notepaperWhite),
         ),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(
+              Icons.save,
+              color: orangeNotePaperColour,
+            ),
+            onPressed: () async {
+              if (_projectFormKey.currentState!.validate()) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                      backgroundColor: regularResultBGColour,
+                      behavior: SnackBarBehavior.fixed,
+                      // margin: EdgeInsets.only(bottom: 0.0),
+                      content: Text(
+                        'Saving project',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 18 * scaling,
+                        ),
+                      ),
+                      dismissDirection: DismissDirection.none),
+                );
+                newProject = Project.fromMap({
+                  "id": widget.projectView.id,
+                  "typeId": newTypeId,
+                  "authorId": newAuthorId,
+                  "title": newTitle,
+                  "notes": newNotes,
+                });
+                await dbHelper.upsertProject(newProject);
+                Navigator.of(context).pop();
+              }
+            },
+          )
+        ],
       ),
       backgroundColor: orangeNotePaperColour,
       body: Container(
@@ -144,12 +179,16 @@ class _ProjectDetailState extends State<ProjectDetail> {
                       // },
                       decoratorProps: DropDownDecoratorProps(
                         decoration: InputDecoration(
+                            constraints: BoxConstraints(
+                              maxHeight: 40 * scaling,
+                            ),
                             floatingLabelBehavior: FloatingLabelBehavior.always,
                             isDense: true,
                             filled: true,
                             fillColor: offWhite,
                             labelText: 'TYPE',
-                            // labelText: widget.projectView.category,
+                            contentPadding: EdgeInsets.fromLTRB(
+                                10 * scaling, 0, 0, 10 * scaling),
                             labelStyle: TextStyle(fontSize: 14 * scaling),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10 * scaling),
@@ -181,12 +220,16 @@ class _ProjectDetailState extends State<ProjectDetail> {
                       },
                       decoratorProps: DropDownDecoratorProps(
                         decoration: InputDecoration(
+                            constraints: BoxConstraints(
+                              maxHeight: 40 * scaling,
+                            ),
                             floatingLabelBehavior: FloatingLabelBehavior.always,
                             isDense: true,
                             filled: true,
                             fillColor: offWhite,
                             labelText: 'AUTHOR',
-                            // labelText: widget.projectView.project,
+                            contentPadding: EdgeInsets.fromLTRB(
+                                10 * scaling, 0, 0, 10 * scaling),
                             labelStyle: TextStyle(fontSize: 14 * scaling),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10 * scaling),
@@ -208,7 +251,7 @@ class _ProjectDetailState extends State<ProjectDetail> {
                   ),
                 ],
               ),
-              Padding(padding: EdgeInsets.all(8 * scaling)),
+              Padding(padding: EdgeInsets.all(5 * scaling)),
               Row(children: [
                 Expanded(
                   child: TextFormField(
@@ -217,7 +260,9 @@ class _ProjectDetailState extends State<ProjectDetail> {
                         isDense: true,
                         filled: true,
                         fillColor: offWhite,
-                        labelText: 'PROJECT TITLE',
+                        labelText: 'TITLE',
+                        contentPadding: EdgeInsets.fromLTRB(10 * scaling,
+                            6 * scaling, 6 * scaling, 10 * scaling),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10 * scaling),
                         )),
@@ -240,10 +285,9 @@ class _ProjectDetailState extends State<ProjectDetail> {
                   ),
                 ),
               ]),
-              Padding(padding: EdgeInsets.all(6 * scaling)),
+              Padding(padding: EdgeInsets.all(5 * scaling)),
               Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
                 Expanded(
-                  flex: 8,
                   child: TextFormField(
                     controller: notesController,
                     decoration: InputDecoration(
@@ -259,48 +303,6 @@ class _ProjectDetailState extends State<ProjectDetail> {
                     validator: (value) {
                       return null;
                     },
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4.0 * scaling),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      iconColor: orangeAppbarColour,
-                      shadowColor: Colors.black,
-                    ),
-                    onPressed: () async {
-                      if (_projectFormKey.currentState!.validate()) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              backgroundColor: regularResultBGColour,
-                              behavior: SnackBarBehavior.fixed,
-                              // margin: EdgeInsets.only(bottom: 0.0),
-                              content: Text(
-                                'Saving project',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 18 * scaling,
-                                ),
-                              ),
-                              dismissDirection: DismissDirection.none),
-                        );
-                        newProject = Project.fromMap({
-                          "id": widget.projectView.id,
-                          "typeId": newTypeId,
-                          "authorId": newAuthorId,
-                          "title": newTitle,
-                          "notes": newNotes,
-                        });
-                        await dbHelper.upsertProject(newProject);
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    child: const Icon(
-                      Icons.save,
-                    ),
                   ),
                 ),
               ]),

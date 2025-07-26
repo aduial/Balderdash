@@ -104,7 +104,7 @@ class Prefs extends StatelessWidget {
                                   "Setting these filters in the 'Run Balderdash' screen's "
                                   "drawer persists until you tap the back button to return "
                                   "to the main menu.\n\nIf you want to set a default Project "
-                                  "and/or Category filter that persist, you can do so in "
+                                  "and/or Category filter that persists, you can do so in "
                                   "in the Preferences screen. These will be used as default "
                                   "filter in the 'Run Balderdash' screen. You can still change "
                                   "them in the filter drawer, but will apply each time you open "

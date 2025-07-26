@@ -57,7 +57,7 @@ class _SelectVocPageState extends State<SelectVocPage> {
     super.initState();
     dbHelper = DatabaseHelper.instance;
     loadPreferences();
-    _refreshVocabularyViewList();
+    _refreshVocabularyViewList(false);
     setSubTitle();
   }
 
@@ -75,10 +75,10 @@ class _SelectVocPageState extends State<SelectVocPage> {
     initComplete = true;
   }
 
-  void _refreshVocabularyViewList() {
+  void _refreshVocabularyViewList(bool findUsage) {
     setState(() {
       _vocabularyViews = dbHelper.getFilteredVocabulariesBPAC(
-          searchTerm, projectId, categoryId);
+          searchTerm, projectId, categoryId, findUsage);
       subTitle = setSubTitle();
       _getVocabularyListLength().then((value) {
         setState(() {
@@ -112,17 +112,17 @@ class _SelectVocPageState extends State<SelectVocPage> {
 
   onSearch(String value) {
     searchTerm = value;
-    _refreshVocabularyViewList();
+    _refreshVocabularyViewList(false);
   }
 
   setFilterProject(int value) {
     projectId = value;
-    _refreshVocabularyViewList();
+    _refreshVocabularyViewList(false);
   }
 
   setFilterCategory(int value) {
     categoryId = value;
-    _refreshVocabularyViewList();
+    _refreshVocabularyViewList(false);
   }
 
   Future<void> handleSettingsButtonPressed() async {
@@ -315,7 +315,7 @@ class _SelectVocPageState extends State<SelectVocPage> {
                                     ),
                                   ).then((value) {
                                     setState(() {
-                                      _refreshVocabularyViewList();
+                                      _refreshVocabularyViewList(false);
                                     });
                                   });
                                 }
@@ -493,7 +493,6 @@ class _SelectVocPageState extends State<SelectVocPage> {
                     margin: EdgeInsets.symmetric(
                       vertical: 16.0 * scaling,
                     ),
-                    child: Text('Terms of Service | Privacy Policy'),
                   ),
                 ),
               ],

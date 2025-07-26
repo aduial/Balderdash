@@ -89,9 +89,43 @@ class _CategoryDetailState extends State<CategoryDetail> {
         ),
         backgroundColor: regularResultBGColour,
         title: Text(
-          "Edit ${widget.categoryView.name!}",
+          "Edit category '${widget.categoryView.name!}'",
           style: TextStyle(color: notepaperWhite),
         ),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(
+              Icons.save,
+              color: cyanNotePaperColour,
+            ),
+            onPressed: () async {
+              if (_categoryFormKey.currentState!.validate()) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                      backgroundColor: regularResultBGColour,
+                      behavior: SnackBarBehavior.fixed,
+                      // margin: EdgeInsets.only(bottom: 0.0),
+                      content: Text(
+                        'Saving category',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 18 * scaling,
+                        ),
+                      ),
+                      dismissDirection: DismissDirection.none),
+                );
+                newCategory = Category.fromMap({
+                  "id": widget.categoryView.id,
+                  "parentId": newParentId,
+                  "name": newName,
+                  "comment": newComment,
+                });
+                await dbHelper.upsertCategory(newCategory);
+                Navigator.of(context).pop();
+              }
+            },
+          )
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -182,10 +216,9 @@ class _CategoryDetailState extends State<CategoryDetail> {
                   ),
                 ],
               ),
-              Padding(padding: EdgeInsets.all(8 * scaling)),
+              Padding(padding: EdgeInsets.all(5 * scaling)),
               Row(children: [
                 Expanded(
-                  flex: 8,
                   child: TextFormField(
                     controller: commentController,
                     decoration: InputDecoration(
@@ -201,47 +234,6 @@ class _CategoryDetailState extends State<CategoryDetail> {
                     validator: (value) {
                       return null;
                     },
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4.0 * scaling),
-                ),
-                Expanded(
-                  flex: 3,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      iconColor: cyanAppbarColour,
-                      shadowColor: Colors.black,
-                    ),
-                    onPressed: () async {
-                      if (_categoryFormKey.currentState!.validate()) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              backgroundColor: regularResultBGColour,
-                              behavior: SnackBarBehavior.fixed,
-                              // margin: EdgeInsets.only(bottom: 0.0),
-                              content: Text(
-                                'Saving category',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 18 * scaling,
-                                ),
-                              ),
-                              dismissDirection: DismissDirection.none),
-                        );
-                        newCategory = Category.fromMap({
-                          "id": widget.categoryView.id,
-                          "parentId": newParentId,
-                          "name": newName,
-                          "comment": newComment,
-                        });
-                        await dbHelper.upsertCategory(newCategory);
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    child: const Icon(
-                      Icons.save,
-                    ),
                   ),
                 ),
               ]),

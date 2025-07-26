@@ -90,6 +90,39 @@ class _TemplateDetailState extends State<TemplateDetail> {
           "Edit ${widget.templateView.title!}",
           style: TextStyle(color: notepaperWhite),
         ),
+        actions: <Widget>[
+          IconButton(
+              icon: Icon(
+                Icons.save,
+                color: violetNotePaperColour,
+              ),
+              onPressed: () async {
+                if (_templateFormKey.currentState!.validate()) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        backgroundColor: regularResultBGColour,
+                        behavior: SnackBarBehavior.fixed,
+                        content: Text(
+                          'Saving template',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 18 * scaling,
+                          ),
+                        ),
+                        dismissDirection: DismissDirection.none),
+                  );
+                  newTemplate = Template.fromMap({
+                    "id": widget.templateView.id,
+                    "projectId": newProjectId,
+                    "title": titleController.text,
+                    "content": contentController.text,
+                    "notes": notesController.text,
+                  });
+                  await dbHelper.upsertTemplate(newTemplate);
+                  Navigator.of(context).pop();
+                }
+              })
+        ],
       ),
       backgroundColor: notepaperWhite,
       body: Container(
@@ -120,12 +153,16 @@ class _TemplateDetailState extends State<TemplateDetail> {
                       },
                       decoratorProps: DropDownDecoratorProps(
                         decoration: InputDecoration(
+                            constraints: BoxConstraints(
+                              maxHeight: 40 * scaling,
+                            ),
                             floatingLabelBehavior: FloatingLabelBehavior.always,
                             isDense: true,
                             filled: true,
                             fillColor: offWhite,
                             labelText: 'PROJECT',
-                            // labelText: widget.templateView.project,
+                            contentPadding: EdgeInsets.fromLTRB(
+                                10 * scaling, 0, 0, 10 * scaling),
                             labelStyle: TextStyle(fontSize: 14 * scaling),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10 * scaling),
@@ -147,7 +184,7 @@ class _TemplateDetailState extends State<TemplateDetail> {
                   ),
                 ],
               ),
-              Padding(padding: EdgeInsets.all(8 * scaling)),
+              Padding(padding: EdgeInsets.all(3 * scaling)),
               Row(children: [
                 Expanded(
                   flex: 4,
@@ -158,7 +195,9 @@ class _TemplateDetailState extends State<TemplateDetail> {
                         isDense: true,
                         filled: true,
                         fillColor: offWhite,
-                        labelText: 'TEMPLATE TITLE',
+                        labelText: 'TITLE',
+                        contentPadding: EdgeInsets.fromLTRB(10 * scaling,
+                            6 * scaling, 6 * scaling, 10 * scaling),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10 * scaling),
                         )),
@@ -207,7 +246,32 @@ class _TemplateDetailState extends State<TemplateDetail> {
                   ),
                 ),
               ]),
-              Padding(padding: EdgeInsets.all(6)),
+              Padding(padding: EdgeInsets.all(3 * scaling)),
+              Row(children: [
+                Expanded(
+                  flex: 8,
+                  child: TextFormField(
+                    controller: notesController,
+                    decoration: InputDecoration(
+                        isDense: true,
+                        filled: true,
+                        fillColor: offWhite,
+                        labelText: 'NOTES',
+                        contentPadding: EdgeInsets.fromLTRB(10 * scaling,
+                            6 * scaling, 6 * scaling, 10 * scaling),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10 * scaling),
+                        )),
+                    maxLines: 1,
+                    validator: (value) {
+                      return null;
+                    },
+                  ),
+                ),
+              ]),
+              Padding(
+                padding: EdgeInsets.all(4 * scaling),
+              ),
               Container(
                 decoration: ShapeDecoration(
                   shape: InsetBorder(width: 3 * scaling),
@@ -248,66 +312,6 @@ class _TemplateDetailState extends State<TemplateDetail> {
               Padding(
                 padding: EdgeInsets.all(6 * scaling),
               ),
-              Row(children: [
-                Expanded(
-                  flex: 8,
-                  child: TextFormField(
-                    controller: notesController,
-                    decoration: InputDecoration(
-                        isDense: true,
-                        filled: true,
-                        fillColor: offWhite,
-                        labelText: 'NOTES',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10 * scaling),
-                        )),
-                    maxLines: 1,
-                    validator: (value) {
-                      return null;
-                    },
-                  ),
-                ),
-                SizedBox(width: 10 * scaling, height: 4 * scaling),
-                Expanded(
-                  flex: 3,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      iconColor: violetAppbarColour,
-                      shadowColor: Colors.black,
-                    ),
-                    onPressed: () async {
-                      if (_templateFormKey.currentState!.validate()) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              backgroundColor: regularResultBGColour,
-                              behavior: SnackBarBehavior.fixed,
-                              // margin: EdgeInsets.only(bottom: 0.0),
-                              content: Text(
-                                'Saving template',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 18 * scaling,
-                                ),
-                              ),
-                              dismissDirection: DismissDirection.none),
-                        );
-                        newTemplate = Template.fromMap({
-                          "id": widget.templateView.id,
-                          "projectId": newProjectId,
-                          "title": titleController.text,
-                          "content": contentController.text,
-                          "notes": notesController.text,
-                        });
-                        await dbHelper.upsertTemplate(newTemplate);
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    child: const Icon(
-                      Icons.save,
-                    ),
-                  ),
-                ),
-              ]),
             ]),
           ),
         ),

@@ -109,6 +109,35 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
           "Edit ${widget.vocabularyView.title!}",
           style: TextStyle(color: notepaperWhite),
         ),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(
+              Icons.save,
+              color: greenNotePaperColour,
+            ),
+            onPressed: () async {
+              if (_vocabularyFormKey.currentState!.validate()) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                      backgroundColor: regularResultBGColour,
+                      behavior: SnackBarBehavior.fixed,
+                      // margin: EdgeInsets.only(bottom: 0.0),
+                      content: Text(
+                        'Saving vocabulary',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 18 * scaling,
+                        ),
+                      ),
+                      dismissDirection: DismissDirection.none),
+                );
+                newVocabulary = makeNewVocabulary();
+                await dbHelper.upsertVocabulary(newVocabulary);
+                Navigator.of(context).pop();
+              }
+            },
+          )
+        ],
       ),
       backgroundColor: notepaperWhite,
       body: Container(
@@ -124,7 +153,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
               vertical: 12 * scaling, horizontal: 8 * scaling),
           child: Form(
             key: _vocabularyFormKey,
-            child: ListView(padding: EdgeInsets.all(4 * scaling), children: [
+            child: ListView(padding: EdgeInsets.all(2 * scaling), children: [
               Row(
                 children: [
                   Expanded(
@@ -139,11 +168,16 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                       },
                       decoratorProps: DropDownDecoratorProps(
                         decoration: InputDecoration(
+                            constraints: BoxConstraints(
+                              maxHeight: 40 * scaling,
+                            ),
                             floatingLabelBehavior: FloatingLabelBehavior.always,
                             isDense: true,
                             filled: true,
                             fillColor: offWhite,
                             labelText: 'CATEGORY',
+                            contentPadding: EdgeInsets.fromLTRB(
+                                10 * scaling, 0, 0, 10 * scaling),
                             // labelText: widget.vocabularyView.category,
                             labelStyle: TextStyle(fontSize: 14 * scaling),
                             border: OutlineInputBorder(
@@ -176,12 +210,16 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                       },
                       decoratorProps: DropDownDecoratorProps(
                         decoration: InputDecoration(
+                            constraints: BoxConstraints(
+                              maxHeight: 40 * scaling,
+                            ),
                             floatingLabelBehavior: FloatingLabelBehavior.always,
                             isDense: true,
                             filled: true,
                             fillColor: offWhite,
                             labelText: 'PROJECT',
-                            // labelText: widget.vocabularyView.project,
+                            contentPadding: EdgeInsets.fromLTRB(
+                                10 * scaling, 0, 0, 10 * scaling),
                             labelStyle: TextStyle(fontSize: 14 * scaling),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10 * scaling),
@@ -203,7 +241,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                   ),
                 ],
               ),
-              Padding(padding: EdgeInsets.all(8)),
+              Padding(padding: EdgeInsets.all(3)),
               Row(children: [
                 Expanded(
                   flex: 3,
@@ -214,7 +252,9 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                         isDense: true,
                         filled: true,
                         fillColor: offWhite,
-                        labelText: 'VOCABULARY TITLE',
+                        labelText: 'TITLE',
+                        contentPadding: EdgeInsets.fromLTRB(10 * scaling,
+                            6 * scaling, 6 * scaling, 10 * scaling),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10 * scaling),
                         )),
@@ -250,6 +290,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                   flex: 1,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
+                      maximumSize: Size.fromHeight(40 * scaling),
                       iconColor: greenAppbarColour,
                       shadowColor: Colors.black,
                     ),
@@ -270,7 +311,62 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                   ),
                 ),
               ]),
-              Padding(padding: EdgeInsets.all(6)),
+              Padding(padding: EdgeInsets.all(1)),
+              Row(children: [
+                Expanded(
+                  flex: 6,
+                  child: TextFormField(
+                    controller: commentController,
+                    decoration: InputDecoration(
+                        // constraints: BoxConstraints(
+                        //   maxHeight: 54 * scaling,
+                        // ),
+                        isDense: true,
+                        filled: true,
+                        fillColor: offWhite,
+                        labelText: 'COMMENT',
+                        contentPadding: EdgeInsets.fromLTRB(10 * scaling,
+                            6 * scaling, 6 * scaling, 10 * scaling),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10 * scaling),
+                        )),
+                    maxLines: 1,
+                    // onChanged: (value) => onCommentChanged(),
+                    validator: (value) {
+                      return null;
+                    },
+                  ),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: const Align(
+                    alignment: Alignment.centerRight,
+                    child: Text('use?'),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4.0 * scaling),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: Switch(
+                    value: newUsethis == 1,
+                    activeColor: greenNotePaperColour,
+                    activeTrackColor: greenAppbarColour,
+                    onChanged: (bool value) {
+                      setState(() {
+                        newUsethis = value ? 1 : 0;
+                      });
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4.0 * scaling),
+                ),
+              ]),
+              Padding(
+                padding: EdgeInsets.all(3 * scaling),
+              ),
               Container(
                 decoration: ShapeDecoration(
                   shape: InsetBorder(width: 3 * scaling),
@@ -311,83 +407,6 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
               Padding(
                 padding: EdgeInsets.all(6 * scaling),
               ),
-              Row(children: [
-                Expanded(
-                  flex: 8,
-                  child: TextFormField(
-                    controller: commentController,
-                    decoration: InputDecoration(
-                        isDense: true,
-                        filled: true,
-                        fillColor: offWhite,
-                        labelText: 'COMMENT',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10 * scaling),
-                        )),
-                    maxLines: 1,
-                    // onChanged: (value) => onCommentChanged(),
-                    validator: (value) {
-                      return null;
-                    },
-                  ),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: const Align(
-                    alignment: Alignment.center,
-                    child: Text('use?'),
-                  ),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Switch(
-                    value: newUsethis == 1,
-                    activeColor: greenNotePaperColour,
-                    activeTrackColor: greenAppbarColour,
-                    onChanged: (bool value) {
-                      setState(() {
-                        newUsethis = value ? 1 : 0;
-                      });
-                    },
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4.0 * scaling),
-                ),
-                Expanded(
-                  flex: 3,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      iconColor: greenAppbarColour,
-                      shadowColor: Colors.black,
-                    ),
-                    onPressed: () async {
-                      if (_vocabularyFormKey.currentState!.validate()) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              backgroundColor: regularResultBGColour,
-                              behavior: SnackBarBehavior.fixed,
-                              // margin: EdgeInsets.only(bottom: 0.0),
-                              content: Text(
-                                'Saving vocabulary',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 18 * scaling,
-                                ),
-                              ),
-                              dismissDirection: DismissDirection.none),
-                        );
-                        newVocabulary = makeNewVocabulary();
-                        await dbHelper.upsertVocabulary(newVocabulary);
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    child: const Icon(
-                      Icons.save,
-                    ),
-                  ),
-                ),
-              ]),
             ]),
           ),
         ),

@@ -2,50 +2,51 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:balderdash/config/colours.dart';
 import 'package:balderdash/config/config.dart';
 import 'package:balderdash/database_helper/database_helper.dart';
-import 'package:balderdash/model/type.dart';
+import 'package:balderdash/screens/vocabulary_detail.dart';
+import 'package:balderdash/views/vocabulary_view.dart';
 import 'package:flutter/material.dart';
 
-class TypePage extends StatefulWidget {
-  const TypePage({super.key});
+class VocabularyPageOld extends StatefulWidget {
+  const VocabularyPageOld({super.key});
 
   @override
-  State<TypePage> createState() => _TypePageState();
+  State<VocabularyPageOld> createState() => _VocabularyPageOldState();
 }
 
-class _TypePageState extends State<TypePage> {
+class _VocabularyPageOldState extends State<VocabularyPageOld> {
   late DatabaseHelper dbHelper;
-  late Future<List<Type>> _types;
+  late Future<List<VocabularyView>> _vocabularyViews;
   final ScrollController _scrollController = ScrollController();
   int numItems = 0;
   String searchTerm = '';
-  Future<int> _getTypeListLength() async {
-    return await _types.then((value) {
+  Future<int> _getVocabularyListLength() async {
+    return await _vocabularyViews.then((value) {
       return value.length;
     });
   }
 
-  List<Type> filteredTypes = [];
+  List<VocabularyView> filteredVocabularies = [];
 
   @override
   void initState() {
     super.initState();
     dbHelper = DatabaseHelper.instance;
-    _refreshTypeList();
+    _refreshVocabularyViewList();
   }
 
   onSearch(String value) {
     searchTerm = value;
-    _refreshTypeList();
+    _refreshVocabularyViewList();
   }
 
-  void _refreshTypeList() {
+  void _refreshVocabularyViewList() {
     setState(() {
       if (searchTerm == '') {
-        _types = dbHelper.getTypes();
+        _vocabularyViews = dbHelper.getVocabularyViews();
       } else {
-        _types = dbHelper.getFilteredTypes(searchTerm);
+        _vocabularyViews = dbHelper.getFilteredVocabularyViews(searchTerm);
       }
-      _getTypeListLength().then((value) {
+      _getVocabularyListLength().then((value) {
         setState(() {
           numItems = value;
         });
@@ -53,55 +54,12 @@ class _TypePageState extends State<TypePage> {
     });
   }
 
-  void _showForm(Type? type) async {
-    final nameController = TextEditingController(text: type?.name);
-    await showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(type == null ? "New project type" : "Change type name"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(labelText: 'Name'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              final name = nameController.text;
-              if (name.isNotEmpty) {
-                if (type != null) {
-                  type?.name = nameController.text;
-                } else {
-                  type ??= Type.fromMap({"name": nameController.text});
-                }
-              }
-              await dbHelper.upsertType(type!);
-              _refreshTypeList();
-              Navigator.of(context).pop();
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
           iconTheme: IconThemeData(
-            color: yellowNotePaperColour,
+            color: greenNotePaperColour,
           ),
           backgroundColor: regularResultBGColour,
           title: SizedBox(
@@ -112,9 +70,9 @@ class _TypePageState extends State<TypePage> {
               decoration: InputDecoration(
                 filled: true,
                 fillColor: inActiveLargeSetColour,
-                hintText: "filter project types",
+                hintText: "filter vocabularies",
                 contentPadding: EdgeInsets.all(0),
-                prefixIcon: Icon(Icons.search, color: notepaperWhite),
+                prefixIcon: Icon(Icons.search, color: offWhite),
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(50 * scaling),
                     borderSide: BorderSide.none),
@@ -131,15 +89,15 @@ class _TypePageState extends State<TypePage> {
             colors: [lightBlueGrey, blueGrey],
           ),
         ),
-        child: FutureBuilder<List<Type>>(
-          future: _types,
+        child: FutureBuilder<List<VocabularyView>>(
+          future: _vocabularyViews,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
               return Center(child: Text('Error: ${snapshot.error}'));
             } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Center(child: Text('No project types found'));
+              return const Center(child: Text('No vocabularies found'));
             }
             return Scrollbar(
               controller: _scrollController,
@@ -147,7 +105,7 @@ class _TypePageState extends State<TypePage> {
                 itemCount: numItems,
                 controller: _scrollController,
                 itemBuilder: (context, index) {
-                  final type = snapshot.data![index];
+                  final vocabularyView = snapshot.data![index];
                   return Container(
                     height: 40 * scaling,
                     padding: EdgeInsets.fromLTRB(
@@ -162,14 +120,47 @@ class _TypePageState extends State<TypePage> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: <Widget>[
                         Expanded(
-                          flex: 6,
+                          flex: 3,
                           child: Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 4 * scaling, 0, 2 * scaling, 0),
                             child: AutoSizeText(
-                              type.name!,
-                              style: TextStyle(color: veryVeryDark),
+                              vocabularyView.title!,
+                              style: TextStyle(
+                                  color: vocabularyView.useThis == 1
+                                      ? veryVeryDark
+                                      : lightBlueGrey),
                               maxLines: 1,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Padding(
+                            padding: EdgeInsetsDirectional.fromSTEB(
+                                2 * scaling, 0, 2 * scaling, 0),
+                            child: AutoSizeText(
+                              vocabularyView.category!,
+                              maxLines: 1,
+                              style: TextStyle(
+                                  color: vocabularyView.useThis == 1
+                                      ? inActiveLargeSetColour
+                                      : lightBlueGrey),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Padding(
+                            padding: EdgeInsetsDirectional.fromSTEB(
+                                2 * scaling, 0, 2 * scaling, 0),
+                            child: AutoSizeText(
+                              vocabularyView.project!,
+                              maxLines: 1,
+                              style: TextStyle(
+                                  color: vocabularyView.useThis == 1
+                                      ? secondary
+                                      : lightBlueGrey),
                             ),
                           ),
                         ),
@@ -177,9 +168,21 @@ class _TypePageState extends State<TypePage> {
                           flex: 1,
                           child: IconButton(
                             icon: const Icon(Icons.edit),
-                            color: yellowAppbarColour,
+                            color: vocabularyView.useThis == 1
+                                ? greenAppbarColour
+                                : lightBlueGrey,
                             onPressed: () {
-                              _showForm(type);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => VocabularyDetail(
+                                      vocabularyView: vocabularyView),
+                                ),
+                              ).then((value) {
+                                setState(() {
+                                  _refreshVocabularyViewList();
+                                });
+                              });
                             },
                           ),
                         ),
@@ -187,21 +190,24 @@ class _TypePageState extends State<TypePage> {
                           flex: 1,
                           child: IconButton(
                             icon: const Icon(Icons.delete),
-                            color: yellowAppbarColour,
+                            color: vocabularyView.useThis == 1
+                                ? greenAppbarColour
+                                : lightBlueGrey,
                             onPressed: () async {
                               final bool isDelete =
                                   await showConfirmationAlertDialog(
                                 context,
-                                title: 'Delete ${type.name!}?',
+                                title: 'Delete ${vocabularyView.title!}?',
                                 message:
-                                    "Do you want to delete project type ${type.name!}? You cannot undo this!",
+                                    "Do you want to delete ${vocabularyView.title!}? You cannot undo this!",
                                 positiveText: 'Delete',
                                 negativeText: 'Cancel',
                                 highlightNegative: true,
                               );
+
                               if (isDelete) {
-                                await dbHelper.deleteType(type);
-                                _refreshTypeList();
+                                await dbHelper.deleteVocabulary(vocabularyView);
+                                _refreshVocabularyViewList();
                               }
                             },
                           ),
@@ -216,10 +222,31 @@ class _TypePageState extends State<TypePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: yellowNotePaperColour,
+        backgroundColor: greenNotePaperColour,
         child: const Icon(Icons.add),
-        onPressed: () {
-          _showForm(null);
+        onPressed: () async {
+          VocabularyView newVocabularyView = VocabularyView.fromMap({
+            // "id": newVocabulary.id,
+            "categoryId": null,
+            "category": '',
+            "projectId": null,
+            "project": '',
+            "title": newVocabularyTitle,
+            "content": '',
+            "comment": 'comment',
+            "useThis": 1
+          });
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  VocabularyDetail(vocabularyView: newVocabularyView),
+            ),
+          ).then((value) {
+            setState(() {
+              _refreshVocabularyViewList();
+            });
+          });
         },
       ),
     );
