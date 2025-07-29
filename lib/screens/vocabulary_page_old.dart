@@ -14,7 +14,6 @@ class VocabularyPageOld extends StatefulWidget {
 }
 
 class _VocabularyPageOldState extends State<VocabularyPageOld> {
-  late DatabaseHelper dbHelper;
   late Future<List<VocabularyView>> _vocabularyViews;
   final ScrollController _scrollController = ScrollController();
   int numItems = 0;
@@ -30,7 +29,6 @@ class _VocabularyPageOldState extends State<VocabularyPageOld> {
   @override
   void initState() {
     super.initState();
-    dbHelper = DatabaseHelper.instance;
     _refreshVocabularyViewList();
   }
 
@@ -42,9 +40,10 @@ class _VocabularyPageOldState extends State<VocabularyPageOld> {
   void _refreshVocabularyViewList() {
     setState(() {
       if (searchTerm == '') {
-        _vocabularyViews = dbHelper.getVocabularyViews();
+        _vocabularyViews = DatabaseHelper().getVocabularyViews();
       } else {
-        _vocabularyViews = dbHelper.getFilteredVocabularyViews(searchTerm);
+        _vocabularyViews =
+            DatabaseHelper().getFilteredVocabularyViews(searchTerm);
       }
       _getVocabularyListLength().then((value) {
         setState(() {
@@ -206,7 +205,8 @@ class _VocabularyPageOldState extends State<VocabularyPageOld> {
                               );
 
                               if (isDelete) {
-                                await dbHelper.deleteVocabulary(vocabularyView);
+                                await DatabaseHelper()
+                                    .deleteVocabulary(vocabularyView);
                                 _refreshVocabularyViewList();
                               }
                             },

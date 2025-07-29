@@ -27,7 +27,6 @@ class ImExport extends StatefulWidget {
 class _ImExportState extends State<ImExport> {
   final _prjDDKey = GlobalKey<DropdownSearchState<Project>>();
   final _settingsFormKey = GlobalKey<FormState>();
-  late DatabaseHelper dbHelper;
   late Future<List<Project>> _projects;
   // late int projectId = 1;
   late Project curProject;
@@ -63,14 +62,13 @@ class _ImExportState extends State<ImExport> {
 
   @override
   void initState() {
-    dbHelper = DatabaseHelper.instance;
     initComplete = false;
     super.initState();
     loadProjects();
   }
 
   Future<void> loadProjects() async {
-    _projects = dbHelper.getProjectsAbove(1);
+    _projects = DatabaseHelper().getProjectsAbove(0);
     initComplete = true;
   }
 
@@ -91,11 +89,28 @@ class _ImExportState extends State<ImExport> {
           .then((_) => saveTemplateFiles())
           .then((_) => saveNonsense());
     }
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            backgroundColor: cyanAppbarColour,
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(milliseconds: 1200),
+            content: Text(
+              "'${curProject.title}' saved in Nonsense format",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 18 * scaling,
+              ),
+            ),
+            dismissDirection: DismissDirection.up),
+      );
+    }
   }
 
   Future<void> saveDataFile(int projectId) async {
     StringBuffer sbd = StringBuffer();
-    _projectVocabularies = await dbHelper.getVocabulariesByProject(projectId);
+    _projectVocabularies =
+        await DatabaseHelper().getVocabulariesByProject(projectId);
     for (Vocabulary voc in _projectVocabularies) {
       sbd.write(voc.title?.toUpperCase());
       sbd.write("\n");
@@ -113,7 +128,8 @@ class _ImExportState extends State<ImExport> {
   }
 
   Future<void> saveTemplateFiles() async {
-    _projectTemplates = await dbHelper.getTemplatesByProject(curProject.id!);
+    _projectTemplates =
+        await DatabaseHelper().getTemplatesByProject(curProject.id!);
     if (_projectTemplates.isNotEmpty) {
       for (Template tpl in _projectTemplates) {
         String tplType = tpl.isHtml == 1
@@ -159,7 +175,7 @@ class _ImExportState extends State<ImExport> {
       sb.write(await createVocabularyInserts(curProject.id!));
       sb.writeln(lvocMark);
       sb.write(await createVocabularyInserts(1));
-      if (await dbHelper.anyTemplatesForProject(curProject.id!)) {
+      if (await DatabaseHelper().anyTemplatesForProject(curProject.id!)) {
         sb.writeln(tmplMark);
         sb.write(await createTemplateInserts(curProject.id!));
       }
@@ -171,11 +187,28 @@ class _ImExportState extends State<ImExport> {
           curProject.title!.toLowerCase().replaceAll(' ', '_');
       _defaultFileNameController.text = "$fileNameTitle.$_extension";
       await _saveFile();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              backgroundColor: cyanAppbarColour,
+              behavior: SnackBarBehavior.floating,
+              duration: Duration(milliseconds: 1200),
+              content: Text(
+                "project '${curProject.title}' exported",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18 * scaling,
+                ),
+              ),
+              dismissDirection: DismissDirection.up),
+        );
+      }
     }
   }
 
   Future<String> createVocabularyInserts(int projectId) async {
-    List<Vocabulary> vocs = await dbHelper.getVocabulariesByProject(projectId);
+    List<Vocabulary> vocs =
+        await DatabaseHelper().getVocabulariesByProject(projectId);
     StringBuffer sbv = StringBuffer();
     for (Vocabulary voc in vocs) {
       sbv.writeln(voc.dump());
@@ -184,7 +217,8 @@ class _ImExportState extends State<ImExport> {
   }
 
   Future<String> createTemplateInserts(int projectId) async {
-    List<Template> tpls = await dbHelper.getTemplatesByProject(projectId);
+    List<Template> tpls =
+        await DatabaseHelper().getTemplatesByProject(projectId);
     StringBuffer sbt = StringBuffer();
     for (Template tpl in tpls) {
       sbt.writeln(tpl.dump());
@@ -285,7 +319,7 @@ class _ImExportState extends State<ImExport> {
         // if user chose to overwrite: delete existing project vocabularies
         if (userChoice == 3) {
           print("`Choice 3: delete vocabularies for project $newProjectId");
-          dbHelper.deleteProjectVocabularies(newProjectId);
+          DatabaseHelper().deleteProjectVocabularies(newProjectId);
         }
         // choice 2 = new prj, 3 = emptied prj, 4 = merge vocs
         nrPVocs = await insertVocs(true, true);
@@ -362,7 +396,8 @@ class _ImExportState extends State<ImExport> {
   Future<int> upsertProject() async {
     int importAction = 1;
     String prjNotes = '';
-    Project? prj = await dbHelper.getProjectByTitle(impTitle.toLowerCase());
+    Project? prj =
+        await DatabaseHelper().getProjectByTitle(impTitle.toLowerCase());
     if (prj == null) {
       // no existing project with that title. createProject sets newProjectId
       createProject(impTitle, prjNotes);
@@ -405,7 +440,8 @@ class _ImExportState extends State<ImExport> {
           }
           i++;
         } while (
-            await dbHelper.getProjectByTitle(impTitle.toLowerCase()) != null);
+            await DatabaseHelper().getProjectByTitle(impTitle.toLowerCase()) !=
+                null);
         if (impTitle == 'nothing_chosen_abort') {
           return 1;
         }
@@ -415,7 +451,6 @@ class _ImExportState extends State<ImExport> {
         print("nieuwnieuwnieuw: $newProjectId");
         return 2;
       } else if (importAction == 3) {
-        // await dbHelper.deleteTemplate(templateView);
         bool isReplace = false;
         if (mounted) {
           isReplace = await showConfirmationChoiceDialog(
@@ -466,7 +501,7 @@ class _ImExportState extends State<ImExport> {
       notes = newNotes;
     }
     print("create project $title");
-    return await dbHelper.insertAndGetId(
+    return await DatabaseHelper().insertAndGetId(
         "INSERT INTO project (typeId, authorId, title, notes) VALUES (2, 3, '$title', '$notes');");
   }
 
@@ -499,7 +534,7 @@ class _ImExportState extends State<ImExport> {
     if (doInsert) {
       print("insert ${insertLines.length} vocs project $pid");
       for (String dump in insertLines) {
-        await dbHelper.upsertVocabulary(Vocabulary.fromDump(dump, pid));
+        await DatabaseHelper().upsertVocabulary(Vocabulary.fromDump(dump, pid));
       }
       return insertLines.length;
     } else {
@@ -520,7 +555,8 @@ class _ImExportState extends State<ImExport> {
     }
     print("insert ${insertLines.length} templated project $newProjectId");
     for (String dump in insertLines) {
-      await dbHelper.upsertTemplate(Template.fromDump(dump, newProjectId));
+      await DatabaseHelper()
+          .upsertTemplate(Template.fromDump(dump, newProjectId));
     }
     return insertLines.length;
   }

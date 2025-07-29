@@ -19,7 +19,6 @@ class _ProjectDetailState extends State<ProjectDetail> {
   final _typeDDKey = GlobalKey<DropdownSearchState<Type>>();
   final _authDDKey = GlobalKey<DropdownSearchState<Author>>();
   final _projectFormKey = GlobalKey<FormState>();
-  late DatabaseHelper dbHelper;
   late Future<List<Type>> _types;
   late Future<List<Author>> _authors;
   late List<ProjectView> pvList;
@@ -40,16 +39,15 @@ class _ProjectDetailState extends State<ProjectDetail> {
   @override
   void initState() {
     super.initState();
-    dbHelper = DatabaseHelper.instance;
     _refreshLists();
     isExistingPV = (null != widget.projectView.id);
     if (isExistingPV) {
       newId = widget.projectView.id!;
       newTypeId = widget.projectView.typeId!;
-      dbHelper.getType(newTypeId).then(
+      DatabaseHelper().getType(newTypeId).then(
           (type) => _typeDDKey.currentState?.changeSelectedItem(type as Type?));
       newAuthorId = widget.projectView.authorId!;
-      dbHelper.getAuthor(newAuthorId).then((auth) =>
+      DatabaseHelper().getAuthor(newAuthorId).then((auth) =>
           _authDDKey.currentState?.changeSelectedItem(auth as Author?));
     }
     newTitle = widget.projectView.title ?? "";
@@ -60,8 +58,8 @@ class _ProjectDetailState extends State<ProjectDetail> {
 
   void _refreshLists() {
     setState(() {
-      _types = dbHelper.getTypes();
-      _authors = dbHelper.getAuthors();
+      _types = DatabaseHelper().getTypes();
+      _authors = DatabaseHelper().getAuthors();
     });
   }
 
@@ -75,7 +73,7 @@ class _ProjectDetailState extends State<ProjectDetail> {
 
   onTitleChanged(String title) async {
     if (!pvListFetched) {
-      pvList = await dbHelper.getProjectViews();
+      pvList = await DatabaseHelper().getProjectViews();
       pvListFetched = true;
     }
     newTitle = title;
@@ -83,7 +81,7 @@ class _ProjectDetailState extends State<ProjectDetail> {
 
   onNotesChanged(String notes) async {
     if (!pvListFetched) {
-      pvList = await dbHelper.getProjectViews();
+      pvList = await DatabaseHelper().getProjectViews();
       pvListFetched = true;
     }
     newNotes = notes;
@@ -91,7 +89,7 @@ class _ProjectDetailState extends State<ProjectDetail> {
 
   initialisePvList() async {
     if (!pvListFetched) {
-      pvList = await dbHelper.getProjectViews();
+      pvList = await DatabaseHelper().getProjectViews();
       pvListFetched = true;
     }
   }
@@ -140,7 +138,7 @@ class _ProjectDetailState extends State<ProjectDetail> {
                   "title": newTitle,
                   "notes": newNotes,
                 });
-                await dbHelper.upsertProject(newProject);
+                await DatabaseHelper().upsertProject(newProject);
                 Navigator.of(context).pop();
               }
             },
@@ -277,7 +275,7 @@ class _ProjectDetailState extends State<ProjectDetail> {
                       }
                       List<ProjectView> titlePVList =
                           pvList.where((i) => i.title == value).toList();
-                      if (null == newId && titlePVList.isNotEmpty) {
+                      if (!isExistingPV && titlePVList.isNotEmpty) {
                         return "Project '${titlePVList[0].title!}' exist, choose another title}'";
                       }
                       return null;

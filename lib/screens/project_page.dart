@@ -14,7 +14,6 @@ class ProjectPage extends StatefulWidget {
 }
 
 class _ProjectPageState extends State<ProjectPage> {
-  late DatabaseHelper dbHelper;
   late Future<List<ProjectView>> _projectViews;
   final ScrollController _scrollController = ScrollController();
   int numItems = 0;
@@ -30,7 +29,6 @@ class _ProjectPageState extends State<ProjectPage> {
   @override
   void initState() {
     super.initState();
-    dbHelper = DatabaseHelper.instance;
     _refreshProjectViewList();
   }
 
@@ -42,9 +40,9 @@ class _ProjectPageState extends State<ProjectPage> {
   void _refreshProjectViewList() {
     setState(() {
       if (searchTerm == '') {
-        _projectViews = dbHelper.getProjectViews();
+        _projectViews = DatabaseHelper().getProjectViews();
       } else {
-        _projectViews = dbHelper.getFilteredProjectViews(searchTerm);
+        _projectViews = DatabaseHelper().getFilteredProjectViews(searchTerm);
       }
       _getVocabularyListLength().then((value) {
         setState(() {
@@ -132,7 +130,7 @@ class _ProjectPageState extends State<ProjectPage> {
                           ),
                         ),
                         Expanded(
-                          flex: 2,
+                          flex: 3,
                           child: Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 2 * scaling, 0, 2 * scaling, 0),
@@ -144,7 +142,7 @@ class _ProjectPageState extends State<ProjectPage> {
                           ),
                         ),
                         Expanded(
-                          flex: 4,
+                          flex: 3,
                           child: Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
                                 2 * scaling, 0, 2 * scaling, 0),
@@ -193,7 +191,8 @@ class _ProjectPageState extends State<ProjectPage> {
                               );
 
                               if (isDelete) {
-                                await dbHelper.deleteProject(projectView);
+                                await DatabaseHelper()
+                                    .deleteProject(projectView);
                                 _refreshProjectViewList();
                               }
                             },

@@ -80,13 +80,13 @@ const String tplInsertInto =
 const String pvocMark = "--projectvocabularies";
 const String lvocMark = "--libraryvocabularies";
 const String tmplMark = "--templates";
-const String pidMark = "§@pId@§";
+// const String pidMark = "§@pId@§";
 
-const String sep1 = "§1§";
-const String sep2 = "§2§";
-const String sep3 = "§3§";
-const String sep4 = "§4§";
-const String sep5 = "§5§";
+const String sep1 = "%1@";
+const String sep2 = "%2@";
+const String sep3 = "%3@";
+const String sep4 = "%4@";
+const String sep5 = "%5@";
 const String vocInsert = "INSERT INTO vocabulary (";
 
 Map<String, String> strfToDart = {

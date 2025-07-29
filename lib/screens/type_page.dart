@@ -13,7 +13,6 @@ class TypePage extends StatefulWidget {
 }
 
 class _TypePageState extends State<TypePage> {
-  late DatabaseHelper dbHelper;
   late Future<List<Type>> _types;
   final ScrollController _scrollController = ScrollController();
   int numItems = 0;
@@ -29,7 +28,6 @@ class _TypePageState extends State<TypePage> {
   @override
   void initState() {
     super.initState();
-    dbHelper = DatabaseHelper.instance;
     _refreshTypeList();
   }
 
@@ -41,9 +39,9 @@ class _TypePageState extends State<TypePage> {
   void _refreshTypeList() {
     setState(() {
       if (searchTerm == '') {
-        _types = dbHelper.getTypes();
+        _types = DatabaseHelper().getTypes();
       } else {
-        _types = dbHelper.getFilteredTypes(searchTerm);
+        _types = DatabaseHelper().getFilteredTypes(searchTerm);
       }
       _getTypeListLength().then((value) {
         setState(() {
@@ -85,7 +83,7 @@ class _TypePageState extends State<TypePage> {
                   type ??= Type.fromMap({"name": nameController.text});
                 }
               }
-              await dbHelper.upsertType(type!);
+              await DatabaseHelper().upsertType(type!);
               _refreshTypeList();
               Navigator.of(context).pop();
             },
@@ -200,7 +198,7 @@ class _TypePageState extends State<TypePage> {
                                 highlightNegative: true,
                               );
                               if (isDelete) {
-                                await dbHelper.deleteType(type);
+                                await DatabaseHelper().deleteType(type);
                                 _refreshTypeList();
                               }
                             },

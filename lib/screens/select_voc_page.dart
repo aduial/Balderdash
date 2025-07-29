@@ -22,7 +22,7 @@ class SelectVocPage extends StatefulWidget {
 }
 
 class _SelectVocPageState extends State<SelectVocPage> {
-  static SharedPreferences? _preferences;
+  final SharedPreferencesAsync asyncPrefs = SharedPreferencesAsync();
 
   final _advancedDrawerController = AdvancedDrawerController();
   final _catDDKey = GlobalKey<DropdownSearchState<Category>>();
@@ -30,7 +30,6 @@ class _SelectVocPageState extends State<SelectVocPage> {
 
   final ScrollController _scrollController = ScrollController();
 
-  late DatabaseHelper dbHelper;
   late Future<List<Project>> _projects;
   late Future<List<Category>> _categories;
   late List<VocabularyView> vvList;
@@ -55,29 +54,35 @@ class _SelectVocPageState extends State<SelectVocPage> {
   @override
   void initState() {
     super.initState();
-    dbHelper = DatabaseHelper.instance;
     loadPreferences();
     _refreshVocabularyViewList(false);
-    setSubTitle();
   }
 
   Future loadPreferences() async {
-    final prefs = await SharedPreferences.getInstance();
-    projectId = prefs.getInt(defaultProject) ?? 1;
-    categoryId = prefs.getInt(defaultCategory) ?? 1;
-    // print("pid = $projectId; cid = $categoryId");
-    _projects = dbHelper.getProjects();
-    _categories = dbHelper.getCategoriesAbove(0);
-    curProject = await dbHelper.getProject(projectId);
-    curCategory = await dbHelper.getCategory(categoryId);
-    _prjDDKey.currentState?.changeSelectedItem(curProject);
-    _catDDKey.currentState?.changeSelectedItem(curCategory);
+    categoryId = await asyncPrefs.getInt(defaultCategory) ?? 1;
+    projectId = await asyncPrefs.getInt(defaultProject) ?? 1;
+    _projects = DatabaseHelper().getProjectsAbove(0);
+    _categories = DatabaseHelper().getCategoriesAbove(0);
+    await setCurrentCategory(categoryId);
+    await setCurrentProject(projectId);
     initComplete = true;
+  }
+
+  Future<void> setCurrentCategory(int id) async {
+    categoryId = id;
+    curCategory = await DatabaseHelper().getCategory(id);
+    _catDDKey.currentState?.changeSelectedItem(curCategory);
+  }
+
+  Future<void> setCurrentProject(int id) async {
+    projectId = id;
+    curProject = await DatabaseHelper().getProject(id);
+    _prjDDKey.currentState?.changeSelectedItem(curProject);
   }
 
   void _refreshVocabularyViewList(bool findUsage) {
     setState(() {
-      _vocabularyViews = dbHelper.getFilteredVocabulariesBPAC(
+      _vocabularyViews = DatabaseHelper().getFilteredVocabulariesBPAC(
           searchTerm, projectId, categoryId, findUsage);
       subTitle = setSubTitle();
       _getVocabularyListLength().then((value) {

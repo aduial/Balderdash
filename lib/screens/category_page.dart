@@ -14,7 +14,6 @@ class CategoryPage extends StatefulWidget {
 }
 
 class _CategoryPageState extends State<CategoryPage> {
-  late DatabaseHelper dbHelper;
   late Future<List<CategoryView>> _categoryViews;
   final ScrollController _scrollController = ScrollController();
   int numItems = 0;
@@ -30,7 +29,6 @@ class _CategoryPageState extends State<CategoryPage> {
   @override
   void initState() {
     super.initState();
-    dbHelper = DatabaseHelper.instance;
     _refreshCategoryViewList();
   }
 
@@ -42,9 +40,9 @@ class _CategoryPageState extends State<CategoryPage> {
   void _refreshCategoryViewList() {
     setState(() {
       if (searchTerm == '') {
-        _categoryViews = dbHelper.getCategoryViews();
+        _categoryViews = DatabaseHelper().getCategoryViews();
       } else {
-        _categoryViews = dbHelper.getFilteredCategoryViews(searchTerm);
+        _categoryViews = DatabaseHelper().getFilteredCategoryViews(searchTerm);
       }
       _getCategoryListLength().then((value) {
         setState(() {
@@ -181,7 +179,8 @@ class _CategoryPageState extends State<CategoryPage> {
                               );
 
                               if (isDelete) {
-                                await dbHelper.deleteCategory(categoryView);
+                                await DatabaseHelper()
+                                    .deleteCategory(categoryView);
                                 _refreshCategoryViewList();
                               }
                             },

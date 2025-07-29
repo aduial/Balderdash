@@ -13,7 +13,6 @@ class AuthorPage extends StatefulWidget {
 }
 
 class _AuthorPageState extends State<AuthorPage> {
-  late DatabaseHelper dbHelper;
   late Future<List<Author>> _authors;
   final ScrollController _scrollController = ScrollController();
   int numItems = 0;
@@ -29,7 +28,6 @@ class _AuthorPageState extends State<AuthorPage> {
   @override
   void initState() {
     super.initState();
-    dbHelper = DatabaseHelper.instance;
     _refreshAuthorList();
   }
 
@@ -41,9 +39,9 @@ class _AuthorPageState extends State<AuthorPage> {
   void _refreshAuthorList() {
     setState(() {
       if (searchTerm == '') {
-        _authors = dbHelper.getAuthors();
+        _authors = DatabaseHelper().getAuthors();
       } else {
-        _authors = dbHelper.getFilteredAuthors(searchTerm);
+        _authors = DatabaseHelper().getFilteredAuthors(searchTerm);
       }
       _getAuthorListLength().then((value) {
         setState(() {
@@ -85,7 +83,7 @@ class _AuthorPageState extends State<AuthorPage> {
                   author ??= Author.fromMap({"name": nameController.text});
                 }
               }
-              await dbHelper.upsertAuthor(author!);
+              await DatabaseHelper().upsertAuthor(author!);
               _refreshAuthorList();
               Navigator.of(context).pop();
             },
@@ -212,7 +210,7 @@ class _AuthorPageState extends State<AuthorPage> {
                                   highlightNegative: true,
                                 );
                                 if (isDelete) {
-                                  await dbHelper.deleteAuthor(author);
+                                  await DatabaseHelper().deleteAuthor(author);
                                   _refreshAuthorList();
                                 }
                               },

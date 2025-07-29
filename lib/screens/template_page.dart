@@ -14,9 +14,10 @@ class TemplatePage extends StatefulWidget {
 }
 
 class _TemplatePageState extends State<TemplatePage> {
-  late DatabaseHelper dbHelper;
   late Future<List<TemplateView>> _templateViews;
   final ScrollController _scrollController = ScrollController();
+  final TextEditingController searchController =
+      TextEditingController(text: '');
   int numItems = 0;
   String searchTerm = '';
   Future<int> _getTemplateListLength() async {
@@ -30,21 +31,20 @@ class _TemplatePageState extends State<TemplatePage> {
   @override
   void initState() {
     super.initState();
-    dbHelper = DatabaseHelper.instance;
     _refreshTemplateViewList();
   }
 
-  onSearch(String value) {
-    searchTerm = value;
+  onSearch() {
     _refreshTemplateViewList();
   }
 
   void _refreshTemplateViewList() {
     setState(() {
-      if (searchTerm == '') {
-        _templateViews = dbHelper.getTemplateViews();
+      if (searchController.text.isEmpty) {
+        _templateViews = DatabaseHelper().getTemplateViews();
       } else {
-        _templateViews = dbHelper.getFilteredTemplateViews(searchTerm);
+        _templateViews =
+            DatabaseHelper().getFilteredTemplateViews(searchController.text);
       }
       _getTemplateListLength().then((value) {
         setState(() {
@@ -66,7 +66,8 @@ class _TemplatePageState extends State<TemplatePage> {
             height: 30 * scaling,
             child: TextField(
               style: TextStyle(color: offWhite, fontSize: 16 * scaling),
-              onChanged: (value) => onSearch(value),
+              controller: searchController,
+              onChanged: (value) => onSearch(),
               decoration: InputDecoration(
                 filled: true,
                 fillColor: inActiveLargeSetColour,
@@ -191,7 +192,8 @@ class _TemplatePageState extends State<TemplatePage> {
                               );
 
                               if (isDelete) {
-                                await dbHelper.deleteTemplate(templateView);
+                                await DatabaseHelper()
+                                    .deleteTemplate(templateView);
                                 _refreshTemplateViewList();
                               }
                             },

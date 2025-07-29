@@ -17,41 +17,42 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DatabaseHelper {
-  static final DatabaseHelper instance = DatabaseHelper._init();
-  DatabaseHelper._init();
-  late Database _database;
+  static final _dbName = "balderdash.db";
+  static final _dbVersion = 1;
+  static final _typeTableName = "type";
+  static final _authorTableName = "author";
+  static final _projectTableName = "project";
+  static final _templateTableName = "template";
+  static final _categoryTableName = "category";
+  static final _vocabularyTableName = "vocabulary";
 
-  static const _dbName = "balderdash.db";
-  static const _dbVersion = 1;
-  static const _typeTableName = "type";
-  static const _authorTableName = "author";
-  static const _projectTableName = "project";
-  static const _templateTableName = "template";
-  static const _categoryTableName = "category";
-  static const _vocabularyTableName = "vocabulary";
+  // Singleton pattern
+  static final DatabaseHelper _instance = DatabaseHelper._internal();
+  factory DatabaseHelper() => _instance;
+  DatabaseHelper._internal();
+
+  static Database? _database;
 
   Future<Database> get database async {
-    // _database = await initiateDatabase();
-    _database = await _initDB(_dbName);
-    return _database;
+    _database ??= await _initDB();
+    return _database!;
   }
 
   // return database if already available in App directory
   // else, copy from assets folder to app directory
-  Future<Database> _initDB(String dbName) async {
+  Future<Database> _initDB() async {
     io.Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    String dbPath = join(documentsDirectory.path, dbName);
+    String dbPath = join(documentsDirectory.path, _dbName);
     bool dbExists = await io.File(dbPath).exists();
     if (!dbExists) {
       // Copy from asset
-      ByteData data = await rootBundle.load(join("assets", dbName));
+      ByteData data = await rootBundle.load(join("assets", _dbName));
       List<int> bytes =
           data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
       // Write and flush the bytes written
       await io.File(dbPath).writeAsBytes(bytes, flush: true);
     }
-    print('DB location: $dbPath');
-    return await openDatabase(dbPath, version: _dbVersion);
+    return await openDatabase(dbPath, version: 1);
   }
 
   Future<void> makeBackup(bool withTimestamp) async {
@@ -130,7 +131,7 @@ class DatabaseHelper {
 
   // get list of authors
   Future<List<Author>> getAuthors() async {
-    Database db = await instance.database;
+    final db = await database;
     final List<Map<String, dynamic>> results =
         await db.query(_authorTableName, orderBy: 'name ASC');
     List<Author> authors = [];
@@ -143,7 +144,7 @@ class DatabaseHelper {
 
   // get Category
   Future<Author> getAuthor(int id) async {
-    final db = await instance.database;
+    final db = await database;
     final map = await db.rawQuery(
         "SELECT * FROM $_authorTableName WHERE "
         "id = ? "
@@ -158,7 +159,7 @@ class DatabaseHelper {
 
   // get filtered list of Authors
   Future<List<Author>> getFilteredAuthors(String searchTerm) async {
-    Database db = await instance.database;
+    final db = await database;
     // final List<Map<String, dynamic>> results = await db.query(_vocabularyTableName, orderBy: 'title ASC');
     final List<Map<String, dynamic>> results = await db.rawQuery(
         "SELECT * "
@@ -175,7 +176,7 @@ class DatabaseHelper {
 
   // Inserting and updating an Author
   Future<Author> upsertAuthor(Author author) async {
-    Database db = await instance.database;
+    final db = await database;
     var count = Sqflite.firstIntValue(await db.rawQuery(
         "SELECT COUNT(*) FROM $_authorTableName WHERE id = ?;", [author.id]));
     if (count == 0) {
@@ -190,7 +191,7 @@ class DatabaseHelper {
 
   // Delete Author
   Future<int> deleteAuthor(Author author) async {
-    Database db = await instance.database;
+    final db = await database;
     return await db.delete(
       _authorTableName,
       where: "id = ?",
@@ -200,7 +201,7 @@ class DatabaseHelper {
 
   // Inserting and updating a category
   Future<Category> upsertCategory(Category category) async {
-    Database db = await instance.database;
+    final db = await database;
     var count = Sqflite.firstIntValue(await db.rawQuery(
         "SELECT COUNT(*) FROM $_categoryTableName WHERE id = ?;",
         [category.id]));
@@ -216,7 +217,7 @@ class DatabaseHelper {
 
   // get Category
   Future<Category> getCategory(int id) async {
-    final db = await instance.database;
+    final db = await database;
     final map = await db.rawQuery(
         "SELECT * FROM $_categoryTableName WHERE "
         "id = ? "
@@ -231,7 +232,7 @@ class DatabaseHelper {
 
   // get list of categories
   Future<List<Category>> getCategoriesAbove(int id) async {
-    Database db = await instance.database;
+    final db = await database;
     final List<Map<String, dynamic>> results = await db.rawQuery(
       "SELECT * FROM $_categoryTableName WHERE "
       "id > $id "
@@ -247,7 +248,7 @@ class DatabaseHelper {
 
   // get list of CategoryViews above id = 1 (None)
   Future<List<CategoryView>> getCategoryViews() async {
-    Database db = await instance.database;
+    final db = await database;
     // final List<Map<String, dynamic>> results = await db.query(_vocabularyTableName, orderBy: 'title ASC');
     final List<Map<String, dynamic>> results = await db.rawQuery(
         "SELECT c.id, c.parentId, IFNULL(cp.name, 'n/a') AS parent, c.name, c.comment "
@@ -264,7 +265,7 @@ class DatabaseHelper {
 
   // get filtered list of CategoryViews
   Future<List<CategoryView>> getFilteredCategoryViews(String searchTerm) async {
-    Database db = await instance.database;
+    final db = await database;
     final List<Map<String, dynamic>> results = await db.rawQuery(
         "SELECT c.id, c.parentId, IFNULL(cp.name, 'n/a') AS parent, c.name, c.comment "
         "FROM $_categoryTableName c "
@@ -281,7 +282,7 @@ class DatabaseHelper {
 
   // get children of a parent category
   Future<List<Category>> getChildCategories(int parentId) async {
-    Database db = await instance.database;
+    final db = await database;
     List<Map<String, dynamic>> results = await db.query(_categoryTableName,
         where: "parentId = ?", whereArgs: [parentId]);
     List<Category> categories = [];
@@ -294,7 +295,7 @@ class DatabaseHelper {
 
   // Delete Category
   Future<int> deleteCategory(CategoryView categoryView) async {
-    Database db = await instance.database;
+    final db = await database;
     return await db.delete(
       _categoryTableName,
       where: "id = ?",
@@ -304,7 +305,7 @@ class DatabaseHelper {
 
   // Inserting and updating a Project
   Future<Project> upsertProject(Project project) async {
-    Database db = await instance.database;
+    final db = await database;
     var count = Sqflite.firstIntValue(await db.rawQuery(
         "SELECT COUNT(*) FROM $_projectTableName WHERE id = ?", [project.id]));
     if (count == 0) {
@@ -317,22 +318,9 @@ class DatabaseHelper {
     return project;
   }
 
-  // get list of projects
-  Future<List<Project>> getProjects() async {
-    Database db = await instance.database;
-    final List<Map<String, dynamic>> results =
-        await db.query(_projectTableName, orderBy: 'id ASC');
-    List<Project> projects = [];
-    for (var result in results) {
-      Project project = Project.fromMap(result);
-      projects.add(project);
-    }
-    return projects;
-  }
-
-  // get list of projects starting at id = 2
+  // get list of projects starting at id = ?
   Future<List<Project>> getProjectsAbove(int id) async {
-    Database db = await instance.database;
+    final db = await database;
     final List<Map<String, dynamic>> results = await db.query(_projectTableName,
         where: "id > ?", whereArgs: [id], orderBy: 'id ASC');
     List<Project> projects = [];
@@ -345,7 +333,7 @@ class DatabaseHelper {
 
   // get a specific project
   Future<Project> getProject(int id) async {
-    Database db = await instance.database;
+    final db = await database;
     final map = await db
         .rawQuery("SELECT * FROM $_projectTableName WHERE id = ?", [id]);
     if (map.isNotEmpty) {
@@ -357,7 +345,7 @@ class DatabaseHelper {
 
   // get a specific project
   Future<Project?> getProjectByTitle(String title) async {
-    Database db = await instance.database;
+    final db = await database;
     final map = await db.rawQuery(
         "SELECT * FROM $_projectTableName WHERE lower(title) = ?", [title]);
     if (map.isNotEmpty) {
@@ -371,7 +359,7 @@ class DatabaseHelper {
 
   // get list of Project views above id = 1
   Future<List<ProjectView>> getProjectViews() async {
-    Database db = await instance.database;
+    final db = await database;
     // final List<Map<String, dynamic>> results = await db.query(_vocabularyTableName, orderBy: 'title ASC');
     final List<Map<String, dynamic>> results = await db.rawQuery(
         "SELECT p.id, p.typeId, t.name AS type, p.authorId, a.name AS author, p.title, p.notes "
@@ -389,7 +377,7 @@ class DatabaseHelper {
 
   // get filtered list of Project views
   Future<List<ProjectView>> getFilteredProjectViews(String searchTerm) async {
-    Database db = await instance.database;
+    final db = await database;
     final List<Map<String, dynamic>> results = await db.rawQuery(
         "SELECT p.id, p.typeId, t.name AS type, p.authorId, a.name AS author, p.title, p.notes "
         "FROM $_projectTableName p "
@@ -407,7 +395,7 @@ class DatabaseHelper {
 
   // get a specific projectView
   Future<ProjectView> getProjectView(int id) async {
-    Database db = await instance.database;
+    final db = await database;
     final map = await db.rawQuery(
         "SELECT p.id, p.typeId, t.name AS type, p.authorId, a.name AS author, p.title, p.notes "
         "FROM $_projectTableName p "
@@ -424,7 +412,7 @@ class DatabaseHelper {
 
   // get list of projects of a certain type
   Future<List<Project>> getProjectsByType(int typeId) async {
-    Database db = await instance.database;
+    final db = await database;
     final List<Map<String, dynamic>> results = await db.query(_projectTableName,
         where: "typeId = ?", whereArgs: [typeId], orderBy: 'title ASC');
     List<Project> projects = [];
@@ -437,7 +425,7 @@ class DatabaseHelper {
 
   // get list of all projects of a certain author
   Future<List<Project>> getProjectsByAuthor(int authorId) async {
-    Database db = await instance.database;
+    final db = await database;
     final List<Map<String, dynamic>> results = await db.query(_projectTableName,
         where: "authorId = ?", whereArgs: [authorId], orderBy: 'title ASC');
     List<Project> projects = [];
@@ -450,7 +438,7 @@ class DatabaseHelper {
 
   // Delete Project by View
   Future<int> deleteProject(ProjectView project) async {
-    Database db = await instance.database;
+    final db = await database;
     return await db.delete(
       _projectTableName,
       where: "id = ?",
@@ -460,7 +448,7 @@ class DatabaseHelper {
 
   // Inserting and updating a Template
   Future<Template> upsertTemplate(Template template) async {
-    Database db = await instance.database;
+    final db = await database;
     var count = Sqflite.firstIntValue(await db.rawQuery(
         "SELECT COUNT(*) FROM $_templateTableName WHERE projectId = ? "
         "AND title = ? AND isHtml = ?",
@@ -478,7 +466,7 @@ class DatabaseHelper {
 
   // get list of templates
   Future<List<Template>> getTemplates() async {
-    Database db = await instance.database;
+    final db = await database;
     final List<Map<String, dynamic>> results =
         await db.query(_templateTableName, orderBy: 'id ASC');
     List<Template> templates = [];
@@ -491,7 +479,7 @@ class DatabaseHelper {
 
   // get list of templateviews
   Future<List<TemplateView>> getTemplateViews() async {
-    Database db = await instance.database;
+    final db = await database;
     final List<Map<String, dynamic>> results = await db.rawQuery(
         "SELECT t.id, t.projectId, p.title AS project, t.title, t.content, t.isHtml, t.notes "
         "FROM $_templateTableName t "
@@ -506,7 +494,7 @@ class DatabaseHelper {
 
   // get filtered list of templateviews
   Future<List<TemplateView>> getFilteredTemplateViews(String searchTerm) async {
-    Database db = await instance.database;
+    final db = await database;
     final List<Map<String, dynamic>> results = await db.rawQuery(
         "SELECT t.id, t.projectId, p.title AS project, t.title, t.content, t.isHtml, t.notes "
         "FROM $_templateTableName t "
@@ -522,7 +510,7 @@ class DatabaseHelper {
 
   // get Template by title and projectId
   Future<List<Template>> getTemplatesByProject(int projectId) async {
-    Database db = await instance.database;
+    final db = await database;
     final results = await db.rawQuery("SELECT * FROM $_templateTableName "
         "WHERE projectId = $projectId "
         "ORDER BY id asc; ");
@@ -535,7 +523,7 @@ class DatabaseHelper {
   }
 
   Future<bool> anyTemplatesForProject(int projectId) async {
-    Database db = await instance.database;
+    final db = await database;
     var count = Sqflite.firstIntValue(await db.rawQuery(
         "SELECT COUNT(*) FROM $_templateTableName WHERE projectId = ?",
         [projectId]));
@@ -544,7 +532,7 @@ class DatabaseHelper {
 
   // Delete Template
   Future<int> deleteTemplate(TemplateView template) async {
-    Database db = await instance.database;
+    final db = await database;
     return await db.delete(
       _templateTableName,
       where: "id = ?",
@@ -554,7 +542,7 @@ class DatabaseHelper {
 
   // get a specific type
   Future<Type> getType(int id) async {
-    Database db = await instance.database;
+    final db = await database;
     final map =
         await db.rawQuery("SELECT * FROM $_typeTableName WHERE id = ?", [id]);
     if (map.isNotEmpty) {
@@ -566,7 +554,7 @@ class DatabaseHelper {
 
   // get list of types
   Future<List<Type>> getTypes() async {
-    Database db = await instance.database;
+    final db = await database;
     final List<Map<String, dynamic>> results =
         await db.query(_typeTableName, orderBy: 'name ASC');
     List<Type> types = [];
@@ -579,7 +567,7 @@ class DatabaseHelper {
 
   // Inserting and updating a Type
   Future<Type> upsertType(Type type) async {
-    Database db = await instance.database;
+    final db = await database;
     var count = Sqflite.firstIntValue(await db.rawQuery(
         "SELECT COUNT(*) FROM $_typeTableName WHERE id = ?", [type.id]));
     if (count == 0) {
@@ -594,7 +582,7 @@ class DatabaseHelper {
 
   // get filtered list of project types
   Future<List<Type>> getFilteredTypes(String searchTerm) async {
-    Database db = await instance.database;
+    final db = await database;
     // final List<Map<String, dynamic>> results = await db.query(_vocabularyTableName, orderBy: 'title ASC');
     final List<Map<String, dynamic>> results = await db.rawQuery("SELECT * "
         "FROM $_typeTableName "
@@ -609,7 +597,7 @@ class DatabaseHelper {
 
   // Delete Type
   Future<int> deleteType(Type type) async {
-    Database db = await instance.database;
+    final db = await database;
     return await db.delete(
       _typeTableName,
       where: "id = ?",
@@ -617,9 +605,47 @@ class DatabaseHelper {
     );
   }
 
+  // get a specific type
+  Future<Vocabulary> getVocabulary(int id) async {
+    final db = await database;
+    final map = await db
+        .rawQuery("SELECT * FROM $_vocabularyTableName WHERE id = ?", [id]);
+    if (map.isNotEmpty) {
+      return Vocabulary.fromMap(map.first);
+    } else {
+      throw Exception("Vocabulary with ID $id not found");
+    }
+  }
+
+  // copy vocabularies with ID in supplied List to another project
+  Future<int> batchCopyVocabularies(
+      List<int> vocsToCopy, int newProjectId) async {
+    int i = 0;
+    for (int vocId in vocsToCopy) {
+      Vocabulary voc = await getVocabulary(vocId);
+      Vocabulary voCopy = copyVocToProject(voc, newProjectId);
+      await upsertVocabulary(voCopy);
+      i++;
+    }
+    return i;
+  }
+
+  // move vocabularies with ID in supplied List to another project
+  Future<int> batchMoveVocabularies(
+      List<int> vocsToMove, int newProjectId) async {
+    int i = 0;
+    for (int vocId in vocsToMove) {
+      Vocabulary voc = await getVocabulary(vocId);
+      voc.projectId = newProjectId;
+      await upsertVocabulary(voc);
+      i++;
+    }
+    return i;
+  }
+
   // Inserting and updating a vocabulary
   Future<void> upsertVocabulary(Vocabulary vocabulary) async {
-    Database db = await instance.database;
+    final db = await database;
     var count = Sqflite.firstIntValue(await db.rawQuery(
         "SELECT COUNT(*) FROM $_vocabularyTableName WHERE projectId = ? "
         "AND title = ?",
@@ -631,13 +657,23 @@ class DatabaseHelper {
       await db.update(_vocabularyTableName, vocabulary.toMap(),
           where: 'projectId = ? AND title = ?',
           whereArgs: [vocabulary.projectId, vocabulary.title]);
-      // db.query('table', columns: ['group'], where: '"group" = ?', whereArgs:['my_group']);
     }
+  }
+
+  Vocabulary copyVocToProject(Vocabulary from, int projectId) {
+    return Vocabulary.fromMap({
+      "categoryId": from.categoryId,
+      "projectId": projectId,
+      "title": from.title,
+      "content": from.content,
+      "comment": from.comment,
+      "useThis": from.useThis,
+    });
   }
 
   // get VocabularyView list
   Future<List<VocabularyView>> getVocabularyViews() async {
-    Database db = await instance.database;
+    final db = await database;
     final List<Map<String, dynamic>> results = await db
         .rawQuery("SELECT v.id, v.categoryId, c.name AS category, v.projectId, "
             "p.title AS project, v.title, v.content, v.comment, v.useThis "
@@ -655,7 +691,7 @@ class DatabaseHelper {
 
   // get single VocabularyView
   Future<VocabularyView> getVocabularyView(int id) async {
-    Database db = await instance.database;
+    final db = await database;
     final map = await db.rawQuery(
         "SELECT v.id, v.categoryId, c.name AS category, v.projectId, "
         "p.title AS project, v.title, v.content, v.comment, v.useThis "
@@ -674,7 +710,7 @@ class DatabaseHelper {
   // get filtered VocabularyView list
   Future<List<VocabularyView>> getFilteredVocabularyViews(
       String searchTerm) async {
-    Database db = await instance.database;
+    final db = await database;
     final List<Map<String, dynamic>> results = await db
         .rawQuery("SELECT v.id, v.categoryId, c.name AS category, v.projectId, "
             "p.title AS project, v.title, v.content, v.comment, v.useThis "
@@ -693,7 +729,7 @@ class DatabaseHelper {
 
   // get Vocabulary by title and projectId, Library (projectId = 1) always included
   Future<List<Vocabulary>> getVocabulariesByProject(int projectId) async {
-    Database db = await instance.database;
+    final db = await database;
     final results = await db.rawQuery("SELECT * FROM $_vocabularyTableName "
         "WHERE projectId = $projectId "
         "AND content != '' "
@@ -709,7 +745,7 @@ class DatabaseHelper {
   // get Vocabulary by title and projectId, Library (projectId = 1) always included
   Future<Vocabulary> getVocabularyByTitleAndProject(
       String searchTerm, int projectId) async {
-    Database db = await instance.database;
+    final db = await database;
     final map = await db.rawQuery("SELECT * FROM $_vocabularyTableName "
         "WHERE title = '$searchTerm' "
         "AND (projectId = $projectId OR projectId = 1) "
@@ -725,7 +761,7 @@ class DatabaseHelper {
   // get list of vocabularyViews filtered on title, project and category
   Future<List<VocabularyView>> getFilteredVocabulariesBPAC(
       String searchTerm, int projectId, int categoryId, bool findUsage) async {
-    Database db = await instance.database;
+    final db = await database;
     final List<Map<String, dynamic>> results = await db.rawQuery(
         "SELECT v.id, v.categoryId, c.name AS category, v.projectId, "
         "p.title AS project, v.title, v.content, v.comment, v.useThis "
@@ -741,9 +777,19 @@ class DatabaseHelper {
     return vocabularyViews;
   }
 
+  // Delete Vocabulary via id
+  Future<int> deleteVocabularyById(int id) async {
+    final db = await database;
+    return await db.delete(
+      _vocabularyTableName,
+      where: "id = ?",
+      whereArgs: [id],
+    );
+  }
+
   // Delete Vocabulary via view
   Future<int> deleteVocabulary(VocabularyView vocabularyView) async {
-    Database db = await instance.database;
+    final db = await database;
     return await db.delete(
       _vocabularyTableName,
       where: "id = ?",
@@ -753,7 +799,7 @@ class DatabaseHelper {
 
   // Delete Vocabularies for Project
   Future<void> deleteProjectVocabularies(int projectId) async {
-    Database db = await instance.database;
+    final db = await database;
     await db.delete(
       _vocabularyTableName,
       where: "projectId = ?",
@@ -766,7 +812,8 @@ class DatabaseHelper {
     final whereClause = StringBuffer('WHERE 1 = 1 ');
     String orderByClause = '';
     if (findUsage && searchTerm.isNotEmpty) {
-      whereClause.write("AND lower(v.content) like '{%$searchTerm%}' "
+      whereClause.write(
+          "AND (v.content like '%{$searchTerm}%' OR v.content like '%{^$searchTerm}%') "
           "AND v.projectId = $projectId; ");
     } else {
       if (searchTerm.isNotEmpty) {
@@ -791,12 +838,12 @@ class DatabaseHelper {
 
 // insert from import sql
   Future<void> executeQuery(String sql) async {
-    Database db = await instance.database;
+    final db = await database;
     await db.rawQuery(sql);
   }
 
   Future<int> insertAndGetId(String sql) async {
-    Database db = await instance.database;
+    final db = await database;
     return await db.rawInsert(sql);
   }
 

@@ -18,22 +18,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-late DatabaseHelper dbHelper;
-
 void main() {
   runApp(MyApp());
 
-  dbHelper = DatabaseHelper.instance;
   final cron = Cron();
   cron.schedule(Schedule.parse('0 * * * *'), () async {
     print('backup DB');
     print(DateTime.now());
-    dbHelper.makeBackup(false);
+    DatabaseHelper().makeBackup(false);
   });
   cron.schedule(Schedule.parse('*/15 * * * *'), () async {
     print("backup DB");
     print(DateTime.now());
-    dbHelper.makeBackup(true);
+    DatabaseHelper().makeBackup(true);
   });
 }
 

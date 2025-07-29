@@ -22,53 +22,51 @@ class _UserPreferencesState extends State<UserPreferences> {
   final _catDDKey = GlobalKey<DropdownSearchState<Category>>();
   final _prjDDKey = GlobalKey<DropdownSearchState<Project>>();
   final _settingsFormKey = GlobalKey<FormState>();
-  late DatabaseHelper dbHelper;
   late Future<List<Project>> _projects;
   late Future<List<Category>> _categories;
-  late int categoryId = 1;
-  late int projectId = 1;
+  int categoryId = 1;
+  int projectId = 1;
   late Project curProject;
   late Category curCategory;
   bool initComplete = false;
+  final SharedPreferencesAsync asyncPrefs = SharedPreferencesAsync();
+  // late SharedPreferences prefs;
 
   @override
   void initState() {
     initComplete = false;
     super.initState();
     loadPreferences();
-    // _setSelected();
   }
 
   Future<void> loadPreferences() async {
-    final prefs = await SharedPreferences.getInstance();
-    projectId = prefs.getInt(defaultProject) ?? 1;
-    categoryId = prefs.getInt(defaultCategory) ?? 1;
-    dbHelper = DatabaseHelper.instance;
-    _projects = dbHelper.getProjects();
-    _categories = dbHelper.getCategoriesAbove(1);
-    curProject = await dbHelper.getProject(projectId);
-    curCategory = await dbHelper.getCategory(categoryId);
-    _prjDDKey.currentState?.changeSelectedItem(curProject);
-    _catDDKey.currentState?.changeSelectedItem(curCategory);
+    categoryId = await asyncPrefs.getInt(defaultCategory) ?? 1;
+    projectId = await asyncPrefs.getInt(defaultProject) ?? 1;
+    _projects = DatabaseHelper().getProjectsAbove(0);
+    _categories = DatabaseHelper().getCategoriesAbove(0);
+    await setCurrentCategory(categoryId);
+    await setCurrentProject(projectId);
     initComplete = true;
   }
 
-  void _getLists() {
-    setState(() {});
+  Future<void> setCurrentCategory(int id) async {
+    curCategory = await DatabaseHelper().getCategory(id);
+    _catDDKey.currentState?.changeSelectedItem(curCategory);
   }
 
-  Future<void> _setSelected() async {}
-
-  storeDefaultCategory(int value) async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setInt(defaultCategory, value);
-    categoryId = value;
+  Future<void> storeDefaultCategory(int id) async {
+    categoryId = id;
+    await asyncPrefs.setInt(defaultCategory, id);
   }
 
-  storeDefaultProject(int value) async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setInt(defaultProject, value);
-    projectId = value;
+  Future<void> setCurrentProject(int id) async {
+    curProject = await DatabaseHelper().getProject(id);
+    _prjDDKey.currentState?.changeSelectedItem(curProject);
+  }
+
+  Future<void> storeDefaultProject(int id) async {
+    projectId = id;
+    await asyncPrefs.setInt(defaultProject, id);
   }
 
   @override
@@ -206,7 +204,8 @@ class _UserPreferencesState extends State<UserPreferences> {
                     onPressed: () {
                       buildSnackBar(context, 'Clear default Category');
                       setState(() {
-                        _catDDKey.currentState?.clear();
+                        setCurrentCategory(1);
+                        storeDefaultCategory(1);
                       });
                     },
                     child: Text("Clear Category"),
@@ -222,7 +221,8 @@ class _UserPreferencesState extends State<UserPreferences> {
                     onPressed: () {
                       buildSnackBar(context, 'Clear default project');
                       setState(() {
-                        _prjDDKey.currentState?.clear();
+                        setCurrentProject(1);
+                        storeDefaultProject(1);
                       });
                     },
                     child: Text("Clear Project"),

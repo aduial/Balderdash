@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:balderdash/model/project.dart';
 import 'package:balderdash/database_helper/database_helper.dart';
+import 'package:balderdash/model/project.dart';
 import 'package:balderdash/views/vocabulary_view.dart';
-
+import 'package:flutter/material.dart';
 
 class ProjectDropdown extends StatefulWidget {
   const ProjectDropdown({super.key, required this.vocabularyView});
@@ -12,21 +11,19 @@ class ProjectDropdown extends StatefulWidget {
 }
 
 class _ProjectDropdownState extends State<ProjectDropdown> {
-  late DatabaseHelper dbHelper;
   late Future<List<Project>> projects;
   var _selectedValue;
 
   @override
   void initState() {
     super.initState();
-    dbHelper = DatabaseHelper.instance;
     _getProjectList();
     // late Category _selected;
   }
 
   void _getProjectList() {
     setState(() {
-      projects = dbHelper.getProjects();
+      projects = DatabaseHelper().getProjectsAbove(0);
     });
   }
 
@@ -59,7 +56,8 @@ class _ProjectDropdownState extends State<ProjectDropdown> {
                       _selectedValue = newValue;
                     });
                   },
-                  items: snapshot.data?.map<DropdownMenuItem<Project>>((Project selected) {
+                  items: snapshot.data
+                      ?.map<DropdownMenuItem<Project>>((Project selected) {
                     return DropdownMenuItem<Project>(
                       value: selected,
                       child: Text(selected.title!),

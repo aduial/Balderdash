@@ -21,7 +21,6 @@ class TemplateDetail extends StatefulWidget {
 class _TemplateDetailState extends State<TemplateDetail> {
   final _prjDDKey = GlobalKey<DropdownSearchState<Project>>();
   final _templateFormKey = GlobalKey<FormState>();
-  late DatabaseHelper dbHelper;
   late Future<List<Project>> _projects;
   late List<TemplateView> tvList;
   final TextEditingController titleController = TextEditingController(text: '');
@@ -39,12 +38,11 @@ class _TemplateDetailState extends State<TemplateDetail> {
   @override
   void initState() {
     super.initState();
-    dbHelper = DatabaseHelper.instance;
     _refreshLists();
     isExistingTV = (null != widget.templateView.id);
     if (isExistingTV) {
       newProjectId = widget.templateView.projectId!;
-      dbHelper
+      DatabaseHelper()
           .getProject(newProjectId)
           .then((prj) => _prjDDKey.currentState?.changeSelectedItem(prj));
     }
@@ -59,7 +57,7 @@ class _TemplateDetailState extends State<TemplateDetail> {
 
   void _refreshLists() {
     setState(() {
-      _projects = dbHelper.getProjects();
+      _projects = DatabaseHelper().getProjectsAbove(0);
     });
   }
 
@@ -69,7 +67,7 @@ class _TemplateDetailState extends State<TemplateDetail> {
 
   onTitleChanged(String title) async {
     if (!tvListFetched) {
-      tvList = await dbHelper.getTemplateViews();
+      tvList = await DatabaseHelper().getTemplateViews();
       tvListFetched = true;
     }
   }
@@ -118,7 +116,7 @@ class _TemplateDetailState extends State<TemplateDetail> {
                     "content": contentController.text,
                     "notes": notesController.text,
                   });
-                  await dbHelper.upsertTemplate(newTemplate);
+                  await DatabaseHelper().upsertTemplate(newTemplate);
                   Navigator.of(context).pop();
                 }
               })
@@ -236,8 +234,8 @@ class _TemplateDetailState extends State<TemplateDetail> {
                   flex: 1,
                   child: Switch(
                     value: newIsHtml == 1,
-                    activeColor: greenNotePaperColour,
-                    activeTrackColor: greenAppbarColour,
+                    activeColor: violetNotePaperColour,
+                    activeTrackColor: violetAppbarColour,
                     onChanged: (bool value) {
                       setState(() {
                         onIsHtmlChanged(value ? 1 : 0);
@@ -270,7 +268,7 @@ class _TemplateDetailState extends State<TemplateDetail> {
                 ),
               ]),
               Padding(
-                padding: EdgeInsets.all(4 * scaling),
+                padding: EdgeInsets.all(5 * scaling),
               ),
               Container(
                 decoration: ShapeDecoration(

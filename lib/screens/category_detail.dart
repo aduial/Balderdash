@@ -17,7 +17,6 @@ class CategoryDetail extends StatefulWidget {
 class _CategoryDetailState extends State<CategoryDetail> {
   final _parentDDKey = GlobalKey<DropdownSearchState<Category>>();
   final _categoryFormKey = GlobalKey<FormState>();
-  late DatabaseHelper dbHelper;
   late Future<List<Category>> _parents;
   late List<CategoryView> cvList;
   final TextEditingController nameController = TextEditingController(text: '');
@@ -37,7 +36,6 @@ class _CategoryDetailState extends State<CategoryDetail> {
   @override
   void initState() {
     super.initState();
-    dbHelper = DatabaseHelper.instance;
     _refreshLists();
     isExistingCV = (null != widget.categoryView.id);
     newParentId = widget.categoryView.parentId!;
@@ -47,14 +45,14 @@ class _CategoryDetailState extends State<CategoryDetail> {
         widget.categoryView.comment == "" ? " " : widget.categoryView.comment!;
     if (isExistingCV) {
       newCategoryId = widget.categoryView.id!;
-      dbHelper.getCategory(newParentId).then(
+      DatabaseHelper().getCategory(newParentId).then(
           (parent) => _parentDDKey.currentState?.changeSelectedItem(parent));
     }
   }
 
   void _refreshLists() {
     setState(() {
-      _parents = dbHelper.getCategoriesAbove(0);
+      _parents = DatabaseHelper().getCategoriesAbove(0);
     });
   }
 
@@ -68,7 +66,7 @@ class _CategoryDetailState extends State<CategoryDetail> {
 
   initialiseCvList() async {
     if (!cvListFetched) {
-      cvList = await dbHelper.getCategoryViews();
+      cvList = await DatabaseHelper().getCategoryViews();
       cvListFetched = true;
     }
   }
@@ -120,7 +118,7 @@ class _CategoryDetailState extends State<CategoryDetail> {
                   "name": newName,
                   "comment": newComment,
                 });
-                await dbHelper.upsertCategory(newCategory);
+                await DatabaseHelper().upsertCategory(newCategory);
                 Navigator.of(context).pop();
               }
             },

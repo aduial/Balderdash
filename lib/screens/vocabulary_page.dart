@@ -21,22 +21,22 @@ class VocabularyPage extends StatefulWidget {
 }
 
 class _VocabularyPageState extends State<VocabularyPage> {
-  static SharedPreferences? _preferences;
+  final SharedPreferencesAsync asyncPrefs = SharedPreferencesAsync();
 
   final _advancedDrawerController = AdvancedDrawerController();
   final _catDDKey = GlobalKey<DropdownSearchState<Category>>();
   final _prjDDKey = GlobalKey<DropdownSearchState<Project>>();
+  final _prjDDMoveKey = GlobalKey<DropdownSearchState<Project>>();
 
   final ScrollController _scrollController = ScrollController();
   final TextEditingController searchController =
       TextEditingController(text: '');
 
-  late DatabaseHelper dbHelper;
   late Future<List<Project>> _projects;
   late Future<List<Category>> _categories;
-  late List<VocabularyView> vvList;
   late Future<List<VocabularyView>> _vocabularyViews;
-  List<VocabularyView> filteredVocabularies = [];
+  late List<bool> _checkedVVs;
+  final batchList = <int>[];
 
   String subTitle = BootstrapSubTitle;
   String searchTitle = '';
@@ -47,6 +47,8 @@ class _VocabularyPageState extends State<VocabularyPage> {
   late Category curCategory;
   bool initComplete = false;
   bool usageSearchMode = false;
+  bool batchMode = false;
+  int moveToProject = 0;
 
   Future<int> _getVocabularyListLength() async {
     return await _vocabularyViews.then((value) {
@@ -57,29 +59,36 @@ class _VocabularyPageState extends State<VocabularyPage> {
   @override
   void initState() {
     super.initState();
-    dbHelper = DatabaseHelper.instance;
     loadPreferences();
     _refreshVocabularyViewList();
-    setSubTitle();
   }
 
   Future loadPreferences() async {
-    final prefs = await SharedPreferences.getInstance();
-    projectId = prefs.getInt(defaultProject) ?? 1;
-    categoryId = prefs.getInt(defaultCategory) ?? 1;
-    // print("pid = $projectId; cid = $categoryId");
-    _projects = dbHelper.getProjects();
-    _categories = dbHelper.getCategoriesAbove(0);
-    curProject = await dbHelper.getProject(projectId);
-    curCategory = await dbHelper.getCategory(categoryId);
-    _prjDDKey.currentState?.changeSelectedItem(curProject);
-    _catDDKey.currentState?.changeSelectedItem(curCategory);
+    categoryId = await asyncPrefs.getInt(defaultCategory) ?? 1;
+    projectId = await asyncPrefs.getInt(defaultProject) ?? 1;
+    _projects = DatabaseHelper().getProjectsAbove(0);
+    _categories = DatabaseHelper().getCategoriesAbove(0);
+    await setCurrentCategory(categoryId);
+    await setCurrentProject(projectId);
+    setSubTitle();
     initComplete = true;
+  }
+
+  Future<void> setCurrentCategory(int id) async {
+    categoryId = id;
+    curCategory = await DatabaseHelper().getCategory(id);
+    _catDDKey.currentState?.changeSelectedItem(curCategory);
+  }
+
+  Future<void> setCurrentProject(int id) async {
+    projectId = id;
+    curProject = await DatabaseHelper().getProject(id);
+    _prjDDKey.currentState?.changeSelectedItem(curProject);
   }
 
   void _refreshVocabularyViewList() {
     setState(() {
-      _vocabularyViews = dbHelper.getFilteredVocabulariesBPAC(
+      _vocabularyViews = DatabaseHelper().getFilteredVocabulariesBPAC(
           usageSearchMode ? searchTitle : searchController.text,
           projectId,
           categoryId,
@@ -87,6 +96,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
       subTitle = setSubTitle();
       _getVocabularyListLength().then((value) {
         setState(() {
+          _checkedVVs = List<bool>.filled(value, false, growable: true);
           numItems = value;
         });
       });
@@ -143,8 +153,129 @@ class _VocabularyPageState extends State<VocabularyPage> {
     });
   }
 
+  doThings(bool batch) {
+    setState(() {
+      if (!batch) {
+        batchList.clear();
+      }
+      batchMode = batch;
+    });
+  }
+
+  void _showForm() async {
+    await showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(
+            "${batchList.length} vocabular${batchList.length == 1 ? "y" : "ies"}"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Text(
+                  "to:",
+                  style:
+                      TextStyle(color: darkerBlueGrey, fontSize: 20 * scaling),
+                ),
+                SizedBox(width: 10 * scaling),
+                Flexible(
+                  child: DropdownSearch<Project>(
+                    key: _prjDDMoveKey,
+                    itemAsString: (item) => item.title!,
+                    items: (filter, t) => _projects,
+                    onSelected: (Project? item) {
+                      setState(() {
+                        if (item != null && item.id != projectId) {
+                          moveToProject = item.id!;
+                        }
+                      });
+                    },
+                    decoratorProps: DropDownDecoratorProps(
+                      decoration: InputDecoration(
+                          floatingLabelBehavior: FloatingLabelBehavior.auto,
+                          isDense: true,
+                          filled: true,
+                          fillColor: offWhite,
+                          labelText: 'PROJECT',
+                          // labelText: widget.vocabularyView.project,
+                          floatingLabelStyle: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.w500),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10 * scaling),
+                          )),
+                    ),
+                    compareFn: (item, sItem) => item.title == sItem.title,
+                    validator: (item) {
+                      if (item == null) {
+                        return 'please select a Project';
+                      }
+                      if (item.id == projectId) {
+                        return "that's the current Project";
+                      }
+                      return null;
+                    },
+                    popupProps: PopupProps.modalBottomSheet(
+                        showSelectedItems: true,
+                        showSearchBox: false,
+                        itemBuilder: projectModalItem),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              if (moveToProject > 0) {
+                await DatabaseHelper()
+                    .batchCopyVocabularies(batchList, moveToProject);
+                _refreshVocabularyViewList();
+                batchList.clear();
+                Navigator.of(context).pop();
+              }
+            },
+            child: const Text('Copy'),
+          ),
+          TextButton(
+            onPressed: () async {
+              if (moveToProject > 0) {
+                await DatabaseHelper()
+                    .batchMoveVocabularies(batchList, moveToProject);
+                _refreshVocabularyViewList();
+                batchList.clear();
+                Navigator.of(context).pop();
+              }
+            },
+            child: const Text('Move'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    Color getColor(Set<WidgetState> states) {
+      const Set<WidgetState> interactiveStates = <WidgetState>{
+        WidgetState.pressed,
+        WidgetState.hovered,
+        WidgetState.focused,
+        WidgetState.selected
+      };
+      if (states.any(interactiveStates.contains)) {
+        return orangeCheckColour;
+      }
+      return notepaperWhite;
+    }
+
     return AdvancedDrawer(
       backdrop: Container(
         width: double.infinity,
@@ -217,27 +348,71 @@ class _VocabularyPageState extends State<VocabularyPage> {
           actions: <Widget>[
             IconButton(
               icon: Icon(
+                batchMode ? Icons.cancel_rounded : Icons.checklist_outlined,
+                color: batchMode ? orangeCheckColour : greenNotePaperColour,
+              ),
+              onPressed: () {
+                if (!usageSearchMode) {
+                  if (batchMode) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          backgroundColor: greenAppbarColour,
+                          behavior: SnackBarBehavior.floating,
+                          duration: Duration(milliseconds: 1200),
+                          content: Text(
+                            "quit Batch Mode",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 18 * scaling,
+                            ),
+                          ),
+                          dismissDirection: DismissDirection.up),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          backgroundColor: orangeCheckColour,
+                          behavior: SnackBarBehavior.floating,
+                          duration: Duration(milliseconds: 1200),
+                          content: Text(
+                            "enter Batch Mode",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 18 * scaling,
+                            ),
+                          ),
+                          dismissDirection: DismissDirection.up),
+                    );
+                  }
+                  batchMode ? doThings(false) : doThings(true);
+                }
+              },
+            ),
+            IconButton(
+              icon: Icon(
                 usageSearchMode ? Icons.cancel_rounded : Icons.settings,
                 color: usageSearchMode ? neoFormColour : greenNotePaperColour,
               ),
               onPressed: () {
-                if (usageSearchMode) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        backgroundColor: greenAppbarColour,
-                        behavior: SnackBarBehavior.floating,
-                        // margin: EdgeInsets.only(bottom: 0.0),
-                        content: Text(
-                          "back to vocabulary list",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 18 * scaling,
+                if (!batchMode) {
+                  if (usageSearchMode) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          backgroundColor: greenAppbarColour,
+                          behavior: SnackBarBehavior.floating,
+                          duration: Duration(milliseconds: 1200),
+                          content: Text(
+                            "back to Vocabulary list",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 18 * scaling,
+                            ),
                           ),
-                        ),
-                        dismissDirection: DismissDirection.up),
-                  );
+                          dismissDirection: DismissDirection.up),
+                    );
+                  }
+                  usageSearchMode ? onSearch() : handleSettingsButtonPressed();
                 }
-                usageSearchMode ? onSearch() : handleSettingsButtonPressed();
               },
             )
           ],
@@ -280,6 +455,21 @@ class _VocabularyPageState extends State<VocabularyPage> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: <Widget>[
+                          if (batchMode)
+                            Checkbox(
+                              checkColor: Colors.white,
+                              fillColor:
+                                  WidgetStateProperty.resolveWith(getColor),
+                              value: _checkedVVs[index],
+                              onChanged: (bool? value) {
+                                setState(() {
+                                  value!
+                                      ? batchList.add(vocabularyView.id!)
+                                      : batchList.remove(vocabularyView.id!);
+                                  _checkedVVs[index] = value;
+                                });
+                              },
+                            ),
                           Expanded(
                             flex: 5,
                             child: Padding(
@@ -394,7 +584,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                                 );
 
                                 if (isDelete) {
-                                  await dbHelper
+                                  await DatabaseHelper()
                                       .deleteVocabulary(vocabularyView);
                                   _refreshVocabularyViewList();
                                 }
@@ -411,31 +601,38 @@ class _VocabularyPageState extends State<VocabularyPage> {
           ),
         ),
         floatingActionButton: FloatingActionButton(
-          backgroundColor: greenNotePaperColour,
-          child: const Icon(Icons.add),
+          backgroundColor:
+              batchMode ? orangeNotePaperColour : greenNotePaperColour,
+          child: batchMode
+              ? const Icon(Icons.my_library_books_rounded)
+              : const Icon(Icons.add),
           onPressed: () async {
-            VocabularyView newVocabularyView = VocabularyView.fromMap({
-              // "id": newVocabulary.id,
-              "categoryId": null,
-              "category": '',
-              "projectId": null,
-              "project": '',
-              "title": newVocabularyTitle,
-              "content": '',
-              "comment": 'comment',
-              "useThis": 1
-            });
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    VocabularyDetail(vocabularyView: newVocabularyView),
-              ),
-            ).then((value) {
-              setState(() {
-                _refreshVocabularyViewList();
+            if (batchMode) {
+              _showForm();
+            } else {
+              VocabularyView newVocabularyView = VocabularyView.fromMap({
+                // "id": newVocabulary.id,
+                "categoryId": null,
+                "category": '',
+                "projectId": null,
+                "project": '',
+                "title": newVocabularyTitle,
+                "content": '',
+                "comment": 'comment',
+                "useThis": 1
               });
-            });
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      VocabularyDetail(vocabularyView: newVocabularyView),
+                ),
+              ).then((value) {
+                setState(() {
+                  _refreshVocabularyViewList();
+                });
+              });
+            }
           },
         ),
       ),

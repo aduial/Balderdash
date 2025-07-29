@@ -23,7 +23,6 @@ class RunPage extends StatefulWidget {
 
 class _RunPageState extends State<RunPage> {
   Map<String, String> stateVariables = {};
-  late DatabaseHelper _dbHelper;
   final TextEditingController resultController =
       TextEditingController(text: '');
   String previousLine = '';
@@ -31,11 +30,10 @@ class _RunPageState extends State<RunPage> {
   @override
   void initState() {
     super.initState();
-    _dbHelper = DatabaseHelper.instance;
   }
 
   Future<Vocabulary> getVocabulary(String title, int projectId) {
-    return _dbHelper.getVocabularyByTitleAndProject(title, projectId);
+    return DatabaseHelper().getVocabularyByTitleAndProject(title, projectId);
   }
 
   Future<void> doThings() async {

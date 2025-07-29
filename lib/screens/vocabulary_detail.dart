@@ -24,7 +24,6 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
   final _catDDKey = GlobalKey<DropdownSearchState<Category>>();
   final _prjDDKey = GlobalKey<DropdownSearchState<Project>>();
   final _vocabularyFormKey = GlobalKey<FormState>();
-  late DatabaseHelper dbHelper;
   late Future<List<Project>> _projects;
   late Future<List<Category>> _categories;
   late List<VocabularyView> vvList;
@@ -45,16 +44,15 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
   @override
   void initState() {
     super.initState();
-    dbHelper = DatabaseHelper.instance;
     _refreshLists();
     isExistingVV = (null != widget.vocabularyView.id);
     if (isExistingVV) {
       newCategoryId = widget.vocabularyView.categoryId!;
-      dbHelper
+      DatabaseHelper()
           .getCategory(newCategoryId)
           .then((cat) => _catDDKey.currentState?.changeSelectedItem(cat));
       newProjectId = widget.vocabularyView.projectId!;
-      dbHelper
+      DatabaseHelper()
           .getProject(newProjectId)
           .then((prj) => _prjDDKey.currentState?.changeSelectedItem(prj));
     }
@@ -69,14 +67,14 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
 
   void _refreshLists() {
     setState(() {
-      _projects = dbHelper.getProjects();
-      _categories = dbHelper.getCategoriesAbove(1);
+      _projects = DatabaseHelper().getProjectsAbove(0);
+      _categories = DatabaseHelper().getCategoriesAbove(1);
     });
   }
 
   onTitleChanged(String title) async {
     if (!vvListFetched) {
-      vvList = await dbHelper.getVocabularyViews();
+      vvList = await DatabaseHelper().getVocabularyViews();
       vvListFetched = true;
     }
   }
@@ -94,7 +92,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
   }
 
   Future<VocabularyView> getVV(int id) async {
-    return await dbHelper.getVocabularyView(id);
+    return await DatabaseHelper().getVocabularyView(id);
   }
 
   @override
@@ -132,7 +130,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                       dismissDirection: DismissDirection.none),
                 );
                 newVocabulary = makeNewVocabulary();
-                await dbHelper.upsertVocabulary(newVocabulary);
+                await DatabaseHelper().upsertVocabulary(newVocabulary);
                 Navigator.of(context).pop();
               }
             },
@@ -296,7 +294,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                     ),
                     onPressed: () async {
                       newVocabulary = makeNewVocabulary();
-                      await dbHelper.upsertVocabulary(newVocabulary);
+                      await DatabaseHelper().upsertVocabulary(newVocabulary);
                       VocabularyView newVV = await getVV(newVocabulary.id!);
                       Navigator.push(
                         context,
