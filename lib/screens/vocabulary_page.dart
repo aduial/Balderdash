@@ -133,11 +133,13 @@ class _VocabularyPageState extends State<VocabularyPage> {
 
   setFilterProject(int value) {
     projectId = value;
+    // setCurrentProject(value);
     _refreshVocabularyViewList();
   }
 
   setFilterCategory(int value) {
     categoryId = value;
+    // setCurrentCategory(value);
     _refreshVocabularyViewList();
   }
 
@@ -305,7 +307,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
       ),
       child: Scaffold(
         appBar: AppBar(
-          toolbarHeight: 60 * scaling,
+          toolbarHeight: 70 * scaling,
           iconTheme: IconThemeData(
             color: greenNotePaperColour,
           ),
@@ -614,11 +616,11 @@ class _VocabularyPageState extends State<VocabularyPage> {
                 // "id": newVocabulary.id,
                 "categoryId": null,
                 "category": '',
-                "projectId": null,
+                "projectId": projectId,
                 "project": '',
-                "title": newVocabularyTitle,
+                "title": '',
                 "content": '',
-                "comment": 'comment',
+                "comment": '',
                 "useThis": 1
               });
               Navigator.push(

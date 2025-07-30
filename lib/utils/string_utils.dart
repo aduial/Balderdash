@@ -4,9 +4,18 @@ class StringUtils {
   static String followCase = '';
 
   static String capitalise(String input) {
-    return (input.length > 1)
-        ? input[0].toUpperCase() + input.substring(1)
-        : input.toUpperCase();
+    if (input.length > 1) {
+      int start = input.indexOf(RegExp(r'[a-zA-Z]'));
+      if (start > 0) {
+        String fuzz = input.substring(0, start);
+        String word = input.substring(start);
+        return fuzz + word[0].toUpperCase() + word.substring(1);
+      } else {
+        return input[0].toUpperCase() + input.substring(1);
+      }
+    } else {
+      return input.toUpperCase();
+    }
   }
 
   static String getCasey(String example, String follow) {
@@ -14,8 +23,7 @@ class StringUtils {
     followCase = follow;
     switch (checkCase()) {
       case 1:
-        return capitalise(followCase
-            .toString());
+        return capitalise(followCase.toString());
       case 2:
         return followCase.toString().toLowerCase();
       case 3:
@@ -27,7 +35,6 @@ class StringUtils {
     }
     return "Error applying case formatting";
   }
-
 
   static int checkCase() {
     RegExp cap = RegExp(r'^\^');

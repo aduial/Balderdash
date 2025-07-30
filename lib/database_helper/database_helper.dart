@@ -246,15 +246,14 @@ class DatabaseHelper {
     return categories;
   }
 
-  // get list of CategoryViews above id = 1 (None)
+  // get list of CategoryViews
   Future<List<CategoryView>> getCategoryViews() async {
     final db = await database;
     // final List<Map<String, dynamic>> results = await db.query(_vocabularyTableName, orderBy: 'title ASC');
     final List<Map<String, dynamic>> results = await db.rawQuery(
         "SELECT c.id, c.parentId, IFNULL(cp.name, 'n/a') AS parent, c.name, c.comment "
         "FROM $_categoryTableName c "
-        "LEFT OUTER JOIN $_categoryTableName cp ON c.parentId = cp.id "
-        "WHERE c.id > 1");
+        "LEFT OUTER JOIN $_categoryTableName cp ON c.parentId = cp.id; ");
     List<CategoryView> categoryViews = [];
     for (var result in results) {
       CategoryView categoryView = CategoryView.fromMap(result);
@@ -270,8 +269,7 @@ class DatabaseHelper {
         "SELECT c.id, c.parentId, IFNULL(cp.name, 'n/a') AS parent, c.name, c.comment "
         "FROM $_categoryTableName c "
         "LEFT OUTER JOIN $_categoryTableName cp ON c.parentId = cp.id "
-        "WHERE c.name like '%$searchTerm%' "
-        "AND c.id > 1; ");
+        "WHERE c.name like '%$searchTerm%'; ");
     List<CategoryView> categoryViews = [];
     for (var result in results) {
       CategoryView categoryView = CategoryView.fromMap(result);
@@ -365,8 +363,7 @@ class DatabaseHelper {
         "SELECT p.id, p.typeId, t.name AS type, p.authorId, a.name AS author, p.title, p.notes "
         "FROM $_projectTableName p "
         "JOIN $_typeTableName t ON p.typeId = t.id "
-        "JOIN $_authorTableName a ON p.authorId = a.id "
-        "WHERE p.id > 1 ;");
+        "JOIN $_authorTableName a ON p.authorId = a.id ;");
     List<ProjectView> projectViews = [];
     for (var result in results) {
       ProjectView projectView = ProjectView.fromMap(result);
@@ -383,8 +380,7 @@ class DatabaseHelper {
         "FROM $_projectTableName p "
         "JOIN $_typeTableName t ON p.typeId = t.id "
         "JOIN $_authorTableName a ON p.authorId = a.id "
-        "WHERE p.title like '%$searchTerm%' "
-        "AND p.id > 1 ;");
+        "WHERE p.title like '%$searchTerm%'; ");
     List<ProjectView> projectViews = [];
     for (var result in results) {
       ProjectView projectView = ProjectView.fromMap(result);

@@ -166,7 +166,7 @@ class _SelectVocPageState extends State<SelectVocPage> {
       ),
       child: Scaffold(
         appBar: AppBar(
-          toolbarHeight: 60 * scaling,
+          toolbarHeight: 70 * scaling,
           iconTheme: IconThemeData(
             color: redNotePaperColour,
           ),

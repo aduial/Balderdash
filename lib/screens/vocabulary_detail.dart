@@ -35,6 +35,8 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
 
   bool vvListFetched = false;
   bool isExistingVV = false;
+  bool hasProjectSet = false;
+  bool isCategorySet = false;
 
   late Vocabulary newVocabulary;
   late int newCategoryId;
@@ -45,20 +47,26 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
   void initState() {
     super.initState();
     _refreshLists();
+
     isExistingVV = (null != widget.vocabularyView.id);
     if (isExistingVV) {
       newCategoryId = widget.vocabularyView.categoryId!;
       DatabaseHelper()
           .getCategory(newCategoryId)
           .then((cat) => _catDDKey.currentState?.changeSelectedItem(cat));
+    }
+
+    hasProjectSet = (null != widget.vocabularyView.projectId);
+    if (hasProjectSet) {
       newProjectId = widget.vocabularyView.projectId!;
       DatabaseHelper()
           .getProject(newProjectId)
           .then((prj) => _prjDDKey.currentState?.changeSelectedItem(prj));
     }
+
     titleController.text = widget.vocabularyView.title!;
     contentController.language = balderdash;
-    contentController.text = widget.vocabularyView.content!;
+    contentController.text = widget.vocabularyView.content ?? '';
     commentController.text = widget.vocabularyView.comment == ""
         ? " "
         : widget.vocabularyView.comment ?? '';
@@ -95,10 +103,39 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
     return await DatabaseHelper().getVocabularyView(id);
   }
 
+  bool editsMade() {
+    return (titleController.text != '' ||
+        contentController.text != '' ||
+        commentController.text.length > 1 ||
+        isCategorySet);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+            onPressed: () async {
+              if (editsMade()) {
+                final bool goBack = await showConfirmationAlertDialog(
+                  context,
+                  title: 'Dismiss your edits?',
+                  message:
+                      "You made some changes that will be lost if you close the screen. 'Cancel' to "
+                      "save the vocabulary first; 'Close' to continue.",
+                  positiveText: 'Close',
+                  negativeText: 'Cancel',
+                  highlightNegative: true,
+                );
+                if (goBack) {
+                  Navigator.of(context).pop();
+                }
+              } else {
+                Navigator.of(context).pop();
+              }
+            },
+            icon: BackButtonIcon(),
+            color: Colors.deepOrange),
         iconTheme: IconThemeData(
           color: greenNotePaperColour,
         ),
@@ -155,13 +192,17 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
               Row(
                 children: [
                   Expanded(
+                    flex: 2,
                     child: DropdownSearch<Category>(
                       key: _catDDKey,
                       itemAsString: (item) => item.name!,
                       items: (filter, t) => _categories,
                       onSelected: (Category? item) {
                         setState(() {
-                          newCategoryId = item!.id!;
+                          if (item != null) {
+                            isCategorySet = true;
+                            newCategoryId = item!.id!;
+                          }
                         });
                       },
                       decoratorProps: DropDownDecoratorProps(
@@ -197,6 +238,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                   ),
                   Padding(padding: EdgeInsets.all(4 * scaling)),
                   Expanded(
+                    flex: 3,
                     child: DropdownSearch<Project>(
                       key: _prjDDKey,
                       itemAsString: (item) => item.title!,
@@ -249,6 +291,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                     decoration: InputDecoration(
                         isDense: true,
                         filled: true,
+                        floatingLabelBehavior: FloatingLabelBehavior.always,
                         fillColor: offWhite,
                         labelText: 'TITLE',
                         contentPadding: EdgeInsets.fromLTRB(10 * scaling,
@@ -265,9 +308,6 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                       }
                       if (value == null || value.isEmpty) {
                         return 'Title cannot be empty';
-                      }
-                      if (value == newVocabularyTitle) {
-                        return "Please change the default new title '$newVocabularyTitle'";
                       }
                       List<VocabularyView> titleVVList =
                           vvList.where((i) => i.title == value).toList();
@@ -322,6 +362,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                         isDense: true,
                         filled: true,
                         fillColor: offWhite,
+                        floatingLabelBehavior: FloatingLabelBehavior.always,
                         labelText: 'COMMENT',
                         contentPadding: EdgeInsets.fromLTRB(10 * scaling,
                             6 * scaling, 6 * scaling, 10 * scaling),
@@ -459,4 +500,46 @@ Widget projectModalItem(
               color: isSelected ? offWhite : onPrimaryFixed),
         )),
   );
+}
+
+Future<bool> showConfirmationAlertDialog(
+  BuildContext context, {
+  required String title,
+  required String message,
+  required String positiveText,
+  required String negativeText,
+  bool highlightPositive = false,
+  bool highlightNegative = false,
+}) async {
+  return await showDialog<bool>(
+        barrierDismissible: true,
+        context: context,
+        builder: (BuildContext ctx) {
+          return AlertDialog(
+            title: Text(title),
+            content: Text(message),
+            actions: <Widget>[
+              TextButton(
+                child: Text(
+                  negativeText.toUpperCase(),
+                  style: highlightNegative
+                      ? const TextStyle(color: darkAnyMatchColour)
+                      : null,
+                ),
+                onPressed: () => Navigator.of(ctx).pop(false),
+              ),
+              TextButton(
+                child: Text(
+                  positiveText.toUpperCase(),
+                  style: highlightPositive
+                      ? const TextStyle(color: Colors.red)
+                      : null,
+                ),
+                onPressed: () => Navigator.of(ctx).pop(true),
+              ),
+            ],
+          );
+        },
+      ) ??
+      false;
 }
