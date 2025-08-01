@@ -445,17 +445,25 @@ class DatabaseHelper {
   // Inserting and updating a Template
   Future<Template> upsertTemplate(Template template) async {
     final db = await database;
-    var count = Sqflite.firstIntValue(await db.rawQuery(
-        "SELECT COUNT(*) FROM $_templateTableName WHERE projectId = ? "
+    // var count = Sqflite.firstIntValue(await db.rawQuery(
+    //     "SELECT COUNT(*) FROM $_templateTableName WHERE projectId = ? "
+    //     "AND title = ? AND isHtml = ?",
+    //     [template.projectId, template.title, template.isHtml]));
+    final List<Map<String, dynamic>> results = await db.rawQuery(
+        "SELECT * FROM $_templateTableName WHERE projectId = ? "
         "AND title = ? AND isHtml = ?",
-        [template.projectId, template.title, template.isHtml]));
+        [template.projectId, template.title, template.isHtml]);
+    var count = results.length;
     if (count == 0) {
       await db.insert(_templateTableName, template.toMap(),
           conflictAlgorithm: ConflictAlgorithm.replace);
     } else {
-      await db.update(_templateTableName, template.toMap(),
-          where: 'projectId = ? AND title = ?',
-          whereArgs: [template.projectId, template.title]);
+      if (results.isNotEmpty) {
+        Template foundTemplate = Template.fromMap(results.first);
+        template.id = foundTemplate.id;
+        await db.update(_templateTableName, template.toMap(),
+            where: 'id = ?', whereArgs: [template.id]);
+      }
     }
     return template;
   }
@@ -640,20 +648,27 @@ class DatabaseHelper {
   }
 
   // Inserting and updating a vocabulary
-  Future<void> upsertVocabulary(Vocabulary vocabulary) async {
+  Future<Vocabulary> upsertVocabulary(Vocabulary vocabulary) async {
     final db = await database;
-    var count = Sqflite.firstIntValue(await db.rawQuery(
-        "SELECT COUNT(*) FROM $_vocabularyTableName WHERE projectId = ? "
-        "AND title = ?",
-        [vocabulary.projectId, vocabulary.title]));
+    final List<Map<String, dynamic>> results = await db.rawQuery(
+        "SELECT * FROM $_vocabularyTableName WHERE projectId = ? "
+        "AND title = ?; ",
+        [vocabulary.projectId, vocabulary.title]);
+    var count = results.length;
     if (count == 0) {
+      // print("insert");
       await db.insert(_vocabularyTableName, vocabulary.toMap(),
           conflictAlgorithm: ConflictAlgorithm.replace);
     } else {
-      await db.update(_vocabularyTableName, vocabulary.toMap(),
-          where: 'projectId = ? AND title = ?',
-          whereArgs: [vocabulary.projectId, vocabulary.title]);
+      if (results.isNotEmpty) {
+        // print("update");
+        Vocabulary foundTemplate = Vocabulary.fromMap(results.first);
+        vocabulary.id = foundTemplate.id;
+        await db.update(_vocabularyTableName, vocabulary.toMap(),
+            where: 'id = ?', whereArgs: [vocabulary.id]);
+      }
     }
+    return vocabulary;
   }
 
   Vocabulary copyVocToProject(Vocabulary from, int projectId) {

@@ -1,10 +1,26 @@
 import 'package:balderdash/config/colours.dart';
 import 'package:balderdash/config/config.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class Intro extends StatelessWidget {
-  const Intro({super.key});
+  Intro({super.key});
+
+  Future<void>? _launched;
+
+  final Uri _sourceForgeUrl = Uri.parse('https://nonsense.sourceforge.net/');
+  final Uri _aduialUrl = Uri.parse('https://github.com/aduial/nonsense');
+
+  Future<void> _launchInBrowser(Uri url) async {
+    if (!await launchUrl(
+      url,
+      mode: LaunchMode.externalApplication,
+    )) {
+      throw Exception('Could not launch $url');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -108,12 +124,41 @@ class Intro extends StatelessWidget {
                                     style:
                                         TextStyle(fontWeight: FontWeight.w600)),
                                 TextSpan(
+                                    text: ", that you can still download from ",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.w300)),
+                                TextSpan(
+                                  text: "nonsense.sourceforge.net",
+                                  style: TextStyle(
+                                      color: regularFormColour,
+                                      fontWeight: FontWeight.w600,
+                                      decoration: TextDecoration.none),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = () async {
+                                      _launched =
+                                          _launchInBrowser(_sourceForgeUrl);
+                                    },
+                                ),
+                                TextSpan(
                                     text:
-                                        ", that you can still download from\nhttps://nonsense.sourceforge.net/. "
-                                        "A slightly extended version 0.7.1 that fixes the issue "
-                                        "with cgi-bin deployment and adds some minor features is available "
-                                        "on Github here:\nhttps://github.com/aduial/nonsense\n\n"
-                                        "Nonsense defines the grammar in ",
+                                        ".\nA slightly extended version 0.7.1 that fixes the issue "
+                                        "with cgi-bin deployment and adds some minor features is available ",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.w300)),
+                                TextSpan(
+                                  text: "here on Github",
+                                  style: TextStyle(
+                                      color: regularFormColour,
+                                      fontWeight: FontWeight.w600,
+                                      decoration: TextDecoration.none),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = () async {
+                                      _launched = _launchInBrowser(_aduialUrl);
+                                    },
+                                ),
+                                TextSpan(
+                                    text:
+                                        ".\n\nNonsense defines the grammar in ",
                                     style:
                                         TextStyle(fontWeight: FontWeight.w300)),
                                 TextSpan(

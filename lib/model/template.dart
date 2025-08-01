@@ -50,7 +50,7 @@ class Template {
 
   static Template fromDump(String dump, int projectId) {
     RegExp tplPattern =
-        RegExp(r'^\d+§1§(\w+?)§2§(.+?)§3§(\d)§4§(\w*?)', dotAll: true);
+        RegExp(r'^\d+%1@([\w\s]+?)%2@(.+?)%3@(\d)%4@(\w*?)', dotAll: true);
     Template template = Template();
     template.projectId = projectId;
     template.title = tplPattern.firstMatch(dump)?.group(1) ?? '';

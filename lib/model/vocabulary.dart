@@ -55,7 +55,7 @@ class Vocabulary {
 
   static Vocabulary fromDump(String dump, int projectId) {
     RegExp vocPattern =
-        RegExp(r'^(\d+)§1§(\d+)§2§(\w+?)§3§(.*?)§4§(.*?)§5§(\d)', dotAll: true);
+        RegExp(r'^(\d+)%1@(\d+)%2@(\w+?)%3@(.*?)%4@(.*?)%5@(\d)', dotAll: true);
     Vocabulary vocabulary = Vocabulary();
     vocabulary.categoryId =
         int.parse(vocPattern.firstMatch(dump)?.group(1) ?? '1');

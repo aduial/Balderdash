@@ -140,7 +140,7 @@ class _RunPageState extends State<RunPage> {
       // } else if (vc.line.contains(RegExp(r'^[\w\s\\@()<>%*_";:?!\-+,.]'))) {
     } else if (vc
         .getNormaLine()
-        .contains(RegExp(r'^[\x27\w\s\\@()&<>%*_"/;:?!\-+,.]'))) {
+        .contains(RegExp(r'^[\x27\w\s\\@()&<>%*_"/;:?!\-+,.™©®]'))) {
       // literal
       vc = parseLiteral(vc);
     } else if (vc.getNormaLine().contains(RegExp(r'^\{\$\^?\w*\}'))) {

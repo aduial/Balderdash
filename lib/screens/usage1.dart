@@ -108,8 +108,14 @@ class Usage1 extends StatelessWidget {
                                       color: greenNotePaperColour)),
                               TextSpan(
                                   text:
-                                      "because they're the most important part of the app. \n"
-                                      "Still there's a bit more to it: there are the ",
+                                      "because they're the most important part of the app.\n"
+                                      "Still there's a bit more to it: in the Vocabulary overview "
+                                      "screen you can tap the magnifying glass on the row "
+                                      "to find what vocabularies call the one in the current "
+                                      "row. Also, the 'checkboxes' icon top right opens Batch "
+                                      "Mode where you can select vocabularies to copy or move "
+                                      "to another project (the gear icon opens a filter drawer)\n\n"
+                                      "Then, there are the ",
                                   style:
                                       TextStyle(fontWeight: FontWeight.w300)),
                               TextSpan(

@@ -63,7 +63,7 @@ class Help extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const Intro()),
+                    MaterialPageRoute(builder: (context) => Intro()),
                   );
                 },
                 leading: Icon(Icons.auto_awesome_rounded),

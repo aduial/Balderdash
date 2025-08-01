@@ -27,7 +27,7 @@ void main() {
     print(DateTime.now());
     DatabaseHelper().makeBackup(false);
   });
-  cron.schedule(Schedule.parse('*/15 * * * *'), () async {
+  cron.schedule(Schedule.parse('1 * * * *'), () async {
     print("backup DB");
     print(DateTime.now());
     DatabaseHelper().makeBackup(true);
@@ -231,18 +231,6 @@ class HomeScreenState extends State<HomeScreen> {
                   title: Text('User Preferences'),
                 ),
                 Spacer(),
-                DefaultTextStyle(
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.white54,
-                  ),
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(
-                      vertical: 16.0,
-                    ),
-                    child: Text('Terms of Service | Privacy Policy'),
-                  ),
-                ),
               ],
             ),
           ),

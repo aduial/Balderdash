@@ -87,6 +87,7 @@ const String sep2 = "%2@";
 const String sep3 = "%3@";
 const String sep4 = "%4@";
 const String sep5 = "%5@";
+String prjRegex = "r'^\\d+$sep1\\d+$sep2\\d+$sep3(\\w+)$sep4\\w+'";
 const String vocInsert = "INSERT INTO vocabulary (";
 
 Map<String, String> strfToDart = {

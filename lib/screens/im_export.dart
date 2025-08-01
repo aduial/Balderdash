@@ -85,9 +85,8 @@ class _ImExportState extends State<ImExport> {
       }
     } else {
       await saveDataFile(curProject.id!)
-          .then((_) => saveDataFile(1))
-          .then((_) => saveTemplateFiles())
-          .then((_) => saveNonsense());
+          .then((_) async => await saveDataFile(1))
+          .then((_) async => await saveTemplateFiles());
     }
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -143,18 +142,6 @@ class _ImExportState extends State<ImExport> {
         await _saveFile();
       }
     }
-  }
-
-  saveNonsense() async {
-    ByteData assetBytes = await rootBundle.load("assets/nonsense.zip");
-    final buffer = assetBytes.buffer;
-    var list =
-        buffer.asUint8List(assetBytes.offsetInBytes, assetBytes.lengthInBytes);
-    _fileContent = utf8.decode(list);
-    _dialogTitleController.text = 'export Nonsense.pl & documentation';
-    _extension = 'zip';
-    _defaultFileNameController.text = 'nonsense.$_extension';
-    await _saveFile();
   }
 
   Future<void> exportProject() async {
@@ -298,7 +285,8 @@ class _ImExportState extends State<ImExport> {
     int userChoice = 1;
 
     // 2§1§2§2§1§3§Medigoed§4§
-    RegExp prjMatch = RegExp(r'^\d+§1§\d+§2§\d+§3§(\w+)§4§\w+');
+    RegExp prjMatch = RegExp(r'^\d+%1@\d+%2@\d+%3@([\w\s]+)%4@[\w\s]+');
+    // RegExp prjMatch = RegExp(prjRegex);
     if (lines[0].contains(prjMatch)) {
       // retrieve title
       impTitle = prjMatch.firstMatch(lines[0])?.group(1) ?? '';
@@ -318,8 +306,7 @@ class _ImExportState extends State<ImExport> {
         lines.removeAt(0);
         // if user chose to overwrite: delete existing project vocabularies
         if (userChoice == 3) {
-          print("`Choice 3: delete vocabularies for project $newProjectId");
-          DatabaseHelper().deleteProjectVocabularies(newProjectId);
+          await DatabaseHelper().deleteProjectVocabularies(newProjectId);
         }
         // choice 2 = new prj, 3 = emptied prj, 4 = merge vocs
         nrPVocs = await insertVocs(true, true);
@@ -328,7 +315,7 @@ class _ImExportState extends State<ImExport> {
         throw NoVocabularyDataFoundException();
       }
       if (lines[0].contains(lvocMark)) {
-        print("start library vocs");
+        // print("start library vocs");
         // library section, remove lvocMark
         lines.removeAt(0);
         if (mounted) {
@@ -390,6 +377,20 @@ class _ImExportState extends State<ImExport> {
         text: 'OK',
         highlight: true,
       );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            backgroundColor: cyanAppbarColour,
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(milliseconds: 1200),
+            content: Text(
+              "project '$impTitle' imported",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 18 * scaling,
+              ),
+            ),
+            dismissDirection: DismissDirection.up),
+      );
     }
   }
 
@@ -400,7 +401,7 @@ class _ImExportState extends State<ImExport> {
         await DatabaseHelper().getProjectByTitle(impTitle.toLowerCase());
     if (prj == null) {
       // no existing project with that title. createProject sets newProjectId
-      createProject(impTitle, prjNotes);
+      await createProject(impTitle, prjNotes);
       // treat as renamed
       return 2;
     } else {
@@ -446,20 +447,20 @@ class _ImExportState extends State<ImExport> {
           return 1;
         }
         // sets newProjectId
-        print("create new project $impTitle ");
+        // print("create new project $impTitle ");
         newProjectId = await createProject(impTitle, prjNotes);
-        print("nieuwnieuwnieuw: $newProjectId");
+        // print("nieuwnieuwnieuw: $newProjectId");
         return 2;
       } else if (importAction == 3) {
         bool isReplace = false;
         if (mounted) {
           isReplace = await showConfirmationChoiceDialog(
             context,
-            title: "Replace content of '$impTitle?'",
+            title: "Replace all content of '$impTitle?'",
             message:
                 "This replaces all current vocabularies of '$impTitle'! You cannot undo this!",
-            positiveText: 'Replace',
-            negativeText: 'Cancel',
+            positiveText: 'Yes, Replace',
+            negativeText: 'No, Cancel',
             highlightPositive: true,
           );
         }
@@ -474,12 +475,12 @@ class _ImExportState extends State<ImExport> {
         if (mounted) {
           isMerge = await showConfirmationChoiceDialog(
             context,
-            title: "Overwrite Vocabularies for '$impTitle?'",
+            title: "Merge Vocabularies for '$impTitle?'",
             message:
-                "This will overwrite Vocabularies for '$impTitle' with the same "
-                "name as imported ones. You cannot undo this!",
-            positiveText: 'Merge',
-            negativeText: 'Cancel',
+                "This will replace Vocabularies for '$impTitle' with the same "
+                "name. You cannot undo this!",
+            positiveText: 'Yes, Merge',
+            negativeText: 'No, Cancel',
             highlightPositive: true,
           );
         }
@@ -513,7 +514,7 @@ class _ImExportState extends State<ImExport> {
   Future<int> insertVocs(bool arePrjVocs, bool doInsert) async {
     List<String> insertLines = [];
     StringBuffer sb = StringBuffer();
-    RegExp clauseStart = RegExp(r'^\d+§1§');
+    RegExp clauseStart = RegExp(r'^\d+%1@');
     String sectionMark = arePrjVocs == true ? lvocMark : tmplMark;
     int pid = arePrjVocs == true ? newProjectId : 1;
     int until = 1;
@@ -522,8 +523,7 @@ class _ImExportState extends State<ImExport> {
       if (i == (lines.length - 1) || lines[i + 1].startsWith(clauseStart)) {
         insertLines.add(sb.toString());
         sb.clear();
-      }
-      if (lines[i + 1].contains(sectionMark)) {
+      } else if (lines[i + 1].contains(sectionMark)) {
         insertLines.add(sb.toString());
         sb.clear();
         until = i + 1;
@@ -711,11 +711,11 @@ class _ImExportState extends State<ImExport> {
                 ),
                 padding: EdgeInsets.all(7),
                 child: Text(
-                    "'save for Nonsense' saves selected Project + Library as .data files, "
-                    "templates (if any) & nonsense.zip (nonsense.pl + documentation) that "
-                    "can be deployed on a web server or run as a command-line Perl application.\n\n"
+                    "'save for Nonsense' saves selected Project + Library as .data files and "
+                    "templates (if any) that can be deployed on a web server or run with the "
+                    "command-line Perl nonsense.pl application (see the help page for details).\n\n"
                     "'export .bdd' exports project + library in a single project.bdd file that "
-                    "can be shared with other Balderdash! users."),
+                    "can be shared with other Balderdash! users via email (or what have you)."),
               ),
               Divider(
                   height: 20 * scaling,

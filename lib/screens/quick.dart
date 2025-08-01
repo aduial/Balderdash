@@ -8,6 +8,17 @@ import 'package:url_launcher/url_launcher.dart';
 class Quick extends StatelessWidget {
   Quick({super.key});
 
+  Future<void>? _launched;
+
+  Future<void> _launchInBrowser(Uri url) async {
+    if (!await launchUrl(
+      url,
+      mode: LaunchMode.externalApplication,
+    )) {
+      throw Exception('Could not launch $url');
+    }
+  }
+
   final Uri _humorixUrl = Uri.parse(
       'https://web.archive.org/web/20010216043241/http://www.i-want-a-website.com/about-linux/');
   final Uri _freshMeatUrl = Uri.parse(
@@ -127,17 +138,15 @@ class Quick extends StatelessWidget {
                                     style:
                                         TextStyle(fontWeight: FontWeight.w300)),
                                 TextSpan(
-                                  text: 'Techdirt',
+                                  text: "Techdirt",
                                   style: TextStyle(
                                       color: regularFormColour,
                                       fontWeight: FontWeight.w600,
                                       decoration: TextDecoration.none),
                                   recognizer: TapGestureRecognizer()
                                     ..onTap = () async {
-                                      if (!await canLaunchUrl(_techDirtUrl)) {
-                                        throw Exception(
-                                            'Could not launch $_techDirtUrl');
-                                      }
+                                      _launched =
+                                          _launchInBrowser(_techDirtUrl);
                                     },
                                 ),
                                 TextSpan(
@@ -145,17 +154,15 @@ class Quick extends StatelessWidget {
                                     style:
                                         TextStyle(fontWeight: FontWeight.w300)),
                                 TextSpan(
-                                  text: 'Slashdot',
+                                  text: "Slashdot",
                                   style: TextStyle(
                                       color: regularFormColour,
                                       fontWeight: FontWeight.w600,
                                       decoration: TextDecoration.none),
                                   recognizer: TapGestureRecognizer()
                                     ..onTap = () async {
-                                      if (!await canLaunchUrl(_slashDotUrl)) {
-                                        throw Exception(
-                                            'Could not launch $_slashDotUrl');
-                                      }
+                                      _launched =
+                                          _launchInBrowser(_slashDotUrl);
                                     },
                                 ),
                                 TextSpan(
@@ -163,17 +170,15 @@ class Quick extends StatelessWidget {
                                     style:
                                         TextStyle(fontWeight: FontWeight.w300)),
                                 TextSpan(
-                                  text: 'Freshmeat',
+                                  text: "Freshmeat",
                                   style: TextStyle(
                                       color: regularFormColour,
                                       fontWeight: FontWeight.w600,
                                       decoration: TextDecoration.none),
                                   recognizer: TapGestureRecognizer()
                                     ..onTap = () async {
-                                      if (!await canLaunchUrl(_freshMeatUrl)) {
-                                        throw Exception(
-                                            'Could not launch $_freshMeatUrl');
-                                      }
+                                      _launched =
+                                          _launchInBrowser(_freshMeatUrl);
                                     },
                                 ),
                                 TextSpan(
@@ -181,17 +186,14 @@ class Quick extends StatelessWidget {
                                     style:
                                         TextStyle(fontWeight: FontWeight.w300)),
                                 TextSpan(
-                                  text: 'Humorix',
+                                  text: "Humorix",
                                   style: TextStyle(
                                       color: regularFormColour,
                                       fontWeight: FontWeight.w600,
                                       decoration: TextDecoration.none),
                                   recognizer: TapGestureRecognizer()
                                     ..onTap = () async {
-                                      if (!await canLaunchUrl(_humorixUrl)) {
-                                        throw Exception(
-                                            'Could not launch $_humorixUrl');
-                                      }
+                                      _launched = _launchInBrowser(_humorixUrl);
                                     },
                                 ),
                                 TextSpan(

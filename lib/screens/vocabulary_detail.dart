@@ -43,6 +43,11 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
   late int newProjectId;
   late int newUsethis;
 
+  String titleStartState = '';
+  String contentStartState = '';
+  String commentStartState = '';
+  bool categorySetStartState = false;
+
   @override
   void initState() {
     super.initState();
@@ -71,6 +76,14 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
         ? " "
         : widget.vocabularyView.comment ?? '';
     newUsethis = widget.vocabularyView.useThis!;
+    setStartState();
+  }
+
+  void setStartState() {
+    titleStartState = titleController.text;
+    contentStartState = contentController.text;
+    commentStartState = commentController.text;
+    categorySetStartState = isCategorySet;
   }
 
   void _refreshLists() {
@@ -104,10 +117,10 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
   }
 
   bool editsMade() {
-    return (titleController.text != '' ||
-        contentController.text != '' ||
-        commentController.text.length > 1 ||
-        isCategorySet);
+    return (titleController.text != titleStartState ||
+        contentController.text != contentStartState ||
+        commentController.text != commentStartState ||
+        isCategorySet != categorySetStartState);
   }
 
   @override
@@ -121,11 +134,11 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                   context,
                   title: 'Dismiss your edits?',
                   message:
-                      "You made some changes that will be lost if you close the screen. 'Cancel' to "
-                      "save the vocabulary first; 'Close' to continue.",
-                  positiveText: 'Close',
-                  negativeText: 'Cancel',
-                  highlightNegative: true,
+                      "You made some changes that will be lost if you close the screen. 'Stay' to "
+                      "save the vocabulary first; 'Dismiss' to close the screen.",
+                  positiveText: 'Dismiss',
+                  negativeText: 'Stay',
+                  highlightPositive: true,
                 );
                 if (goBack) {
                   Navigator.of(context).pop();
@@ -135,7 +148,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
               }
             },
             icon: BackButtonIcon(),
-            color: Colors.deepOrange),
+            color: greenNotePaperColour),
         iconTheme: IconThemeData(
           color: greenNotePaperColour,
         ),
@@ -202,6 +215,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                           if (item != null) {
                             isCategorySet = true;
                             newCategoryId = item!.id!;
+                            setStartState();
                           }
                         });
                       },
@@ -520,21 +534,17 @@ Future<bool> showConfirmationAlertDialog(
             content: Text(message),
             actions: <Widget>[
               TextButton(
-                child: Text(
-                  negativeText.toUpperCase(),
-                  style: highlightNegative
-                      ? const TextStyle(color: darkAnyMatchColour)
-                      : null,
-                ),
+                child: Text(negativeText.toUpperCase(),
+                    style: highlightNegative
+                        ? const TextStyle(color: Colors.red)
+                        : const TextStyle(color: Colors.green)),
                 onPressed: () => Navigator.of(ctx).pop(false),
               ),
               TextButton(
-                child: Text(
-                  positiveText.toUpperCase(),
-                  style: highlightPositive
-                      ? const TextStyle(color: Colors.red)
-                      : null,
-                ),
+                child: Text(positiveText.toUpperCase(),
+                    style: highlightPositive
+                        ? const TextStyle(color: Colors.red)
+                        : const TextStyle(color: Colors.green)),
                 onPressed: () => Navigator.of(ctx).pop(true),
               ),
             ],
