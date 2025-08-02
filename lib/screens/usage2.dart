@@ -92,7 +92,7 @@ class Usage2 extends StatelessWidget {
                         child: RichText(
                           textAlign: TextAlign.left,
                           text: TextSpan(
-                            text: "Next to a ",
+                            text: "",
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyLarge!
@@ -101,6 +101,32 @@ class Usage2 extends StatelessWidget {
                                     fontWeight: FontWeight.w300,
                                     fontSize: 13 * scaling),
                             children: <TextSpan>[
+                              TextSpan(
+                                  text: "Vocabularies ",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: greenNotePaperColour)),
+                              TextSpan(
+                                  text: "have a (one) ",
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.w300)),
+                              TextSpan(
+                                  text: "Category ",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: cyanNotePaperColour)),
+                              TextSpan(
+                                  text:
+                                      "(eg. Adjective, Noun, Phrase ...) These are convenience "
+                                      "labels that you can use to keep track of your Vocabularies; "
+                                      "they don't influence how Balderdash! works. There's "
+                                      "about twenty defined in the database and you can add "
+                                      "as many as you like, or delete them. Categories can be "
+                                      "nested by specifying a Parent Category in the Category "
+                                      "detail screen, so you can refine "
+                                      "your Categories as much as you want.\n\nNext to a ",
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.w300)),
                               TextSpan(
                                   text: "Category",
                                   style: TextStyle(

@@ -1,5 +1,8 @@
 // ignore_for_file: sort_child_properties_last
 
+import 'dart:convert';
+import 'dart:core';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:balderdash/config/colours.dart';
 import 'package:balderdash/config/config.dart';
@@ -8,10 +11,15 @@ import 'package:balderdash/model/category.dart';
 import 'package:balderdash/model/project.dart';
 import 'package:balderdash/screens/vocabulary_detail.dart';
 import 'package:balderdash/views/vocabulary_view.dart';
+import 'package:balderdash/widgets/voc_trace.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../config/config.dart' as UserPreferences;
+import '../model/vocabulary.dart';
+import '../utils/string_utils.dart';
 
 class VocabularyPage extends StatefulWidget {
   const VocabularyPage({super.key});
@@ -37,6 +45,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
   late Future<List<VocabularyView>> _vocabularyViews;
   late List<bool> _checkedVVs;
   final batchList = <int>[];
+  Set<int> usingSet = {};
 
   String subTitle = BootstrapSubTitle;
   String searchTitle = '';
@@ -47,8 +56,11 @@ class _VocabularyPageState extends State<VocabularyPage> {
   late Category curCategory;
   bool initComplete = false;
   bool usageSearchMode = false;
+  bool usingSearchMode = false;
   bool batchMode = false;
   int moveToProject = 0;
+  String vocLine = '';
+  String previousLine = '';
 
   Future<int> _getVocabularyListLength() async {
     return await _vocabularyViews.then((value) {
@@ -60,7 +72,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
   void initState() {
     super.initState();
     loadPreferences();
-    _refreshVocabularyViewList();
+    _refreshVocabularyViewList(true);
   }
 
   Future loadPreferences() async {
@@ -86,13 +98,15 @@ class _VocabularyPageState extends State<VocabularyPage> {
     _prjDDKey.currentState?.changeSelectedItem(curProject);
   }
 
-  void _refreshVocabularyViewList() {
+  void _refreshVocabularyViewList(bool doFetch) {
     setState(() {
-      _vocabularyViews = DatabaseHelper().getFilteredVocabulariesBPAC(
-          usageSearchMode ? searchTitle : searchController.text,
-          projectId,
-          categoryId,
-          usageSearchMode);
+      if (doFetch) {
+        _vocabularyViews = DatabaseHelper().getFilteredVocabulariesBPAC(
+            usageSearchMode ? searchTitle : searchController.text,
+            projectId,
+            categoryId,
+            usageSearchMode);
+      }
       subTitle = setSubTitle();
       _getVocabularyListLength().then((value) {
         setState(() {
@@ -102,6 +116,19 @@ class _VocabularyPageState extends State<VocabularyPage> {
       });
     });
   }
+
+  // void _usingVocabularyViewList() {
+  //   setState(() {
+  //     _vocabularyViews =
+  //     subTitle = setSubTitle();
+  //     _getVocabularyListLength().then((value) {
+  //       setState(() {
+  //         _checkedVVs = List<bool>.filled(value, false, growable: true);
+  //         numItems = value;
+  //       });
+  //     });
+  //   });
+  // }
 
   String setSubTitle() {
     final whereTitle = StringBuffer('');
@@ -127,20 +154,19 @@ class _VocabularyPageState extends State<VocabularyPage> {
   onSearch() {
     setState(() {
       usageSearchMode = false;
-      _refreshVocabularyViewList();
+      usingSearchMode = false;
+      _refreshVocabularyViewList(true);
     });
   }
 
   setFilterProject(int value) {
     projectId = value;
-    // setCurrentProject(value);
-    _refreshVocabularyViewList();
+    _refreshVocabularyViewList(true);
   }
 
   setFilterCategory(int value) {
     categoryId = value;
-    // setCurrentCategory(value);
-    _refreshVocabularyViewList();
+    _refreshVocabularyViewList(true);
   }
 
   Future<void> handleSettingsButtonPressed() async {
@@ -150,12 +176,141 @@ class _VocabularyPageState extends State<VocabularyPage> {
   onUsageSearch(String value) {
     setState(() {
       usageSearchMode = true;
+      usingSearchMode = false;
       searchTitle = value.toLowerCase();
-      _refreshVocabularyViewList();
+      _refreshVocabularyViewList(true);
     });
   }
 
-  doThings(bool batch) {
+  onUsingSearch(String value) async {
+    usageSearchMode = false;
+    usingSearchMode = true;
+    await doStuff(value);
+    setState(() {
+      _refreshVocabularyViewList(false);
+    });
+  }
+
+  Future<Vocabulary> getVocabulary(String title, int projectId) async {
+    return await DatabaseHelper()
+        .getVocabularyByTitleAndProject(title, projectId);
+  }
+
+  Future<void> doStuff(String title) async {
+    usingSet.clear();
+    Vocabulary voc = await getVocabulary(title, projectId);
+    usingSet.add(voc.id ?? 0);
+    await parseVocabulary(voc);
+    _vocabularyViews = DatabaseHelper().getVocabularyViewList(usingSet);
+  }
+
+  Future<void> parseVocabulary(Vocabulary voc) async {
+    List<String> lines = [];
+    lines = splitVocabulary(voc.content!);
+    for (vocLine in lines) {
+      VocTrace vc = VocTrace(
+          vocabulary: voc,
+          line: vocLine.replaceAll(RegExp(r'^#\d+#'), ''), // remove weight tag
+          variableName: StringUtils.capitalise(voc.title!.toLowerCase()));
+      await parseVocabTrace(vc);
+    }
+  }
+
+  Future<String> parseVocabTrace(VocTrace vc) async {
+    if (vc.line.isNotEmpty && vc.line == previousLine) {
+      return "$endlessLoopError in ${vc.line}";
+    }
+    if (vc.line.contains("{{") || vc.line.contains("}}")) {
+      return "$doubleCurlyBracesError in ${vc.line}";
+    }
+    previousLine = vc.line;
+    if (!vc.line.contains("{")) {
+      vc.line = '';
+      return vc.line;
+    }
+    // remove everything up to the first {
+    vc.line = vc.line.replaceFirst(RegExp(r'^.*?{'), '{');
+
+    if (vc.line.startsWith('{[')) {
+      vc = removeTag(vc);
+    } else if (vc.line.startsWith('{\\')) {
+      vc = removeTag(vc);
+    } else if (vc
+        .getNormaLine()
+        .contains(RegExp(r'^\{\w+:=[\x27\w\s\\^@|()<>%*_";:?!\-+,.]+\}'))) {
+      vc = removeTag(vc);
+    } else if (vc
+        .getNormaLine()
+        .contains(RegExp(r'^\{\w*=([\w\s\\@()<>%*_";:?!\-+,.])+\}'))) {
+      vc = removeTag(vc);
+    } else if (vc.getNormaLine().contains(RegExp(r'^\{\^?\w+(#\d+-\d+)?\}'))) {
+      // variable
+      vc = await parseVariable(vc);
+    } else if (vc.getNormaLine().contains(RegExp(r'^\{\$\^?\w*\}'))) {
+      vc = removeTag(vc);
+    } else if (vc.line.contains(RegExp(r'^\{@(%-?\w\w?\W*)*(\|\d+\|\d+)?\}'))) {
+      vc = removeTag(vc);
+    }
+    if (vc.line.isNotEmpty) {
+      return await parseVocabTrace(vc);
+    } else {
+      // end of vc lifecycle
+      return "done";
+    }
+  }
+
+  Future<VocTrace> parseVariable(VocTrace vc) async {
+    String varTitle = '';
+    RegExp varMatch = RegExp(r'^\{\^?(\w+?)(#\d+-\d+)?\}');
+    if (vc.line.contains(varMatch)) {
+      // retrieve title
+      varTitle = varMatch.firstMatch(vc.line)?.group(1) ?? '';
+    }
+    Vocabulary next = await retrieveVocabularyVariable(vc, varTitle);
+    usingSet.add(next.id ?? 0);
+    await parseVocabulary(next);
+    return removeTag(vc);
+  }
+
+  Future<Vocabulary> retrieveVocabularyVariable(
+      VocTrace vc, String varTitle) async {
+    Vocabulary next = await getVocabulary(
+        varTitle.replaceFirst('^', '').toUpperCase(), projectId);
+    if (next.content!.isEmpty) {
+      showError(noEmptyVocabulary,
+          "Vocabulary '${varTitle.replaceFirst('^', '').toUpperCase()}' called in '${vc.variableName}' has no content");
+    }
+    return next;
+  }
+
+  VocTrace removeTag(VocTrace vc) {
+    // remove tag
+    vc.line = vc.line.replaceFirst(RegExp(r'^\{.*?\}'), '');
+    if (vc.line.isNotEmpty) {
+      // remove fixed text until first {
+      vc.line = vc.line.replaceFirst(RegExp(r'^.*?{'), '{');
+    }
+    return vc;
+  }
+
+  List<String> splitVocabulary(String content) {
+    List<String> uniqueLines = [];
+    List<String> activeLines = [];
+    LineSplitter ls = LineSplitter();
+    uniqueLines = ls.convert(content);
+    if (uniqueLines[0].isEmpty) {
+      return [emptyFirstLineError];
+    }
+    for (var line in uniqueLines) {
+      if (line.isEmpty) {
+        break;
+      }
+      activeLines.add(line);
+    }
+    return activeLines;
+  }
+
+  setBatchMode(bool batch) {
     setState(() {
       if (!batch) {
         batchList.clear();
@@ -239,8 +394,10 @@ class _VocabularyPageState extends State<VocabularyPage> {
               if (moveToProject > 0) {
                 await DatabaseHelper()
                     .batchCopyVocabularies(batchList, moveToProject);
-                _refreshVocabularyViewList();
+                setBatchMode(false);
+                handleRightActionModePressed();
                 batchList.clear();
+                _refreshVocabularyViewList(true);
                 Navigator.of(context).pop();
               }
             },
@@ -251,8 +408,10 @@ class _VocabularyPageState extends State<VocabularyPage> {
               if (moveToProject > 0) {
                 await DatabaseHelper()
                     .batchMoveVocabularies(batchList, moveToProject);
-                _refreshVocabularyViewList();
+                setBatchMode(false);
+                handleRightActionModePressed();
                 batchList.clear();
+                _refreshVocabularyViewList(true);
                 Navigator.of(context).pop();
               }
             },
@@ -262,6 +421,50 @@ class _VocabularyPageState extends State<VocabularyPage> {
       ),
     );
   }
+
+  void handleRightActionModePressed() {
+    if (!batchMode) {
+      if (usageSearchMode || usingSearchMode) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              backgroundColor: greenAppbarColour,
+              behavior: SnackBarBehavior.floating,
+              duration: Duration(milliseconds: 1200),
+              content: Text(
+                "back to Vocabulary list",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18 * scaling,
+                ),
+              ),
+              dismissDirection: DismissDirection.up),
+        );
+      }
+      (usageSearchMode || usingSearchMode)
+          ? onSearch()
+          : handleSettingsButtonPressed();
+    }
+  }
+
+  void showError(String title, String msg) => showDialog<String>(
+      context: UserPreferences.navigatorKey.currentContext!,
+      builder: (BuildContext context) => AlertDialog(
+            title: Text(title),
+            content: Text(msg),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  int count = 0;
+                  Navigator.of(context).popUntil((_) => count++ >= 2);
+                },
+                child: const Text('Go back'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, 'OK'),
+                child: const Text('OK'),
+              ),
+            ],
+          ));
 
   @override
   Widget build(BuildContext context) {
@@ -354,67 +557,54 @@ class _VocabularyPageState extends State<VocabularyPage> {
                 color: batchMode ? orangeCheckColour : greenNotePaperColour,
               ),
               onPressed: () {
-                if (!usageSearchMode) {
-                  if (batchMode) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          backgroundColor: greenAppbarColour,
-                          behavior: SnackBarBehavior.floating,
-                          duration: Duration(milliseconds: 1200),
-                          content: Text(
-                            "quit Batch Mode",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 18 * scaling,
-                            ),
+                // if (!usageSearchMode && !usingSearchMode) {
+                if (batchMode) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        backgroundColor: greenAppbarColour,
+                        behavior: SnackBarBehavior.floating,
+                        duration: Duration(milliseconds: 1200),
+                        content: Text(
+                          "quit Batch Mode",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 18 * scaling,
                           ),
-                          dismissDirection: DismissDirection.up),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          backgroundColor: orangeCheckColour,
-                          behavior: SnackBarBehavior.floating,
-                          duration: Duration(milliseconds: 1200),
-                          content: Text(
-                            "enter Batch Mode",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 18 * scaling,
-                            ),
+                        ),
+                        dismissDirection: DismissDirection.up),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        backgroundColor: orangeCheckColour,
+                        behavior: SnackBarBehavior.floating,
+                        duration: Duration(milliseconds: 1200),
+                        content: Text(
+                          "enter Batch Mode",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 18 * scaling,
                           ),
-                          dismissDirection: DismissDirection.up),
-                    );
-                  }
-                  batchMode ? doThings(false) : doThings(true);
+                        ),
+                        dismissDirection: DismissDirection.up),
+                  );
                 }
+                batchMode ? setBatchMode(false) : setBatchMode(true);
               },
             ),
             IconButton(
               icon: Icon(
-                usageSearchMode ? Icons.cancel_rounded : Icons.settings,
-                color: usageSearchMode ? neoFormColour : greenNotePaperColour,
+                (usageSearchMode || usingSearchMode)
+                    ? Icons.cancel_rounded
+                    : Icons.settings,
+                color: usageSearchMode
+                    ? neoFormColour
+                    : usingSearchMode
+                        ? lightVerbatimMatchColour
+                        : greenNotePaperColour,
               ),
               onPressed: () {
-                if (!batchMode) {
-                  if (usageSearchMode) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          backgroundColor: greenAppbarColour,
-                          behavior: SnackBarBehavior.floating,
-                          duration: Duration(milliseconds: 1200),
-                          content: Text(
-                            "back to Vocabulary list",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 18 * scaling,
-                            ),
-                          ),
-                          dismissDirection: DismissDirection.up),
-                    );
-                  }
-                  usageSearchMode ? onSearch() : handleSettingsButtonPressed();
-                }
+                handleRightActionModePressed();
               },
             )
           ],
@@ -446,8 +636,8 @@ class _VocabularyPageState extends State<VocabularyPage> {
                     final vocabularyView = snapshot.data![index];
                     return Container(
                       height: 40 * scaling,
-                      padding: EdgeInsets.fromLTRB(
-                          5.0 * scaling, 0.0, 5.0 * scaling, 0.0),
+                      padding:
+                          EdgeInsets.fromLTRB(0.0, 0.0, 4.0 * scaling, 0.0),
                       decoration: BoxDecoration(
                         border: Border(
                           bottom: BorderSide(width: scaling, color: tanteRia),
@@ -458,19 +648,50 @@ class _VocabularyPageState extends State<VocabularyPage> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: <Widget>[
                           if (batchMode)
-                            Checkbox(
-                              checkColor: Colors.white,
-                              fillColor:
-                                  WidgetStateProperty.resolveWith(getColor),
-                              value: _checkedVVs[index],
-                              onChanged: (bool? value) {
-                                setState(() {
-                                  value!
-                                      ? batchList.add(vocabularyView.id!)
-                                      : batchList.remove(vocabularyView.id!);
-                                  _checkedVVs[index] = value;
-                                });
-                              },
+                            Expanded(
+                              flex: 1,
+                              child: Checkbox(
+                                checkColor: Colors.white,
+                                fillColor:
+                                    WidgetStateProperty.resolveWith(getColor),
+                                value: _checkedVVs[index],
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    value!
+                                        ? batchList.add(vocabularyView.id!)
+                                        : batchList.remove(vocabularyView.id!);
+                                    _checkedVVs[index] = value;
+                                  });
+                                },
+                              ),
+                            ),
+                          if (!batchMode)
+                            Expanded(
+                              flex: 1,
+                              child: IconButton(
+                                  icon: const Icon(Icons.search_rounded),
+                                  color: vocabularyView.useThis == 1
+                                      ? violetAppbarColour
+                                      : lightBlueGrey,
+                                  onPressed: () {
+                                    onUsageSearch(vocabularyView.title ?? '');
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          backgroundColor: violetAppbarColour,
+                                          behavior: SnackBarBehavior.floating,
+                                          duration:
+                                              Duration(milliseconds: 1200),
+                                          content: Text(
+                                            "vocabularies using '${vocabularyView.title ?? ''}'",
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontSize: 18 * scaling,
+                                            ),
+                                          ),
+                                          dismissDirection:
+                                              DismissDirection.endToStart),
+                                    );
+                                  }),
                             ),
                           Expanded(
                             flex: 5,
@@ -520,20 +741,21 @@ class _VocabularyPageState extends State<VocabularyPage> {
                           Expanded(
                             flex: 1,
                             child: IconButton(
-                                icon: const Icon(Icons.search_rounded),
+                                icon: const Icon(Icons.commit_rounded),
                                 color: vocabularyView.useThis == 1
-                                    ? violetAppbarColour
+                                    ? blueAppbarColour
                                     : lightBlueGrey,
                                 // onPressed: () =>
                                 //     onUsageSearch(vocabularyView.title ?? ''),
                                 onPressed: () {
-                                  onUsageSearch(vocabularyView.title ?? '');
+                                  onUsingSearch(vocabularyView.title ?? '');
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                        backgroundColor: violetAppbarColour,
+                                        backgroundColor: blueAppbarColour,
                                         behavior: SnackBarBehavior.floating,
+                                        duration: Duration(milliseconds: 1200),
                                         content: Text(
-                                          "vocabularies using '${vocabularyView.title ?? ''}'",
+                                          "all vocabularies used by '${vocabularyView.title ?? ''}'",
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
                                             fontSize: 18 * scaling,
@@ -560,7 +782,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                                   ),
                                 ).then((value) {
                                   setState(() {
-                                    _refreshVocabularyViewList();
+                                    _refreshVocabularyViewList(true);
                                   });
                                 });
                               },
@@ -588,7 +810,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                                 if (isDelete) {
                                   await DatabaseHelper()
                                       .deleteVocabulary(vocabularyView);
-                                  _refreshVocabularyViewList();
+                                  _refreshVocabularyViewList(true);
                                 }
                               },
                             ),
@@ -631,7 +853,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                 ),
               ).then((value) {
                 setState(() {
-                  _refreshVocabularyViewList();
+                  _refreshVocabularyViewList(true);
                 });
               });
             }

@@ -109,12 +109,17 @@ class Usage1 extends StatelessWidget {
                               TextSpan(
                                   text:
                                       "because they're the most important part of the app.\n"
-                                      "Still there's a bit more to it: in the Vocabulary overview "
-                                      "screen you can tap the magnifying glass on the row "
-                                      "to find what vocabularies call the one in the current "
-                                      "row. Also, the 'checkboxes' icon top right opens Batch "
-                                      "Mode where you can select vocabularies to copy or move "
-                                      "to another project (the gear icon opens a filter drawer)\n\n"
+                                      "The Vocabularies screen has a few features we didn't mention "
+                                      "yet. The magnifying glass button left on the row will show what "
+                                      "vocabularies call the current one (in that row), and the leftmost "
+                                      "of the three buttons right on the row will show all vocabularies "
+                                      "that will be called when running the current one. Which is useful if you "
+                                      "want to copy them into a separate project.\n\n"
+                                      "For that you'll have to tap the 'checkboxes' icon top right - "
+                                      "left of the gear icon. "
+                                      "It opens Batch Mode, where you can select vocabularies to copy or move "
+                                      "to another project using the floating button bottom right (which "
+                                      "turns orange in Batch Mode)\n\n"
                                       "Then, there are the ",
                                   style:
                                       TextStyle(fontWeight: FontWeight.w300)),
@@ -142,32 +147,6 @@ class Usage1 extends StatelessWidget {
                                       "so you can find your stuff back, share a project with another "
                                       "Balderdash! user, etcetera. We'll briefly walk you through "
                                       "that below.\n\n",
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.w300)),
-                              TextSpan(
-                                  text: "Vocabularies ",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      color: greenNotePaperColour)),
-                              TextSpan(
-                                  text: "have a (one) ",
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.w300)),
-                              TextSpan(
-                                  text: "Category ",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      color: cyanNotePaperColour)),
-                              TextSpan(
-                                  text:
-                                      "(eg. Adjective, Noun, Phrase ...) These are convenience "
-                                      "labels that you can use to keep track of your Vocabularies; "
-                                      "they don't influence how Balderdash! works. There's "
-                                      "about twenty defined in the database and you can add "
-                                      "as many as you like, or delete them. Categories can be "
-                                      "nested by specifying a Parent Category in the Category "
-                                      "detail screen, so you can refine "
-                                      "your Categories as much as you want.\n\n\n",
                                   style:
                                       TextStyle(fontWeight: FontWeight.w300)),
                               TextSpan(

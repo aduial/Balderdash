@@ -700,6 +700,15 @@ class DatabaseHelper {
     return vocabularyViews;
   }
 
+  Future<List<VocabularyView>> getVocabularyViewList(Set<int> usingSet) async {
+    List<VocabularyView> vocabularyViews = [];
+    for (int id in usingSet) {
+      vocabularyViews.add(await getVocabularyView(id));
+    }
+    return vocabularyViews;
+    // return Future.value(vocabularyViews);
+  }
+
   // get single VocabularyView
   Future<VocabularyView> getVocabularyView(int id) async {
     final db = await database;
