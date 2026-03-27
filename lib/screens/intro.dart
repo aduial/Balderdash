@@ -170,15 +170,15 @@ class Intro extends StatelessWidget {
                                     style:
                                         TextStyle(fontWeight: FontWeight.w300)),
                                 TextSpan(
-                                    text: "vocabularies",
+                                    text: "vocabularies ",
                                     style:
                                         TextStyle(fontWeight: FontWeight.w600)),
                                 TextSpan(
                                     text:
-                                        "(a group of lines containing text and commands). "
-                                        "Balderdash! is completely compatible with grammars written "
-                                        "for Nonsense. In fact, I've included the original demo "
-                                        "content in this app. The difference is that this app doesn’t "
+                                        "(groups of lines containing text and commands). "
+                                        "Balderdash! is fully compatible with grammars written "
+                                        "for Nonsense. The original demo content is imcluded in "
+                                        "this app. The difference is that this app doesn’t "
                                         "use .data files, but a local ",
                                     style:
                                         TextStyle(fontWeight: FontWeight.w300)),
@@ -188,13 +188,28 @@ class Intro extends StatelessWidget {
                                         TextStyle(fontWeight: FontWeight.w600)),
                                 TextSpan(
                                     text:
-                                        "database.\n\nThis allows adding entities like users, "
-                                        "categories and projects to structure the process, "
-                                        "that you can use or ignore as you see fit. "
-                                        "The smaller screen size gave rise to the vocabulary as the "
-                                        "basic unit of a grammar instead of .data files containing "
-                                        "dozens of vocabularies each.\n\n"
-                                        "How Balderdash! works, writing vocabularies and managing "
+                                        "database.\n\nThis allows adding structure to the "
+                                        "process with entities like 'users', 'categories' "
+                                        "and 'projects' that you can use or ignore as you see fit. "
+                                        "The smaller screen size gave rise to the ",
+                                    style:
+                                    TextStyle(fontWeight: FontWeight.w300)),
+                                TextSpan(
+                                    text:
+                                        "vocabulary ",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.w600)),
+                                TextSpan(
+                                    text: "as the basic unit of a grammar, instead of ",
+                                    style:
+                                    TextStyle(fontWeight: FontWeight.w300)),
+                                TextSpan(
+                                    text: ".data files ",
+                                    style:
+                                    TextStyle(fontWeight: FontWeight.w600)),
+                                TextSpan(
+                                  text: "containing dozens of vocabularies each.\n\n"
+                                        "How Balderdash! works, how to write vocabularies and managing "
                                         "projects in the app is all described in help pages.\n\n\n\n\n",
                                     style:
                                         TextStyle(fontWeight: FontWeight.w300)),

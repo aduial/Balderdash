@@ -44,6 +44,9 @@ class DatabaseHelper {
     io.Directory documentsDirectory = await getApplicationDocumentsDirectory();
     String dbPath = join(documentsDirectory.path, _dbName);
     bool dbExists = await io.File(dbPath).exists();
+
+    print("hier");
+    print(dbPath);
     if (!dbExists) {
       // Copy from asset
       ByteData data = await rootBundle.load(join("assets", _dbName));

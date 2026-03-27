@@ -234,7 +234,7 @@ class _TemplateDetailState extends State<TemplateDetail> {
                   flex: 1,
                   child: Switch(
                     value: newIsHtml == 1,
-                    activeColor: violetNotePaperColour,
+                    activeThumbColor: violetNotePaperColour,
                     activeTrackColor: violetAppbarColour,
                     onChanged: (bool value) {
                       setState(() {

@@ -116,9 +116,7 @@ class Quick extends StatelessWidget {
                             text: TextSpan(
                               text:
                                   "The idea of this app doesn't go well with the TL;DR "
-                                  "attitude but, oh, well.\n\nIf you like to see it working "
-                                  "you best try one of the included demo's. There are the "
-                                  "original examples from the ",
+                                  "attitude but, oh, well: best try one of the included text-only demo's.\n",
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyLarge!
@@ -127,14 +125,28 @@ class Quick extends StatelessWidget {
                                       fontWeight: FontWeight.w300,
                                       fontSize: 13 * scaling),
                               children: <TextSpan>[
-                                TextSpan(
-                                    text: "Balderdash! ",
+                              TextSpan(
+                                  text:
+                                  "Tap 'Run Balderdash! in the app menu; then tap the gear icon "
+                                  "top right. Tap CATEGORY in the drawer that opens and select "
+                                  "'Bootstrap'. Halfway down you'll see 'KIFFAZ' - go ahead "
+                                  "and tap the red triangle on its right. The 'Run KIFFAZ' "
+                                  "screen opens: go ahead and tap the play button.\n"
+                                  "This produces a list of alliterative poetic descriptions of "
+                                  "a rock band that cultivated a 'flirting with Evil' image.\n"
+                                  "EMBARRASSINGNAMES produces embarrassing names, WRITELC "
+                                  "a Lovecraftian abomination, and YURPBLAH executive balderdash.\n\n"
+                                  "If you speak Dutch, try 'BOEVEN, MEDINIX or 'DUTCHNAMES'.\n\n\n\n\n\n",
+                                  style:
+                                  TextStyle(fontWeight: FontWeight.w300)),
+                              TextSpan(
+                                    text: "Nonsense! ",
                                     style:
                                         TextStyle(fontWeight: FontWeight.w600)),
                                 TextSpan(
                                     text:
-                                        "app. Several of those work with a HTML or RDF template "
-                                        "and generate a parody version of the ",
+                                        "perl script include several that use HTML or RDF templates "
+                                        "to generate parody versions of classic websites like ",
                                     style:
                                         TextStyle(fontWeight: FontWeight.w300)),
                                 TextSpan(
@@ -182,7 +194,7 @@ class Quick extends StatelessWidget {
                                     },
                                 ),
                                 TextSpan(
-                                    text: " or Nonsense! creator's own site ",
+                                    text: " and Nonsense! creator's own website ",
                                     style:
                                         TextStyle(fontWeight: FontWeight.w300)),
                                 TextSpan(
@@ -197,12 +209,12 @@ class Quick extends StatelessWidget {
                                     },
                                 ),
                                 TextSpan(
-                                    text: " as they were around 2001.\n\n",
+                                    text: " as they existed around 2001.\n\n",
                                     style:
                                         TextStyle(fontWeight: FontWeight.w300)),
                                 TextSpan(
                                     text:
-                                        "It's much easier to start with regular text Balderdash. "
+                                        "However, it's easier to start with regular textual Balderdash. "
                                         "Tap 'Run Balderdash! in the app menu. This opens a "
                                         "long list: tap the gear icon top right. Tap CATEGORY "
                                         "in the drawer that opens and choose 'Bootstrap' from "
@@ -218,6 +230,10 @@ class Quick extends StatelessWidget {
                                         "If you speak Dutch, try 'BOEVEN, MEDINIX or 'DUTCHNAMES'.\n\n\n\n\n\n",
                                     style:
                                         TextStyle(fontWeight: FontWeight.w300)),
+                                TextSpan(
+                                    text: "\n\n\n\n\n\n",
+                                    style:
+                                TextStyle(fontWeight: FontWeight.w300)),
                               ],
                             ),
                           ),

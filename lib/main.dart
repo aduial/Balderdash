@@ -19,6 +19,7 @@ import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 void main() {
+  print("koeoia");
   runApp(MyApp());
 
   final cron = Cron();
@@ -27,11 +28,11 @@ void main() {
     print(DateTime.now());
     DatabaseHelper().makeBackup(false);
   });
-  cron.schedule(Schedule.parse('1 * * * *'), () async {
-    print("backup DB");
-    print(DateTime.now());
-    DatabaseHelper().makeBackup(true);
-  });
+  // cron.schedule(Schedule.parse('1 * * * *'), () async {
+  //   print("backup DB");
+  //   print(DateTime.now());
+  //   DatabaseHelper().makeBackup(true);
+  // });
 }
 
 class MyApp extends StatelessWidget {
@@ -333,8 +334,8 @@ class HomeScreenState extends State<HomeScreen> {
                     padding: EdgeInsetsDirectional.fromSTEB(
                         20 * scaling, 0 * scaling, 20 * scaling, 0 * scaling),
                     child: Text(
-                      "Did you ever wish you had a million monkeys with typewriters in your pocket? "
-                      "Your wish has been granted - without the need to supply bananas and ink ribbons! ",
+                      "A million monkeys with typewriters in your pocket - "
+                      "but without bananas and ink ribbons! ",
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                           color: ithildin,

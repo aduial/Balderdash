@@ -182,29 +182,29 @@ class _VocabularyPageState extends State<VocabularyPage> {
     });
   }
 
-  onUsingSearch(String value) async {
+  onUsingSearch(int pId, String title) async {
     usageSearchMode = false;
     usingSearchMode = true;
-    await doStuff(value);
+    await doStuff(pId, title);
     setState(() {
       _refreshVocabularyViewList(false);
     });
   }
 
-  Future<Vocabulary> getVocabulary(String title, int projectId) async {
-    return await DatabaseHelper()
-        .getVocabularyByTitleAndProject(title, projectId);
-  }
-
-  Future<void> doStuff(String title) async {
+  Future<void> doStuff(int pId, String title) async {
     usingSet.clear();
-    Vocabulary voc = await getVocabulary(title, projectId);
+    Vocabulary voc = await getVocabulary(pId, title);
     usingSet.add(voc.id ?? 0);
-    await parseVocabulary(voc);
+    await parseVocabulary(pId, voc);
+    print("${usingSet.length} vocs found");
     _vocabularyViews = DatabaseHelper().getVocabularyViewList(usingSet);
   }
 
-  Future<void> parseVocabulary(Vocabulary voc) async {
+  Future<Vocabulary> getVocabulary(int pId, String title) async {
+    return await DatabaseHelper().getVocabularyByTitleAndProject(title, pId);
+  }
+
+  Future<void> parseVocabulary(int pId, Vocabulary voc) async {
     List<String> lines = [];
     lines = splitVocabulary(voc.content!);
     for (vocLine in lines) {
@@ -212,11 +212,11 @@ class _VocabularyPageState extends State<VocabularyPage> {
           vocabulary: voc,
           line: vocLine.replaceAll(RegExp(r'^#\d+#'), ''), // remove weight tag
           variableName: StringUtils.capitalise(voc.title!.toLowerCase()));
-      await parseVocabTrace(vc);
+      await parseVocabTrace(pId, vc);
     }
   }
 
-  Future<String> parseVocabTrace(VocTrace vc) async {
+  Future<String> parseVocabTrace(int pId, VocTrace vc) async {
     if (vc.line.isNotEmpty && vc.line == previousLine) {
       return "$endlessLoopError in ${vc.line}";
     }
@@ -245,37 +245,37 @@ class _VocabularyPageState extends State<VocabularyPage> {
       vc = removeTag(vc);
     } else if (vc.getNormaLine().contains(RegExp(r'^\{\^?\w+(#\d+-\d+)?\}'))) {
       // variable
-      vc = await parseVariable(vc);
+      vc = await parseVariable(pId, vc);
     } else if (vc.getNormaLine().contains(RegExp(r'^\{\$\^?\w*\}'))) {
       vc = removeTag(vc);
     } else if (vc.line.contains(RegExp(r'^\{@(%-?\w\w?\W*)*(\|\d+\|\d+)?\}'))) {
       vc = removeTag(vc);
     }
     if (vc.line.isNotEmpty) {
-      return await parseVocabTrace(vc);
+      return await parseVocabTrace(pId, vc);
     } else {
       // end of vc lifecycle
       return "done";
     }
   }
 
-  Future<VocTrace> parseVariable(VocTrace vc) async {
+  Future<VocTrace> parseVariable(int pId, VocTrace vc) async {
     String varTitle = '';
     RegExp varMatch = RegExp(r'^\{\^?(\w+?)(#\d+-\d+)?\}');
     if (vc.line.contains(varMatch)) {
       // retrieve title
       varTitle = varMatch.firstMatch(vc.line)?.group(1) ?? '';
     }
-    Vocabulary next = await retrieveVocabularyVariable(vc, varTitle);
+    Vocabulary next = await retrieveVocabularyVariable(pId, vc, varTitle);
     usingSet.add(next.id ?? 0);
-    await parseVocabulary(next);
+    await parseVocabulary(pId, next);
     return removeTag(vc);
   }
 
   Future<Vocabulary> retrieveVocabularyVariable(
-      VocTrace vc, String varTitle) async {
-    Vocabulary next = await getVocabulary(
-        varTitle.replaceFirst('^', '').toUpperCase(), projectId);
+      int pId, VocTrace vc, String varTitle) async {
+    Vocabulary next =
+        await getVocabulary(pId, varTitle.replaceFirst('^', '').toUpperCase());
     if (next.content!.isEmpty) {
       showError(noEmptyVocabulary,
           "Vocabulary '${varTitle.replaceFirst('^', '').toUpperCase()}' called in '${vc.variableName}' has no content");
@@ -727,7 +727,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                             flex: 2,
                             child: Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
-                                  2 * scaling, 0, 2 * scaling, 0),
+                                  2 * scaling, 0, 0, 0),
                               child: AutoSizeText(
                                 vocabularyView.project!,
                                 maxLines: 1,
@@ -741,14 +741,13 @@ class _VocabularyPageState extends State<VocabularyPage> {
                           Expanded(
                             flex: 1,
                             child: IconButton(
-                                icon: const Icon(Icons.commit_rounded),
+                                icon: const Icon(Icons.star_border_rounded),
                                 color: vocabularyView.useThis == 1
                                     ? blueAppbarColour
                                     : lightBlueGrey,
-                                // onPressed: () =>
-                                //     onUsageSearch(vocabularyView.title ?? ''),
                                 onPressed: () {
-                                  onUsingSearch(vocabularyView.title ?? '');
+                                  onUsingSearch(vocabularyView.projectId ?? 0,
+                                      vocabularyView.title ?? '');
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                         backgroundColor: blueAppbarColour,

@@ -214,7 +214,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                         setState(() {
                           if (item != null) {
                             isCategorySet = true;
-                            newCategoryId = item!.id!;
+                            newCategoryId = item.id!;
                             setStartState();
                           }
                         });
@@ -404,7 +404,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                   flex: 1,
                   child: Switch(
                     value: newUsethis == 1,
-                    activeColor: greenNotePaperColour,
+                    activeThumbColor: greenNotePaperColour,
                     activeTrackColor: greenAppbarColour,
                     onChanged: (bool value) {
                       setState(() {
