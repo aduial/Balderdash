@@ -116,7 +116,7 @@ class Quick extends StatelessWidget {
                             text: TextSpan(
                               text:
                                   "The idea of this app doesn't go well with the TL;DR "
-                                  "attitude but, oh, well: best try one of the included text-only demo's.\n",
+                                  "attitude but if you want to see how it works, try one of the included text-only demo's.\n",
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyLarge!
@@ -126,26 +126,112 @@ class Quick extends StatelessWidget {
                                       fontSize: 13 * scaling),
                               children: <TextSpan>[
                               TextSpan(
-                                  text:
-                                  "Tap 'Run Balderdash! in the app menu; then tap the gear icon "
-                                  "top right. Tap CATEGORY in the drawer that opens and select "
-                                  "'Bootstrap'. Halfway down you'll see 'KIFFAZ' - go ahead "
-                                  "and tap the red triangle on its right. The 'Run KIFFAZ' "
-                                  "screen opens: go ahead and tap the play button.\n"
-                                  "This produces a list of alliterative poetic descriptions of "
-                                  "a rock band that cultivated a 'flirting with Evil' image.\n"
-                                  "EMBARRASSINGNAMES produces embarrassing names, WRITELC "
-                                  "a Lovecraftian abomination, and YURPBLAH executive balderdash.\n\n"
-                                  "If you speak Dutch, try 'BOEVEN, MEDINIX or 'DUTCHNAMES'.\n\n\n\n\n\n",
+                                  text: "Tap ",
                                   style:
                                   TextStyle(fontWeight: FontWeight.w300)),
-                              TextSpan(
+                                TextSpan(
+                                    text: "Run Balderdash!  ",
+                                    style:
+                                    TextStyle(fontWeight: FontWeight.w600)),
+                                TextSpan(
+                                    text: "in the app menu, then tap the gear icon "
+                                  "top right. In the drawer that opens, check if the first box says ",
+                                    style:
+                                    TextStyle(fontWeight: FontWeight.w300)),
+                                TextSpan(
+                                    text: "PROJECT",
+                                    style:
+                                    TextStyle(fontWeight: FontWeight.w600)),
+                                TextSpan(
+                                    text: " - if not tap the X button to the right. "
+                                        "Then check the 'Category' box below that says ",
+                                    style:
+                                    TextStyle(fontWeight: FontWeight.w300)),
+                                TextSpan(
+                                    text: "Bootstrap",
+                                    style:
+                                    TextStyle(fontWeight: FontWeight.w600)),
+                                TextSpan(
+                                    text: "; if not, tap it and select 'Bootstrap' from the list."
+                                  "Tap on the list screen left if it hasn't already moved "
+                                  "back. Find the item called ",
+                                    style:
+                                    TextStyle(fontWeight: FontWeight.w300)),
+                                TextSpan(
+                                    text: "KIFFAZ",
+                                    style:
+                                    TextStyle(fontWeight: FontWeight.w600)),
+                                TextSpan(
+                                    text: ". Tap the red triangle on its right. Tap the 'play' button "
+                                  "In the next screen to see a list of alliterative poetic descriptions of "
+                                  "a rock band that cultivated a ",
+                                    style:
+                                    TextStyle(fontWeight: FontWeight.w300)),
+                                TextSpan(
+                                    text: "'flirting with Evil' ",
+                                    style:
+                                    TextStyle(fontWeight: FontWeight.w500,
+                                        fontStyle: FontStyle.italic)),
+                                TextSpan(
+                                    text: "image.\n",
+                                    style:
+                                    TextStyle(fontWeight: FontWeight.w300)),
+                                TextSpan(
+                                    text: "EMBARRASSINGNAMES ",
+                                    style:
+                                    TextStyle(fontWeight: FontWeight.w600)),
+                                TextSpan(
+                                    text: "generates embarrassing names, ",
+                                    style:
+                                    TextStyle(fontWeight: FontWeight.w300)),
+                                TextSpan(
+                                    text: "WRITELC ",
+                                    style:
+                                    TextStyle(fontWeight: FontWeight.w600)),
+                                TextSpan(
+                                    text: "a Lovecraftian abomination of sorts, and ",
+                                    style:
+                                    TextStyle(fontWeight: FontWeight.w300)),
+                                TextSpan(
+                                    text: "YURPBLAH ",
+                                    style:
+                                    TextStyle(fontWeight: FontWeight.w600)),
+                                TextSpan(
+                                    text: "is the Executive's best friend.\n\n"
+                                  "If you speak Dutch, try ",
+                                    style:
+                                    TextStyle(fontWeight: FontWeight.w300)),
+                                TextSpan(
+                                    text: "BOEVEN",
+                                    style:
+                                    TextStyle(fontWeight: FontWeight.w600)),
+                                TextSpan(
+                                    text: ", ",
+                                    style:
+                                    TextStyle(fontWeight: FontWeight.w300)),
+                                TextSpan(
+                                    text: "MEDINIX",
+                                    style:
+                                    TextStyle(fontWeight: FontWeight.w600)),
+                                TextSpan(
+                                    text: " or ",
+                                    style:
+                                    TextStyle(fontWeight: FontWeight.w300)),
+                                TextSpan(
+                                    text: "DUTCHNAMES.\n\n",
+                                    style:
+                                    TextStyle(fontWeight: FontWeight.w600)),
+                                TextSpan(
+                                    text: "This app includes the original demo files from the ",
+                                    style:
+                                    TextStyle(fontWeight: FontWeight.w300)),
+                                TextSpan(
                                     text: "Nonsense! ",
                                     style:
                                         TextStyle(fontWeight: FontWeight.w600)),
                                 TextSpan(
                                     text:
-                                        "perl script include several that use HTML or RDF templates "
+                                        "perl script, including several that use HTML or RDF templates "
                                         "to generate parody versions of classic websites like ",
                                     style:
                                         TextStyle(fontWeight: FontWeight.w300)),
@@ -209,31 +295,9 @@ class Quick extends StatelessWidget {
                                     },
                                 ),
                                 TextSpan(
-                                    text: " as they existed around 2001.\n\n",
+                                    text: " as they existed around 2001.\n\n\n\n\n",
                                     style:
-                                        TextStyle(fontWeight: FontWeight.w300)),
-                                TextSpan(
-                                    text:
-                                        "However, it's easier to start with regular textual Balderdash. "
-                                        "Tap 'Run Balderdash! in the app menu. This opens a "
-                                        "long list: tap the gear icon top right. Tap CATEGORY "
-                                        "in the drawer that opens and choose 'Bootstrap' from "
-                                        "the list. Halfway down you'll see 'KIFFAZ' - go ahead "
-                                        "and tap the red triangle on its right. The 'Run KIFFAZ' "
-                                        "screen opens: go ahead and tap the play button.\n"
-                                        "What you're seeing is a list of alliterative poetic "
-                                        "descriptions of a rock band that cultivated a "
-                                        "'flirting with Evil' image.\nEMBARRASSINGNAMES is "
-                                        "testing the emotional charge of certain letter "
-                                        "combinations, WRITELC (tries to) produce a Lovecraftian "
-                                        "abomination and YURPBLAH is about snazzy hollow phrases.\n\n"
-                                        "If you speak Dutch, try 'BOEVEN, MEDINIX or 'DUTCHNAMES'.\n\n\n\n\n\n",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.w300)),
-                                TextSpan(
-                                    text: "\n\n\n\n\n\n",
-                                    style:
-                                TextStyle(fontWeight: FontWeight.w300)),
+                                        TextStyle(fontWeight: FontWeight.w300))
                               ],
                             ),
                           ),

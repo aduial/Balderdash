@@ -1,4 +1,5 @@
 import '../config/config.dart';
+import '../views/vocabulary_view.dart';
 
 /*
   The Vocabulary entity contains the elements referred to in the grammar file.
@@ -35,6 +36,18 @@ class Vocabulary {
       "comment": comment,
       "useThis": useThis
     };
+  }
+
+  static Vocabulary fromView(VocabularyView vv) {
+    Vocabulary vocabulary = Vocabulary();
+    vocabulary.id = vv.id;
+    vocabulary.categoryId = vv.categoryId;
+    vocabulary.projectId = vv.projectId;
+    vocabulary.title = vv.title;
+    vocabulary.content = vv.content;
+    vocabulary.comment = vv.comment;
+    vocabulary.useThis = vv.useThis;
+    return vocabulary;
   }
 
   static Vocabulary fromMap(Map map) {

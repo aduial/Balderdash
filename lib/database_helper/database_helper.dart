@@ -31,6 +31,10 @@ class DatabaseHelper {
   factory DatabaseHelper() => _instance;
   DatabaseHelper._internal();
 
+  late io.Directory documentsDirectory;
+  late String dbPath;
+  late bool dbExists;
+
   static Database? _database;
 
   Future<Database> get database async {
@@ -41,36 +45,39 @@ class DatabaseHelper {
   // return database if already available in App directory
   // else, copy from assets folder to app directory
   Future<Database> _initDB() async {
-    io.Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    String dbPath = join(documentsDirectory.path, _dbName);
-    bool dbExists = await io.File(dbPath).exists();
+    // check if database is present in application doc directory
+    documentsDirectory = await getApplicationDocumentsDirectory();
+    dbPath = join(documentsDirectory.path, _dbName);
+    dbExists = await io.File(dbPath).exists();
 
-    print("hier");
+    // print("hier");
     print(dbPath);
+    // if no database found
     if (!dbExists) {
-      // Copy from asset
+      // Copy from asset directory
       ByteData data = await rootBundle.load(join("assets", _dbName));
       List<int> bytes =
           data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
       // Write and flush the bytes written
       await io.File(dbPath).writeAsBytes(bytes, flush: true);
     }
+    //return database
     return await openDatabase(dbPath, version: 1);
   }
 
-  Future<void> makeBackup(bool withTimestamp) async {
-    io.Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    String dbPath = join(documentsDirectory.path, _dbName);
-    int timestamp = DateTime.now().millisecondsSinceEpoch;
-    // io.File(dbPath).copy("backup/database.db.$timestamp");
-    if (withTimestamp) {
-      io.File(dbPath).copy(
-          "/Users/luthien/git/aduial/balderdash/backup/balderdash.db.$timestamp");
-    } else {
-      io.File(dbPath)
-          .copy("/Users/luthien/git/aduial/balderdash/backup/balderdash.db");
-    }
-  }
+  // Future<void> makeBackup(bool withTimestamp) async {
+  //   io.Directory documentsDirectory = await getApplicationDocumentsDirectory();
+  //   String dbPath = join(documentsDirectory.path, _dbName);
+  //   int timestamp = DateTime.now().millisecondsSinceEpoch;
+  //   // io.File(dbPath).copy("backup/database.db.$timestamp");
+  //   if (withTimestamp) {
+  //     io.File(dbPath).copy(
+  //         "/Users/luthien/git/aduial/balderdash/backup/balderdash.db.$timestamp");
+  //   } else {
+  //     io.File(dbPath)
+  //         .copy("/Users/luthien/git/aduial/balderdash/backup/balderdash.db");
+  //   }
+  // }
 
   // deprecated
   void _onCreate(Database db, int version) async {
@@ -750,13 +757,38 @@ class DatabaseHelper {
     return vocabularyViews;
   }
 
-  // get Vocabulary by title and projectId, Library (projectId = 1) always included
+  // get Vocabulary by title and projectId
   Future<List<Vocabulary>> getVocabulariesByProject(int projectId) async {
     final db = await database;
     final results = await db.rawQuery("SELECT * FROM $_vocabularyTableName "
         "WHERE projectId = $projectId "
         "AND content != '' "
         "ORDER BY id asc; ");
+    List<Vocabulary> vocabularies = [];
+    for (var result in results) {
+      Vocabulary vocabulary = Vocabulary.fromMap(result);
+      vocabularies.add(vocabulary);
+    }
+    return vocabularies;
+  }
+
+  // get Library Vocabulary used by Project <projectId> Library
+  // note that the NOT EXISTS clause prevents including Library
+  // vocabularies with the same title as project vocabularies
+  Future<List<Vocabulary>> getUsedLibraryVocabularies(int projectId) async {
+    final db = await database;
+    final results = await db.rawQuery(
+        "SELECT * FROM $_vocabularyTableName AS lvoc "
+        "WHERE EXISTS ( "
+          "SELECT * FROM vocabulary AS pvoc "
+            "WHERE ( upper(pvoc.content) LIKE '%{' || lvoc.title || '}%' "
+                 "OR upper(pvoc.content) LIKE '%{^' || lvoc.title || '}%' ) "
+            "AND pvoc.projectId = $projectId) "
+        "AND NOT EXISTS ( "
+            "SELECT * FROM vocabulary AS pvoc "
+            "WHERE lvoc.title = pvoc.title "
+            "AND pvoc.projectId = $projectId) "
+        "AND lvoc.projectId = 1");
     List<Vocabulary> vocabularies = [];
     for (var result in results) {
       Vocabulary vocabulary = Vocabulary.fromMap(result);
@@ -800,6 +832,19 @@ class DatabaseHelper {
     return vocabularyViews;
   }
 
+  // get Vocabulary by title and projectId, Library (projectId = 1) always included
+  Future<Vocabulary> getVocabularyById(int id) async {
+    final db = await database;
+    final map = await db.rawQuery("SELECT * FROM $_vocabularyTableName "
+        "WHERE id = '$id'; ");
+    if (map.isNotEmpty) {
+      return Vocabulary.fromMap(map.first);
+    } else {
+      throw Exception(
+          "Vocabulary with ID '$id' not found");
+    }
+  }
+
   // Delete Vocabulary via id
   Future<int> deleteVocabularyById(int id) async {
     final db = await database;
@@ -836,8 +881,15 @@ class DatabaseHelper {
     String orderByClause = '';
     if (findUsage && searchTerm.isNotEmpty) {
       whereClause.write(
-          "AND (v.content like '%{$searchTerm}%' OR v.content like '%{^$searchTerm}%') "
-          "AND v.projectId = $projectId; ");
+          "AND (lower(v.content) like '%:=$searchTerm}%' OR lower(v.content) like '%{^$searchTerm}%' OR lower(v.content) like '%{$searchTerm}%')");
+      if (projectId > 1){
+        whereClause.write(" AND v.projectId = $projectId; ");
+      } else {
+        whereClause.write("; ");
+      }
+
+          // "AND (v.content like '%{$searchTerm}%' OR v.content like '%{^$searchTerm}%') "
+          // "AND (v.projectId = $projectId OR v.projectId = 1); ");
     } else {
       if (searchTerm.isNotEmpty) {
         whereClause.write("AND v.title like '%$searchTerm%' ");

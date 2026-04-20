@@ -29,6 +29,7 @@ class VocabularyPage extends StatefulWidget {
 }
 
 class _VocabularyPageState extends State<VocabularyPage> {
+  // Map<String, String> stateVariables = {};
   final SharedPreferencesAsync asyncPrefs = SharedPreferencesAsync();
 
   final _advancedDrawerController = AdvancedDrawerController();
@@ -50,6 +51,8 @@ class _VocabularyPageState extends State<VocabularyPage> {
   String subTitle = BootstrapSubTitle;
   String searchTitle = '';
   int projectId = 1;
+  int searchInProjectId = 1;
+  int usingProjectId = 1;
   int categoryId = 1;
   int numItems = 0;
   late Project curProject;
@@ -61,6 +64,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
   int moveToProject = 0;
   String vocLine = '';
   String previousLine = '';
+
 
   Future<int> _getVocabularyListLength() async {
     return await _vocabularyViews.then((value) {
@@ -103,7 +107,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
       if (doFetch) {
         _vocabularyViews = DatabaseHelper().getFilteredVocabulariesBPAC(
             usageSearchMode ? searchTitle : searchController.text,
-            projectId,
+            usageSearchMode ? searchInProjectId : projectId,
             categoryId,
             usageSearchMode);
       }
@@ -182,29 +186,28 @@ class _VocabularyPageState extends State<VocabularyPage> {
     });
   }
 
-  onUsingSearch(int pId, String title) async {
+  /*
+    for this search we collect:
+    - all directly referred vocabularies
+    - vocabularies used to set state variables
+  */
+  onUsingSearch(VocabularyView vv) async {
+    usingSet.clear();
     usageSearchMode = false;
     usingSearchMode = true;
-    await doStuff(pId, title);
+    await parseVocabulary(Vocabulary.fromView(vv));
+    print("${usingSet.length} vocs found");
+    _vocabularyViews = DatabaseHelper().getVocabularyViewList(usingSet);
     setState(() {
       _refreshVocabularyViewList(false);
     });
   }
 
-  Future<void> doStuff(int pId, String title) async {
-    usingSet.clear();
-    Vocabulary voc = await getVocabulary(pId, title);
+  /*
+    add ID to usingSet, wrap in VocTrace and go ...
+  */
+  Future<void> parseVocabulary(Vocabulary voc) async {
     usingSet.add(voc.id ?? 0);
-    await parseVocabulary(pId, voc);
-    print("${usingSet.length} vocs found");
-    _vocabularyViews = DatabaseHelper().getVocabularyViewList(usingSet);
-  }
-
-  Future<Vocabulary> getVocabulary(int pId, String title) async {
-    return await DatabaseHelper().getVocabularyByTitleAndProject(title, pId);
-  }
-
-  Future<void> parseVocabulary(int pId, Vocabulary voc) async {
     List<String> lines = [];
     lines = splitVocabulary(voc.content!);
     for (vocLine in lines) {
@@ -212,11 +215,12 @@ class _VocabularyPageState extends State<VocabularyPage> {
           vocabulary: voc,
           line: vocLine.replaceAll(RegExp(r'^#\d+#'), ''), // remove weight tag
           variableName: StringUtils.capitalise(voc.title!.toLowerCase()));
-      await parseVocabTrace(pId, vc);
+      previousLine = '';
+      await parseVocabTrace(vc);
     }
   }
 
-  Future<String> parseVocabTrace(int pId, VocTrace vc) async {
+  Future<String> parseVocabTrace(VocTrace vc) async {
     if (vc.line.isNotEmpty && vc.line == previousLine) {
       return "$endlessLoopError in ${vc.line}";
     }
@@ -225,63 +229,100 @@ class _VocabularyPageState extends State<VocabularyPage> {
     }
     previousLine = vc.line;
     if (!vc.line.contains("{")) {
+      // line only contains literal text, skip to next line
       vc.line = '';
       return vc.line;
     }
-    // remove everything up to the first {
+    // remove literal text  up to the first {
     vc.line = vc.line.replaceFirst(RegExp(r'^.*?{'), '{');
-
     if (vc.line.startsWith('{[')) {
+      // anonymous vocabulary, ignore, remove tag and proceed
       vc = removeTag(vc);
     } else if (vc.line.startsWith('{\\')) {
+      // line break, { } or null, ignore, remove tag and proceed
       vc = removeTag(vc);
-    } else if (vc
-        .getNormaLine()
-        .contains(RegExp(r'^\{\w+:=[\x27\w\s\\^@|()<>%*_";:?!\-+,.]+\}'))) {
+    } else if (vc.line.contains(RegExp(r'^\{@(%-?\w\w?\W*)*(\|\d+\|\d+)?\}'))) {
+      // strftime, ignore, remove tag and proceed
       vc = removeTag(vc);
     } else if (vc
         .getNormaLine()
         .contains(RegExp(r'^\{\w*=([\w\s\\@()<>%*_";:?!\-+,.])+\}'))) {
       vc = removeTag(vc);
+    } else if (vc
+        .getNormaLine()
+        .contains(RegExp(r'^\{\w+:=[\x27\w\s\\^@|()<>%*_";:?!\-+,.]+\}'))) {
+      // state variable assignment via Vocabulary: treat as a regular
+      // vocabulary variable, proces recursively + add to using list
+      vc = await parseStateVariable(vc);
     } else if (vc.getNormaLine().contains(RegExp(r'^\{\^?\w+(#\d+-\d+)?\}'))) {
-      // variable
-      vc = await parseVariable(pId, vc);
+      // process vocabulary variable; proces recursively + add to using list
+      vc = await parseVocabularyVariable(vc);
     } else if (vc.getNormaLine().contains(RegExp(r'^\{\$\^?\w*\}'))) {
+      // state variable write
       vc = removeTag(vc);
-    } else if (vc.line.contains(RegExp(r'^\{@(%-?\w\w?\W*)*(\|\d+\|\d+)?\}'))) {
+    } else if (vc.getNormaLine().contains(RegExp(r'^\{\$\$\^?\w*\}'))) {
+      // state pointer write
       vc = removeTag(vc);
     }
     if (vc.line.isNotEmpty) {
-      return await parseVocabTrace(pId, vc);
+      // continue ...
+      return await parseVocabTrace(vc);
     } else {
       // end of vc lifecycle
       return "done";
     }
   }
 
-  Future<VocTrace> parseVariable(int pId, VocTrace vc) async {
-    String varTitle = '';
-    RegExp varMatch = RegExp(r'^\{\^?(\w+?)(#\d+-\d+)?\}');
-    if (vc.line.contains(varMatch)) {
-      // retrieve title
-      varTitle = varMatch.firstMatch(vc.line)?.group(1) ?? '';
-    }
-    Vocabulary next = await retrieveVocabularyVariable(pId, vc, varTitle);
-    usingSet.add(next.id ?? 0);
-    await parseVocabulary(pId, next);
+  Future<Vocabulary> getVocabulary(int pId, String title) async {
+    return await DatabaseHelper().getVocabularyByTitleAndProject(title, pId);
+  }
+
+  // Future<Vocabulary> getVocabularyById(int id) async {
+  //   return await DatabaseHelper().getVocabularyById(id);
+  // }
+
+  // Future<int?> getVocabularyId(int pId, String title) async {
+  //   Vocabulary voc = await DatabaseHelper().getVocabularyByTitleAndProject(title, pId);
+  //   return voc.id;
+  // }
+
+  /*
+    retrieve vocabulary {var:=vocab} <- and recurse
+  */
+  Future<VocTrace> parseStateVariable(VocTrace vc)  async {
+    int start = vc.line.indexOf('{');
+    int equals = vc.line.indexOf(':=', start + 1);
+    int end = vc.line.indexOf('}');
+    String vocabTitle = vc.line.substring(equals + 2, end);
+    Vocabulary next = await getVocabulary(usingProjectId, vocabTitle.replaceFirst('^', '').toUpperCase());
+    await parseVocabulary(next);
     return removeTag(vc);
   }
 
-  Future<Vocabulary> retrieveVocabularyVariable(
-      int pId, VocTrace vc, String varTitle) async {
-    Vocabulary next =
-        await getVocabulary(pId, varTitle.replaceFirst('^', '').toUpperCase());
-    if (next.content!.isEmpty) {
-      showError(noEmptyVocabulary,
-          "Vocabulary '${varTitle.replaceFirst('^', '').toUpperCase()}' called in '${vc.variableName}' has no content");
+  /*
+    retrieve vocabulary and recurse
+  */
+  Future<VocTrace> parseVocabularyVariable(VocTrace vc) async {
+    String vocabTitle = '';
+    RegExp varMatch = RegExp(r'^\{\^?(\w+?)(#\d+-\d+)?\}');
+    if (vc.line.contains(varMatch)) {
+      vocabTitle = varMatch.firstMatch(vc.line)?.group(1) ?? '';
+      Vocabulary next = await getVocabulary(usingProjectId, vocabTitle.replaceFirst('^', '').toUpperCase());
+      await parseVocabulary(next);
     }
-    return next;
+    return removeTag(vc);
   }
+
+  // Future<Vocabulary> retrieveVocabularyVariable(
+  //     int pId, VocTrace vc, String varTitle) async {
+  //   Vocabulary next =
+  //       await getVocabulary(pId, varTitle.replaceFirst('^', '').toUpperCase());
+  //   if (next.content!.isEmpty) {
+  //     showError(noEmptyVocabulary,
+  //         "Vocabulary '${varTitle.replaceFirst('^', '').toUpperCase()}' called in '${vc.variableName}' has no content");
+  //   }
+  //   return next;
+  // }
 
   VocTrace removeTag(VocTrace vc) {
     // remove tag
@@ -674,6 +715,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                                       ? violetAppbarColour
                                       : lightBlueGrey,
                                   onPressed: () {
+                                    searchInProjectId = vocabularyView.projectId!;
                                     onUsageSearch(vocabularyView.title ?? '');
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
@@ -746,8 +788,8 @@ class _VocabularyPageState extends State<VocabularyPage> {
                                     ? blueAppbarColour
                                     : lightBlueGrey,
                                 onPressed: () {
-                                  onUsingSearch(vocabularyView.projectId ?? 0,
-                                      vocabularyView.title ?? '');
+                                  usingProjectId = vocabularyView.projectId!;
+                                  onUsingSearch(vocabularyView);
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                         backgroundColor: blueAppbarColour,

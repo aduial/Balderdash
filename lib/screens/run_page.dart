@@ -53,6 +53,7 @@ class _RunPageState extends State<RunPage> {
         line: pickRandomLine(splitVocabulary(voc.content!)),
         variableName: StringUtils.capitalise(voc.title!.toLowerCase()));
     String result = await parseVocabulary(vc);
+    stateVariables.clear();
     if (result.contains(doubleCurlyBracesError)) {
       resultController.text =
           "Vocabulary '${vc.variableName}' contains double curly "
@@ -128,12 +129,12 @@ class _RunPageState extends State<RunPage> {
         .getNormaLine()
         .contains(RegExp(r'^\{\w+:=[\x27\w\s\\^@|()<>%*_";:?!\-+,.]+\}'))) {
       // evaluate command and store as state variable
-      vc = await parseStateVariable(vc);
+      vc = await assignStateVariable(vc);
     } else if (vc
         .getNormaLine()
         .contains(RegExp(r'^\{\w*=([\w\s\\@()<>%*_";:?!\-+,.])+\}'))) {
       // add literal string as state variable
-      vc = parseStateLiteral(vc);
+      vc = assignStateLiteral(vc);
     } else if (vc.getNormaLine().contains(RegExp(r'^\{\^?\w+(#\d+-\d+)?\}'))) {
       // variable
       vc = await parseVariable(vc);
@@ -143,9 +144,12 @@ class _RunPageState extends State<RunPage> {
         .contains(RegExp(r'^[\x27\w\s\\@()&<>%*_"/;:?!\-+,.™©®]'))) {
       // literal
       vc = parseLiteral(vc);
+    } else if (vc.getNormaLine().contains(RegExp(r'^\{\$\$\^?\w*\}'))) {
+      // replace state pointer with value
+      vc = await evalStatePointer(vc);
     } else if (vc.getNormaLine().contains(RegExp(r'^\{\$\^?\w*\}'))) {
-      // read state variable
-      vc = readStateVariable(vc);
+      // write state variable
+      vc = writeStateVariable(vc);
     } else if (vc.line.contains(RegExp(r'^\{@(%-?\w\w?\W*)*(\|\d+\|\d+)?\}'))) {
       // {@strftime format|number1|number2}
       vc = insertStrfTime(vc);
@@ -251,7 +255,7 @@ class _RunPageState extends State<RunPage> {
     return vc;
   }
 
-  Future<VocTrace> parseStateVariable(VocTrace vc) async {
+  Future<VocTrace> assignStateVariable(VocTrace vc) async {
     int start = vc.line.indexOf('{');
     int equals = vc.line.indexOf(':=', start + 1);
     int end = vc.line.indexOf('}');
@@ -336,7 +340,7 @@ class _RunPageState extends State<RunPage> {
     return small + random.nextInt(large - small);
   }
 
-  VocTrace parseStateLiteral(VocTrace vc) {
+  VocTrace assignStateLiteral(VocTrace vc) {
     int start = vc.line.indexOf('{');
     int equals = vc.line.indexOf('=', start + 1);
     int end = vc.line.indexOf('}');
@@ -347,8 +351,24 @@ class _RunPageState extends State<RunPage> {
     return vc;
   }
 
+  Future<VocTrace> evalStatePointer(VocTrace vc) async {
+    int start = vc.line.indexOf('\$\$') + 2;
+    int end = vc.line.indexOf('}', start + 2);
+    String variableName = vc.line.substring(start, end);
+    String key = variableName.toLowerCase().replaceFirst('^', '');
+    if (stateVariables.containsKey(key)) {
+      String newLine = "{${stateVariables[key]!}}";
+      String remainder = vc.line.substring(end + 1);
+      vc.line = newLine + remainder;
+      vc = await parseVariable(vc);
+    } else {
+      vc.localResult.write("[in line ${vc.line}, pointer '\$\$key' not found]");
+    }
+    return vc;
+  }
+
   // casing of state vars
-  VocTrace readStateVariable(VocTrace vc) {
+  VocTrace writeStateVariable(VocTrace vc) {
     int start = vc.line.indexOf('{\$') + 2;
     int end = vc.line.indexOf('}', start + 2);
     String variableName = vc.line.substring(start, end);

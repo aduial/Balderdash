@@ -16,7 +16,7 @@ class AboutVoc5 extends StatelessWidget {
         ),
         backgroundColor: mountainBlue,
         title: Text(
-          "State variables",
+          "Variables",
           style: Theme.of(context).textTheme.bodyLarge!.copyWith(
               color: ithildin,
               fontWeight: FontWeight.w500,
@@ -94,7 +94,7 @@ class AboutVoc5 extends StatelessWidget {
                           text: TextSpan(
                             text:
                                 "To preserve a semblance of context amidst the random chaos, "
-                                "Balderdash! offers State variables. These contain either fixed "
+                                "Balderdash! offers variables. These contain either fixed "
                                 "text or the result of a {command} and once set, they can be "
                                 "recalled as often as needed until Balderdash! reaches the end of "
                                 "the starting vocabulary:\n\n",
@@ -107,7 +107,7 @@ class AboutVoc5 extends StatelessWidget {
                                     fontSize: 13 * scaling),
                             children: <TextSpan>[
                               TextSpan(
-                                  text: "{statevar1=some text} ",
+                                  text: "{var1=some text} ",
                                   style: GoogleFonts.notoSansMono(
                                       fontWeight: FontWeight.w500,
                                       color: brightGreen)),
@@ -121,15 +121,15 @@ class AboutVoc5 extends StatelessWidget {
                                       fontWeight: FontWeight.w400,
                                       fontStyle: FontStyle.italic)),
                               TextSpan(
-                                  text: " in state variable ",
+                                  text: " in variable ",
                                   style:
                                       TextStyle(fontWeight: FontWeight.w300)),
                               TextSpan(
-                                  text: "\$statevar1\n\n",
+                                  text: "\$var1\n\n",
                                   style:
                                       TextStyle(fontWeight: FontWeight.w600)),
                               TextSpan(
-                                  text: "{statevar2:=command} ",
+                                  text: "{var2:=command} ",
                                   style: GoogleFonts.notoSansMono(
                                       fontWeight: FontWeight.w500,
                                       color: brightGreen)),
@@ -140,24 +140,25 @@ class AboutVoc5 extends StatelessWidget {
                               TextSpan(
                                   text: "command ",
                                   style: TextStyle(
-                                      fontWeight: FontWeight.w400,
+                                      fontWeight: FontWeight.w600,
                                       fontStyle: FontStyle.italic)),
                               TextSpan(
-                                  text: "in state variable ",
+                                  text: "in variable ",
                                   style:
                                       TextStyle(fontWeight: FontWeight.w300)),
                               TextSpan(
-                                  text: "\$statevar2\n\n",
+                                  text: "\$var2\n\n",
                                   style:
                                       TextStyle(fontWeight: FontWeight.w600)),
                               TextSpan(
                                   text:
                                       "SETTING state variables does not add text to the result. To GET "
-                                      "text from a state variable is done like this:\n",
+                                      "text from a variable, put it between curly brackets prefixed "
+                                      "with a dollar sign: ",
                                   style:
                                       TextStyle(fontWeight: FontWeight.w300)),
                               TextSpan(
-                                  text: "{\$statevar1} {\$statevar2}\n\n",
+                                  text: "{\$var1} {\$var2} ",
                                   style: GoogleFonts.notoSansMono(
                                       fontWeight: FontWeight.w500,
                                       color: brightGreen)),
@@ -167,22 +168,41 @@ class AboutVoc5 extends StatelessWidget {
                                       TextStyle(fontWeight: FontWeight.w600)),
                               TextSpan(
                                   text:
-                                      "you have set them. It's best practice to set all state variables "
+                                      "you have set them.\nIt's best practice to set all variables "
                                       "together in a dedicated one-line vocabulary, and call that in the "
-                                      "starting vocabulary.\n"
-                                      "Note that case formatting also works for state variables; it "
-                                      "is applied when you read them, eg. \n",
+                                      "starting vocabulary. "
+                                      "Note that case formatting also works for variables; it "
+                                      "is applied when you read them, eg. ",
                                   style:
                                       TextStyle(fontWeight: FontWeight.w300)),
                               TextSpan(
                                   text:
-                                      "{\$statevar} {\$STATEVAR} {\$StateVar} {\$^statevar} ",
+                                      "{\$var} {\$VAR} {\$Var} {\$^var} ",
                                   style: GoogleFonts.notoSansMono(
                                       fontWeight: FontWeight.w500)),
                               TextSpan(
-                                  text: "- see the previous page.\n\n\n\n\n\n",
+                                  text: "- see the previous page.\n\n"
+                                      "A variable prefixed with TWO dollar signs: ",
+                                  style:
+                                  TextStyle(fontWeight: FontWeight.w300)),
+                              TextSpan(
+                                  text: "{\$\$var1} {\$\$var2} ",
+                                  style: GoogleFonts.notoSansMono(
+                                  fontWeight: FontWeight.w500,
+                                  color: brightGreen)),
+                              TextSpan(
+                                  text:  "functions as a ",
                                   style:
                                       TextStyle(fontWeight: FontWeight.w300)),
+                              TextSpan(
+                                  text: "pointer:",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600)),
+                              TextSpan(
+                                  text:  " its value is interpreted as a Vocabulary name, "
+                                      "allowing for interesting dynamic behaviour.\n\n\n\n\n\n",
+                                  style:
+                                  TextStyle(fontWeight: FontWeight.w300)),
                             ],
                           ),
                         ),

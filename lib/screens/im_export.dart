@@ -39,6 +39,7 @@ class _ImExportState extends State<ImExport> {
   final _defaultFileNameController = TextEditingController();
   final _initialDirectoryController = TextEditingController();
   final _newTitleController = TextEditingController();
+  final _exportDBNameController = TextEditingController();
   String? _extension;
   final bool _lockParentWindow = false;
   String _fileContent = '';
@@ -46,11 +47,12 @@ class _ImExportState extends State<ImExport> {
   bool _userAborted = false;
   List<PlatformFile>? pickedFiles;
   // late String directoryPath;
-  late final ByteData fileBytes;
+  // late final ByteData fileBytes;
   late String importedPath;
   late int newProjectId;
   bool mergeLibrary = false;
   bool initialised = false;
+  bool noLibraryVocsFound = false;
 
   String impTitle = '';
 
@@ -67,12 +69,15 @@ class _ImExportState extends State<ImExport> {
     loadProjects();
   }
 
+  void printInDebug(Object object) => debugPrint(object.toString());
+
   Future<void> loadProjects() async {
     _projects = DatabaseHelper().getProjectsAbove(0);
     initComplete = true;
   }
 
   Future<void> saveAsNonsense() async {
+    noLibraryVocsFound = false;
     if (!initialised) {
       if (mounted) {
         await showConfirmationAlertDialog(
@@ -84,10 +89,15 @@ class _ImExportState extends State<ImExport> {
         );
       }
     } else {
-      await saveDataFile(curProject.id!)
-          .then((_) async => await saveDataFile(1))
-          .then((_) async => await saveTemplateFiles());
+      if (curProject.id! == 1){
+        await prepareDataFile(curProject.id!, true);
+      } else {
+        await prepareDataFile(curProject.id!, true)
+            .then((_) async => await prepareDataFile(curProject.id!, false))
+            .then((_) async => await saveTemplateFiles());
+      }
     }
+    String nonsenseSaved = " saved in Nonsense format${noLibraryVocsFound ? ", no Library vocabularies" : ""}";
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -95,7 +105,7 @@ class _ImExportState extends State<ImExport> {
             behavior: SnackBarBehavior.floating,
             duration: Duration(milliseconds: 1200),
             content: Text(
-              "'${curProject.title}' saved in Nonsense format",
+              "'${curProject.title}'$nonsenseSaved",
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 18 * scaling,
@@ -106,23 +116,40 @@ class _ImExportState extends State<ImExport> {
     }
   }
 
-  Future<void> saveDataFile(int projectId) async {
+  Future<void> prepareDataFile(int projectId, bool projectVocs) async {
+    if (projectVocs) {
+      _projectVocabularies =
+      await DatabaseHelper().getVocabulariesByProject(projectId);
+    } else {
+      _projectVocabularies =
+      await DatabaseHelper().getUsedLibraryVocabularies(projectId);
+      if (_projectVocabularies.isNotEmpty){
+        saveDataFile(projectVocs);
+      } else {
+        noLibraryVocsFound = true;
+      }
+    }
+  }
+
+
+  Future<void> saveDataFile(bool projectVocs) async {
     StringBuffer sbd = StringBuffer();
-    _projectVocabularies =
-        await DatabaseHelper().getVocabulariesByProject(projectId);
     for (Vocabulary voc in _projectVocabularies) {
       sbd.write(voc.title?.toUpperCase());
       sbd.write("\n");
       sbd.write(voc.content);
       sbd.write("\n\n");
     }
+
     _fileContent = sbd.toString();
-    _dialogTitleController.text = projectId == 1
-        ? 'save library as .data file'
-        : 'save project as .data file';
+    _dialogTitleController.text = projectVocs
+        ? 'save project vocabularies as .data file'
+        : 'save used Library vocabularies as default.data';
     _extension = 'data';
+    String fileNameTitle =
+    curProject.title!.toLowerCase().replaceAll(' ', '_');
     _defaultFileNameController.text =
-        projectId == 1 ? 'default.data' : "${curProject.title!}.${_extension!}";
+      projectVocs ? "$fileNameTitle.$_extension" : 'default.data' ;
     await _saveFile();
   }
 
@@ -137,8 +164,10 @@ class _ImExportState extends State<ImExport> {
         _fileContent = tpl.content ?? '';
         _dialogTitleController.text = 'save $tplType template';
         _extension = 'template';
+        String templateTitle =
+        curProject.title!.toLowerCase().replaceAll(' ', '_');
         _defaultFileNameController.text =
-            "${curProject.title!}.$tplType.$_extension";
+            "$templateTitle.$tplType.$_extension";
         await _saveFile();
       }
     }
@@ -159,9 +188,9 @@ class _ImExportState extends State<ImExport> {
       StringBuffer sb = StringBuffer();
       sb.writeln(curProject.dump());
       sb.writeln(pvocMark);
-      sb.write(await createVocabularyInserts(curProject.id!));
+      sb.write(await createVocabularyInserts(curProject.id!, true));
       sb.writeln(lvocMark);
-      sb.write(await createVocabularyInserts(1));
+      sb.write(await createVocabularyInserts(curProject.id!, false));
       if (await DatabaseHelper().anyTemplatesForProject(curProject.id!)) {
         sb.writeln(tmplMark);
         sb.write(await createTemplateInserts(curProject.id!));
@@ -193,11 +222,16 @@ class _ImExportState extends State<ImExport> {
     }
   }
 
-  Future<String> createVocabularyInserts(int projectId) async {
-    List<Vocabulary> vocs =
-        await DatabaseHelper().getVocabulariesByProject(projectId);
+  Future<String> createVocabularyInserts(int projectId, bool projectVocs) async {
+    if (projectVocs) {
+      _projectVocabularies =
+      await DatabaseHelper().getVocabulariesByProject(projectId);
+    } else {
+      _projectVocabularies =
+      await DatabaseHelper().getUsedLibraryVocabularies(projectId);
+    }
     StringBuffer sbv = StringBuffer();
-    for (Vocabulary voc in vocs) {
+    for (Vocabulary voc in _projectVocabularies) {
       sbv.writeln(voc.dump());
     }
     return sbv.toString();
@@ -220,7 +254,7 @@ class _ImExportState extends State<ImExport> {
 
     try {
       final Uint8List fileData = Uint8List.fromList(_fileContent.codeUnits);
-      pickedSaveFilePath = await FilePicker.platform.saveFile(
+      pickedSaveFilePath = await FilePicker.saveFile(
         allowedExtensions: (_extension?.isNotEmpty ?? false)
             ? _extension?.replaceAll(' ', '').split(',')
             : null,
@@ -248,21 +282,6 @@ class _ImExportState extends State<ImExport> {
     });
   }
 
-  void _logException(String message) {
-    printInDebug(message);
-    _scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
-    _scaffoldMessengerKey.currentState?.showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style: const TextStyle(
-            color: Colors.white,
-          ),
-        ),
-      ),
-    );
-  }
-
   Future<void> importProject() async {
     int nrPVocs = 0;
     int nrLVocs = 0;
@@ -271,7 +290,7 @@ class _ImExportState extends State<ImExport> {
     String fileContent;
 
     FilePickerResult? result =
-        await FilePicker.platform.pickFiles(type: FileType.any, withData: true);
+        await FilePicker.pickFiles(type: FileType.any, withData: true);
     if (result != null) {
       importedFile = File(result.files.first.path!);
       importedPath = importedFile.path;
@@ -561,7 +580,75 @@ class _ImExportState extends State<ImExport> {
     return insertLines.length;
   }
 
-  void printInDebug(Object object) => debugPrint(object.toString());
+  Future<void> backupDB() async {
+      await _saveDBBackup();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: cyanAppbarColour,
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(milliseconds: 1200),
+            content: Text(
+              "database backup saved",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 18 * scaling,
+              ),
+            ),
+            dismissDirection: DismissDirection.up),
+      );
+    }
+  }
+
+  Future<void> _saveDBBackup() async {
+    String sourceDBPath = DatabaseHelper().dbPath;
+    final dbFile = File(sourceDBPath);
+    final fileBytes = await dbFile.readAsBytes();
+
+    int timestamp = DateTime.now().millisecondsSinceEpoch;
+    String exportDBName = "balderdash.db.$timestamp";
+    String? pickedDBExportPath;
+
+    try {
+      pickedDBExportPath = await FilePicker.saveFile(
+        dialogTitle: "select save location:",
+        fileName: exportDBName,
+        bytes: fileBytes,
+      );
+
+    } on PlatformException catch (e) {
+      _logException('Unsupported operation: $e');
+    } catch (e) {
+      _logException(e.toString());
+    }
+    if (pickedDBExportPath == null) {
+      // User canceled the picker
+    } else if (mounted) {
+      await showConfirmationAlertDialog(
+        context,
+        title: "Exported copy of the app database",
+        message:
+        "Source path: $sourceDBPath target: $pickedDBExportPath DB: $exportDBName ",
+        text: 'OK',
+        highlight: true,
+      );
+    }
+  }
+
+  void _logException(String message) {
+    printInDebug(message);
+    _scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+    _scaffoldMessengerKey.currentState?.showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -642,6 +729,8 @@ class _ImExportState extends State<ImExport> {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         iconColor: cyanAppbarColour,
+                        backgroundColor: blueGrey,
+                        foregroundColor: Colors.white,
                         shadowColor: Colors.black,
                       ),
                       onPressed: () {
@@ -655,9 +744,9 @@ class _ImExportState extends State<ImExport> {
                   ),
                 ],
               ),
-              Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(
-                    8 * scaling, 4 * scaling, 8 * scaling, 4 * scaling),
+              SizedBox(
+                height: 6 * scaling,
+                width: 8 * scaling,
               ),
               Row(children: [
                 Expanded(
@@ -665,6 +754,8 @@ class _ImExportState extends State<ImExport> {
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       iconColor: cyanAppbarColour,
+                      backgroundColor: blueGrey,
+                      foregroundColor: Colors.white,
                       shadowColor: Colors.black,
                     ),
                     onPressed: () {
@@ -672,7 +763,7 @@ class _ImExportState extends State<ImExport> {
                         saveAsNonsense();
                       });
                     },
-                    child: Text("save for Nonsense"),
+                    child: Text("SAVE Nonsense .data"),
                   ),
                 ),
                 SizedBox(
@@ -683,6 +774,8 @@ class _ImExportState extends State<ImExport> {
                   flex: 2,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
+                      backgroundColor: blueGrey,
+                      foregroundColor: Colors.white,
                       iconColor: cyanAppbarColour,
                       shadowColor: Colors.black,
                     ),
@@ -691,13 +784,13 @@ class _ImExportState extends State<ImExport> {
                         exportProject();
                       });
                     },
-                    child: Text("export .bdd"),
+                    child: Text("EXPORT .bdd"),
                   ),
                 ),
               ]),
-              Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(
-                    8 * scaling, 4 * scaling, 8 * scaling, 4 * scaling),
+              SizedBox(
+                height: 6 * scaling,
+                width: 8 * scaling,
               ),
               Container(
                 decoration: BoxDecoration(
@@ -711,11 +804,11 @@ class _ImExportState extends State<ImExport> {
                 ),
                 padding: EdgeInsets.all(7),
                 child: Text(
-                    "'save for Nonsense' saves selected Project + Library as .data files and "
-                    "templates (if any) that can be deployed on a web server or run with the "
-                    "command-line Perl nonsense.pl application (see the help page for details).\n\n"
-                    "'export .bdd' exports project + library in a single project.bdd file that "
-                    "can be shared with other Balderdash! users via email (or what have you)."),
+                    "[SAVE Nonsense] saves selected Project + used Library vocabularies as .data "
+                    "files and templates (if any) that can be deployed on a web server or run with the "
+                    "command-line Perl nonsense.pl application (see the help page for details).\n"
+                    "[export .bdd] exports project + used Library vocabularies in a single project.bdd "
+                    "file that can be shared with other Balderdash! users."),
               ),
               Divider(
                   height: 20 * scaling,
@@ -735,25 +828,107 @@ class _ImExportState extends State<ImExport> {
                 ),
                 padding: EdgeInsets.all(7 * scaling),
                 child: Text(
-                    "Import a project: tap 'import .bdd', find the project.bdd "
+                    "[IMPORT .bdd] import a project: tap, find the project.bdd "
                     "file and open. If there's an existing project with the same name "
                     "you'll be prompted to rename the new project, overwrite the existing "
                     "one or merge the two projects. Library vocabularies in the import "
-                    "can be merged into your existing library. "),
+                    "can be merged into your existing library. \n"
+                    "[BACKUP DB] backup & save database file."),
               ),
-              Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(
-                    8 * scaling, 8 * scaling, 8 * scaling, 8 * scaling),
+              SizedBox(
+                height: 6 * scaling,
+                width: 8 * scaling,
               ),
               Row(children: [
                 SizedBox(
-                  height: 16 * scaling,
-                  width: 60 * scaling,
+                  height: 4 * scaling,
+                  width: 10 * scaling,
                 ),
                 Expanded(
                   flex: 1,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
+                      iconColor: cyanAppbarColour,
+                      backgroundColor: Colors.blueGrey,
+                      foregroundColor: Colors.white,
+                      shadowColor: Colors.black,
+                      // textStyle: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        importProject();
+                      });
+                    },
+                    child: Text("IMPORT .bdd"),
+                  ),
+                ),
+                SizedBox(
+                  height: 10 * scaling,
+                  width: 20 * scaling,
+                ),
+                Expanded(
+                  flex: 1,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      iconColor: cyanAppbarColour,
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      shadowColor: Colors.black,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        backupDB();
+                      });
+                    },
+                    child: Text("BACKUP DB"),
+                  ),
+                ),
+                SizedBox(
+                  height: 16 * scaling,
+                  width: 16 * scaling,
+                ),
+              ]),
+              SizedBox(
+                height: 6 * scaling,
+                width: 10 * scaling,
+              ),
+              // Divider(
+              //     height: 20 * scaling,
+              //     thickness: 1 * scaling,
+              //     indent: 8 * scaling,
+              //     endIndent: 8 * scaling,
+              //     color: blueGrey),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: darkerBlueGrey),
+                  borderRadius: BorderRadius.circular(10),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [notepaperWhite, notepaperWhite],
+                  ),
+                ),
+                padding: EdgeInsets.all(7 * scaling),
+                child: Text(
+                    "Danger zone! ONLY USE [REPLACE DB] IF YOU HAVE A BACKUP AND KNOW "
+                        "WHAT YOU'RE DOING. You risk losing all your work and break the app. "
+                        "You have been warned."),
+              ),
+              SizedBox(
+                height: 6 * scaling,
+                width: 10 * scaling,
+              ),
+              Row(children: [
+                SizedBox(
+                  height: 16 * scaling,
+                  width: 100 * scaling,
+                ),
+                Expanded(
+                  flex: 1,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                      foregroundColor: Colors.white,
                       iconColor: cyanAppbarColour,
                       shadowColor: Colors.black,
                     ),
@@ -762,13 +937,13 @@ class _ImExportState extends State<ImExport> {
                         importProject();
                       });
                     },
-                    child: Text("import .bdd"),
+                    child: Text("REPLACE DB"),
                   ),
                 ),
                 SizedBox(
                   height: 16 * scaling,
-                  width: 60 * scaling,
-                ),
+                  width: 100 * scaling,
+                )
               ]),
             ]),
           ),

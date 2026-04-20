@@ -1,7 +1,6 @@
 import 'package:balderdash/config/colours.dart';
 import 'package:balderdash/config/config.dart';
 import 'package:balderdash/config/user_preferences.dart';
-import 'package:balderdash/database_helper/database_helper.dart';
 import 'package:balderdash/screens/author_page.dart';
 import 'package:balderdash/screens/category_page.dart';
 import 'package:balderdash/screens/help.dart';
@@ -11,7 +10,6 @@ import 'package:balderdash/screens/select_voc_page.dart';
 import 'package:balderdash/screens/template_page.dart';
 import 'package:balderdash/screens/type_page.dart';
 import 'package:balderdash/screens/vocabulary_page.dart';
-import 'package:cron/cron.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -19,15 +17,15 @@ import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 void main() {
-  print("koeoia");
+  // print("koeoia");
   runApp(MyApp());
 
-  final cron = Cron();
-  cron.schedule(Schedule.parse('0 * * * *'), () async {
-    print('backup DB');
-    print(DateTime.now());
-    DatabaseHelper().makeBackup(false);
-  });
+  // final cron = Cron();
+  // cron.schedule(Schedule.parse('0 * * * *'), () async {
+    // print('backup DB');
+    // print(DateTime.now());
+  //   DatabaseHelper().makeBackup(false);
+  // });
   // cron.schedule(Schedule.parse('1 * * * *'), () async {
   //   print("backup DB");
   //   print(DateTime.now());
@@ -334,8 +332,8 @@ class HomeScreenState extends State<HomeScreen> {
                     padding: EdgeInsetsDirectional.fromSTEB(
                         20 * scaling, 0 * scaling, 20 * scaling, 0 * scaling),
                     child: Text(
-                      "A million monkeys with typewriters in your pocket - "
-                      "but without bananas and ink ribbons! ",
+                      "A million monkeys with typewriters in your pocket "
+                      "without the bananas and ink ribbons.",
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                           color: ithildin,

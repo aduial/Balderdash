@@ -98,7 +98,7 @@ class How2 extends StatelessWidget {
                                 "leapfrog journey across vocabularies, and the results of a "
                                 "well-written grammar (set of vocabularies) can be truly "
                                 "surprising - Balderdash! can produce combinations of phrases "
-                                "(and, for the truly bold & brave: new words from separate "
+                                "(and, for the bold & brave: new words from separate "
                                 "syllables or even letters) that you would never have "
                                 "thought of.\n\n",
                             style: Theme.of(context)
@@ -114,13 +114,13 @@ class How2 extends StatelessWidget {
                                       "In that sense, Balderdash! is way more creative and free than "
                                       "any AI, that obediently regurgitates content found elsewhere. "
                                       "It walks the narrow path between meaningless chaos and "
-                                      "boring copy-pasting, and it is up to you, as user, to find it.\n\n"
+                                      "boring copy-pasting, and it is up to you, as user, to find that.\n\n"
                                       "Copy-pasting and generating chaos are simple; compiling text "
                                       "alternatives, crafting phrase patterns and using state variables "
                                       "as contextual cement to produce a great grammar that leaves you "
                                       "in stitches is hard, but immensely rewarding.\n\n"
                                       "And, of course, it's a magnificent brain workout and a well-deserved "
-                                      "slap in the face of Big-Buck 'generative AI'.",
+                                      "slap in the face of Big-Buck generative AI.",
                                   style:
                                       TextStyle(fontWeight: FontWeight.w300)),
                               TextSpan(
