@@ -69,6 +69,7 @@ const String doubleCurlyBracesError = "DOUBLE_CURLY_BRACES_ERROR";
 const String emptyFirstLineError = "EMPTY_FIRST_LINE_ERROR";
 const String defaultProject = "defaultProject";
 const String defaultCategory = "defaultCategory";
+const String checkOnSave = "checkOnSave";
 const String htmlContent = "HTML";
 const String rdfContent = "RDF";
 const String prjInsertInto =

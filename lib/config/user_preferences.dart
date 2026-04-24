@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -26,6 +28,7 @@ class _UserPreferencesState extends State<UserPreferences> {
   late Future<List<Category>> _categories;
   int categoryId = 1;
   int projectId = 1;
+  late int newCheckOnSave;
   late Project curProject;
   late Category curCategory;
   bool initComplete = false;
@@ -40,6 +43,7 @@ class _UserPreferencesState extends State<UserPreferences> {
   }
 
   Future<void> loadPreferences() async {
+    newCheckOnSave = await asyncPrefs.getInt(checkOnSave) ?? 1;
     categoryId = await asyncPrefs.getInt(defaultCategory) ?? 1;
     projectId = await asyncPrefs.getInt(defaultProject) ?? 1;
     _projects = DatabaseHelper().getProjectsAbove(0);
@@ -47,7 +51,19 @@ class _UserPreferencesState extends State<UserPreferences> {
     await setCurrentCategory(categoryId);
     await setCurrentProject(projectId);
     initComplete = true;
+    setState(() {});
   }
+
+
+  Future<void> storeCheckVocabOnSave(int value) async {
+    newCheckOnSave = value;
+    await asyncPrefs.setInt(checkOnSave, value);
+  }
+
+  // Future<void> setCheckVocabOnSave(bool value) async {
+  //   checkOnSave = value;
+  //   await asyncPrefs.setBool("checkVocabOnSave", value);
+  // }
 
   Future<void> setCurrentCategory(int id) async {
     curCategory = await DatabaseHelper().getCategory(id);
@@ -86,7 +102,8 @@ class _UserPreferencesState extends State<UserPreferences> {
           style: TextStyle(color: notepaperWhite),
         ),
       ),
-      backgroundColor: notepaperWhite,
+      // backgroundColor: Colors.transparent,
+      // backgroundColor: notepaperWhite,
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -105,19 +122,21 @@ class _UserPreferencesState extends State<UserPreferences> {
                 children: [
                   Expanded(
                     child: DropdownSearch<Category>(
-                      key: _catDDKey,
+                      // key: _catDDKey,
                       itemAsString: (item) => item.name!,
                       items: (filter, t) => _categories,
                       onSelected: (Category? item) {
-                        if (initComplete) {
-                          setState(() {
-                            if (item == null) {
-                              storeDefaultCategory(1);
-                            } else {
-                              storeDefaultCategory(item.id!);
-                            }
-                          });
-                          buildSnackBar(context, 'Saving preference');
+                        if (_settingsFormKey.currentState!.validate()) {
+                          if (initComplete) {
+                            setState(() {
+                              if (item == null) {
+                                storeDefaultCategory(1);
+                              } else {
+                                storeDefaultCategory(item.id!);
+                              }
+                            });
+                            buildSnackBar(context, 'Saving preference');
+                          }
                         }
                       },
                       decoratorProps: DropDownDecoratorProps(
@@ -149,19 +168,21 @@ class _UserPreferencesState extends State<UserPreferences> {
                   Padding(padding: EdgeInsets.all(4 * scaling)),
                   Expanded(
                     child: DropdownSearch<Project>(
-                      key: _prjDDKey,
+                      // key: _prjDDKey,
                       itemAsString: (item) => item.title!,
                       items: (filter, t) => _projects,
                       onSelected: (Project? item) {
                         if (initComplete) {
-                          setState(() {
-                            if (item == null) {
-                              storeDefaultProject(1);
-                            } else {
-                              storeDefaultProject(item.id!);
-                            }
-                          });
-                          buildSnackBar(context, 'Saving preference');
+                          if (_settingsFormKey.currentState!.validate()) {
+                            setState(() {
+                              if (item == null) {
+                                storeDefaultProject(1);
+                              } else {
+                                storeDefaultProject(item.id!);
+                              }
+                            });
+                            buildSnackBar(context, 'Saving preference');
+                          }
                         }
                       },
                       decoratorProps: DropDownDecoratorProps(
@@ -231,11 +252,46 @@ class _UserPreferencesState extends State<UserPreferences> {
                     // ),
                   ),
                 ),
-              ])
-            ]),
-          ),
-        ),
-      ),
+              ],
+              ),
+              Row(children: [
+                Expanded(
+                  flex: 1,
+                  child: const Align(
+                    alignment: Alignment.centerRight,
+                    child: Text('Mark vocabulary list on save'),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4.0 * scaling),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: Switch(
+                    value: initComplete? newCheckOnSave == 1 : false,
+                    activeThumbColor: greenNotePaperColour,
+                    activeTrackColor: greenAppbarColour,
+                    onChanged: (bool value) {
+                      setState(() {
+                        newCheckOnSave = value ? 1 : 0;
+                        print(newCheckOnSave);
+                        storeCheckVocabOnSave(newCheckOnSave);
+
+                        buildSnackBar(context, 'Saving ...');
+                      });
+                      },
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4.0 * scaling),
+                )
+              ]
+              )
+            ]
+          )
+          )
+        )
+      )
     );
   }
 

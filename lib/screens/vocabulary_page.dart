@@ -12,14 +12,16 @@ import 'package:balderdash/model/project.dart';
 import 'package:balderdash/screens/vocabulary_detail.dart';
 import 'package:balderdash/views/vocabulary_view.dart';
 import 'package:balderdash/widgets/voc_trace.dart';
+import 'package:diacritic/diacritic.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../config/config.dart' as UserPreferences;
+import '../config/config.dart';
 import '../model/vocabulary.dart';
 import '../utils/string_utils.dart';
+import '../utils/vocab_utils.dart';
 
 class VocabularyPage extends StatefulWidget {
   const VocabularyPage({super.key});
@@ -65,9 +67,12 @@ class _VocabularyPageState extends State<VocabularyPage> {
   String vocLine = '';
   String previousLine = '';
 
+  Map<int, bool> vvErrorState = {};
+
 
   Future<int> _getVocabularyListLength() async {
     return await _vocabularyViews.then((value) {
+      print("${value.length} vocs");
       return value.length;
     });
   }
@@ -120,19 +125,6 @@ class _VocabularyPageState extends State<VocabularyPage> {
       });
     });
   }
-
-  // void _usingVocabularyViewList() {
-  //   setState(() {
-  //     _vocabularyViews =
-  //     subTitle = setSubTitle();
-  //     _getVocabularyListLength().then((value) {
-  //       setState(() {
-  //         _checkedVVs = List<bool>.filled(value, false, growable: true);
-  //         numItems = value;
-  //       });
-  //     });
-  //   });
-  // }
 
   String setSubTitle() {
     final whereTitle = StringBuffer('');
@@ -196,8 +188,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
     usageSearchMode = false;
     usingSearchMode = true;
     await parseVocabulary(Vocabulary.fromView(vv));
-    print("${usingSet.length} vocs found");
-    _vocabularyViews = DatabaseHelper().getVocabularyViewList(usingSet);
+    _vocabularyViews = DatabaseHelper().getVocabularyViewList({...usingSet});
     setState(() {
       _refreshVocabularyViewList(false);
     });
@@ -208,8 +199,9 @@ class _VocabularyPageState extends State<VocabularyPage> {
   */
   Future<void> parseVocabulary(Vocabulary voc) async {
     usingSet.add(voc.id ?? 0);
+    print(voc.title);
     List<String> lines = [];
-    lines = splitVocabulary(voc.content!);
+    lines = splitVocabulary(voc.content!, true);
     for (vocLine in lines) {
       VocTrace vc = VocTrace(
           vocabulary: voc,
@@ -228,11 +220,6 @@ class _VocabularyPageState extends State<VocabularyPage> {
       return "$doubleCurlyBracesError in ${vc.line}";
     }
     previousLine = vc.line;
-    if (!vc.line.contains("{")) {
-      // line only contains literal text, skip to next line
-      vc.line = '';
-      return vc.line;
-    }
     // remove literal text  up to the first {
     vc.line = vc.line.replaceFirst(RegExp(r'^.*?{'), '{');
     if (vc.line.startsWith('{[')) {
@@ -273,18 +260,9 @@ class _VocabularyPageState extends State<VocabularyPage> {
     }
   }
 
-  Future<Vocabulary> getVocabulary(int pId, String title) async {
-    return await DatabaseHelper().getVocabularyByTitleAndProject(title, pId);
+  Future<List<Vocabulary>> getVocabulary(int pId, String title) async {
+      return await DatabaseHelper().getVocabularyByTitleAndProject(title, pId);
   }
-
-  // Future<Vocabulary> getVocabularyById(int id) async {
-  //   return await DatabaseHelper().getVocabularyById(id);
-  // }
-
-  // Future<int?> getVocabularyId(int pId, String title) async {
-  //   Vocabulary voc = await DatabaseHelper().getVocabularyByTitleAndProject(title, pId);
-  //   return voc.id;
-  // }
 
   /*
     retrieve vocabulary {var:=vocab} <- and recurse
@@ -294,8 +272,10 @@ class _VocabularyPageState extends State<VocabularyPage> {
     int equals = vc.line.indexOf(':=', start + 1);
     int end = vc.line.indexOf('}');
     String vocabTitle = vc.line.substring(equals + 2, end);
-    Vocabulary next = await getVocabulary(usingProjectId, vocabTitle.replaceFirst('^', '').toUpperCase());
-    await parseVocabulary(next);
+    List<Vocabulary> nexts = await getVocabulary(usingProjectId, vocabTitle.replaceFirst('^', '').toUpperCase());
+    if (nexts.isNotEmpty && !usingSet.contains(nexts.first.id)) {
+      await parseVocabulary(nexts.first);
+    }
     return removeTag(vc);
   }
 
@@ -307,22 +287,13 @@ class _VocabularyPageState extends State<VocabularyPage> {
     RegExp varMatch = RegExp(r'^\{\^?(\w+?)(#\d+-\d+)?\}');
     if (vc.line.contains(varMatch)) {
       vocabTitle = varMatch.firstMatch(vc.line)?.group(1) ?? '';
-      Vocabulary next = await getVocabulary(usingProjectId, vocabTitle.replaceFirst('^', '').toUpperCase());
-      await parseVocabulary(next);
+      List<Vocabulary> nexts = await getVocabulary(usingProjectId, vocabTitle.replaceFirst('^', '').toUpperCase());
+      if (nexts.isNotEmpty && !usingSet.contains(nexts.first.id)) {
+        await parseVocabulary(nexts.first);
+      }
     }
     return removeTag(vc);
   }
-
-  // Future<Vocabulary> retrieveVocabularyVariable(
-  //     int pId, VocTrace vc, String varTitle) async {
-  //   Vocabulary next =
-  //       await getVocabulary(pId, varTitle.replaceFirst('^', '').toUpperCase());
-  //   if (next.content!.isEmpty) {
-  //     showError(noEmptyVocabulary,
-  //         "Vocabulary '${varTitle.replaceFirst('^', '').toUpperCase()}' called in '${vc.variableName}' has no content");
-  //   }
-  //   return next;
-  // }
 
   VocTrace removeTag(VocTrace vc) {
     // remove tag
@@ -334,7 +305,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
     return vc;
   }
 
-  List<String> splitVocabulary(String content) {
+  List<String> splitVocabulary(String content, bool onlyVars) {
     List<String> uniqueLines = [];
     List<String> activeLines = [];
     LineSplitter ls = LineSplitter();
@@ -346,7 +317,15 @@ class _VocabularyPageState extends State<VocabularyPage> {
       if (line.isEmpty) {
         break;
       }
-      activeLines.add(line);
+      if (onlyVars) {
+        RegExp varMatch = RegExp(r'\{\^?\w+:?=?\^?\w+(#\d+-\d+)?\}');
+        if (line.contains(varMatch)) {
+          activeLines.add(
+              varMatch.allMatches(line).map((m) => m.group(0)).toString());
+        }
+      } else {
+        activeLines.add(line);
+      }
     }
     return activeLines;
   }
@@ -359,6 +338,74 @@ class _VocabularyPageState extends State<VocabularyPage> {
       batchMode = batch;
     });
   }
+
+  Future<String> checkVocabularyView(VocabularyView vv) async {
+    StringBuffer sb = StringBuffer();
+    Map<int, bool> lineErrorState = {};
+    int i = 0;
+    bool isOK = true;
+    for (String line in splitVocabulary(vv.content!, false)){
+      i++;
+      lineErrorState[i] = checkVocabulary(line);
+    }
+    if (lineErrorState.containsValue(false)){
+      lineErrorState.forEach((key, value) {
+        if (!value){
+          sb.write('$key ');
+        }
+      });
+    }
+    print(sb.toString());
+    return sb.toString().trimRight();
+  }
+
+
+
+  Future<void> checkVocabularyViews() async {
+    vvErrorState.clear();
+    bool isOK = true;
+    for (VocabularyView vv in await _vocabularyViews){
+      isOK = true;
+      for (String line in splitVocabulary(vv.content!, false)){
+        isOK = checkVocabulary(line);
+        if (!isOK){
+          break;
+        }
+      }
+      vvErrorState[vv.id!] = isOK;
+    }
+  }
+
+  bool checkVocabulary(String line) {
+    // weighting factor
+    line = line.replaceAll(RegExp(r'^#\d+#'), '');
+    // anonymous
+    line = removeDiacritics(line).replaceAll(RegExp(r'\{\[[\x27\w\s\\^@|()<>%*_";:?!\-+,.™©®]+\}'), '');
+    // special
+    line = line.replaceAll(RegExp(r'{\\[NRLnrl0]\}'), '');
+    // assign state var
+    line = removeDiacritics(line).replaceAll(RegExp(r'\{\w+:=[\x27\w\s\\^@|()<>%*_";:?!\-+,.]+\}'), '');
+    // assign state literal
+    line = removeDiacritics(line).replaceAll(RegExp(r'^\{\w*=([\w\s\\@()<>%*_";:?!\-+,.™©®])+\}'), '');
+    // vocabulary var
+    line = removeDiacritics(line).replaceAll(RegExp(r'\{\^?\w+(#\d+-\d+)?\}'), '');
+    // pointer
+    line = removeDiacritics(line).replaceAll(RegExp(r'\{\$\$\^?\w*\}'), '');
+    // strftime
+    line = removeDiacritics(line).replaceAll(RegExp(r'\{@(%-?\w\w?\W*)*(\|\d+\|\d+)?\}'), '');
+    // write state variable
+    line = removeDiacritics(line).replaceAll(RegExp(r'\{\$\^?\w*\}'), '');
+    // no more curly braces left, now remove all literals
+    line = removeDiacritics(line).replaceAll(RegExp(r'[\x27\w\s\\@()&<>%*_"/;:?!\-+,.™©®]'), '');
+    if (line.isNotEmpty) {
+      // if something's left, its an error
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+
 
   void _showForm() async {
     await showDialog(
@@ -453,7 +500,9 @@ class _VocabularyPageState extends State<VocabularyPage> {
                 handleRightActionModePressed();
                 batchList.clear();
                 _refreshVocabularyViewList(true);
-                Navigator.of(context).pop();
+                if (mounted) {
+                  Navigator.of(context).pop();
+                }
               }
             },
             child: const Text('Move'),
@@ -488,7 +537,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
   }
 
   void showError(String title, String msg) => showDialog<String>(
-      context: UserPreferences.navigatorKey.currentContext!,
+      context: navigatorKey.currentContext!,
       builder: (BuildContext context) => AlertDialog(
             title: Text(title),
             content: Text(msg),
@@ -744,7 +793,8 @@ class _VocabularyPageState extends State<VocabularyPage> {
                                 vocabularyView.title!,
                                 style: TextStyle(
                                     color: vocabularyView.useThis == 1
-                                        ? veryVeryDark
+                                        ? (vvErrorState.containsKey(vocabularyView.id!) &&
+                                        !vvErrorState[vocabularyView.id]! ? darkAnyMatchColour : veryVeryDark)
                                         : lightBlueGrey),
                                 maxLines: 1,
                               ),
@@ -821,7 +871,8 @@ class _VocabularyPageState extends State<VocabularyPage> {
                                     builder: (context) => VocabularyDetail(
                                         vocabularyView: vocabularyView),
                                   ),
-                                ).then((value) {
+                                ).then((value) async {
+                                  vvErrorState = VocabUtils.checkVocabularyViews(await _vocabularyViews);
                                   setState(() {
                                     _refreshVocabularyViewList(true);
                                   });
@@ -838,7 +889,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                                   : lightBlueGrey,
                               onPressed: () async {
                                 final bool isDelete =
-                                    await showConfirmationAlertDialog(
+                                    await showConfirmationChoiceDialog(
                                   context,
                                   title: 'Delete ${vocabularyView.title!}?',
                                   message:
@@ -1052,6 +1103,26 @@ class _VocabularyPageState extends State<VocabularyPage> {
                     ],
                   ),
                 ),
+                Padding(
+                  padding: EdgeInsets.all(12.0 * scaling),
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                  ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        shadowColor: Colors.black,
+                      ),
+                    onPressed: () async {
+                        vvErrorState = VocabUtils.checkVocabularyViews(await _vocabularyViews);
+                        setState(() {
+                          _advancedDrawerController.hideDrawer();
+                        });
+                        },
+                    child: const Text('Check current vocabularies'),
+                  ),
+                      ]
+                  ),
+                ),
                 Spacer(),
                 DefaultTextStyle(
                   style: TextStyle(
@@ -1073,13 +1144,12 @@ class _VocabularyPageState extends State<VocabularyPage> {
   }
 }
 
-Future<bool> showConfirmationAlertDialog(
+Future<bool> showConfirmationChoiceDialog(
   BuildContext context, {
   required String title,
   required String message,
   required String positiveText,
   required String negativeText,
-  bool highlightPositive = false,
   bool highlightNegative = false,
 }) async {
   return await showDialog<bool>(
@@ -1102,7 +1172,7 @@ Future<bool> showConfirmationAlertDialog(
               TextButton(
                 child: Text(
                   positiveText.toUpperCase(),
-                  style: highlightPositive
+                  style: !highlightNegative
                       ? const TextStyle(color: Colors.red)
                       : null,
                 ),
@@ -1113,4 +1183,32 @@ Future<bool> showConfirmationAlertDialog(
         },
       ) ??
       false;
+}
+
+Future<void> showConfirmationAlertDialog(
+    BuildContext context, {
+      required String title,
+      required String message,
+      required String text,
+      bool highlight = false,
+    }) async {
+  return await showDialog<void>(
+    barrierDismissible: true,
+    context: context,
+    builder: (BuildContext ctx) {
+      return AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: <Widget>[
+          TextButton(
+            child: Text(text.toUpperCase(),
+                style: highlight
+                    ? const TextStyle(color: Colors.red)
+                    : const TextStyle(color: Colors.green)),
+            onPressed: () => Navigator.of(ctx).pop(false),
+          )
+        ],
+      );
+    },
+  );
 }

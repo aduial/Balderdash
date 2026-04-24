@@ -9,6 +9,7 @@ import 'package:balderdash/screens/intro.dart';
 import 'package:balderdash/screens/prefs.dart';
 import 'package:balderdash/screens/quick.dart';
 import 'package:balderdash/screens/usage1.dart';
+import 'package:balderdash/screens/intro2.dart';
 import 'package:flutter/material.dart';
 
 class Help extends StatelessWidget {
@@ -138,6 +139,16 @@ class Help extends StatelessWidget {
                 },
                 leading: Icon(Icons.heart_broken_rounded),
                 title: Text("It doesn't work!"),
+              ),
+              ListTile(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => Intro2()),
+                  );
+                },
+                leading: Icon(Icons.heart_broken_rounded),
+                title: Text("markdown"),
               ),
               Spacer(),
               DefaultTextStyle(

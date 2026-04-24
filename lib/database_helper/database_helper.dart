@@ -798,7 +798,25 @@ class DatabaseHelper {
   }
 
   // get Vocabulary by title and projectId, Library (projectId = 1) always included
-  Future<Vocabulary> getVocabularyByTitleAndProject(
+  Future<List<Vocabulary>> getVocabularyByTitleAndProject(
+      String searchTerm, int projectId) async {
+    final db = await database;
+
+    final List<Map<String, dynamic>> results = await db.rawQuery(
+        "SELECT * FROM $_vocabularyTableName "
+        "WHERE title = '$searchTerm' "
+        "AND (projectId = $projectId OR projectId = 1) "
+        "AND useThis = 1;");
+    List<Vocabulary> vocabularies = [];
+    for (var result in results) {
+      Vocabulary vocabulary = Vocabulary.fromMap(result);
+      vocabularies.add(vocabulary);
+    }
+    return vocabularies;
+  }
+
+  // get Vocabulary by title and projectId, Library (projectId = 1) always included
+  Future<Vocabulary> getSingleVocabByTitleAndProject(
       String searchTerm, int projectId) async {
     final db = await database;
     final map = await db.rawQuery("SELECT * FROM $_vocabularyTableName "
@@ -812,6 +830,7 @@ class DatabaseHelper {
           "Vocabulary with title '$searchTerm' not found for this project");
     }
   }
+
 
   // get list of vocabularyViews filtered on title, project and category
   Future<List<VocabularyView>> getFilteredVocabulariesBPAC(

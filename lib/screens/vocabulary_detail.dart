@@ -12,6 +12,7 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_code_editor/flutter_code_editor.dart';
 import 'package:widgets_easier/widgets_easier.dart';
+import '../utils/vocab_utils.dart';
 
 class VocabularyDetail extends StatefulWidget {
   final VocabularyView vocabularyView;
@@ -116,7 +117,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
     return await DatabaseHelper().getVocabularyView(id);
   }
 
-  bool editsMade() {
+  bool editsNotSaved() {
     return (titleController.text != titleStartState ||
         contentController.text != contentStartState ||
         commentController.text != commentStartState ||
@@ -129,7 +130,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
       appBar: AppBar(
         leading: IconButton(
             onPressed: () async {
-              if (editsMade()) {
+              if (editsNotSaved()) {
                 final bool goBack = await showConfirmationAlertDialog(
                   context,
                   title: 'Dismiss your edits?',
@@ -141,7 +142,11 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                   highlightPositive: true,
                 );
                 if (goBack) {
-                  Navigator.of(context).pop();
+                  return;
+                } else {
+                  setState(() {
+                    Navigator.of(context).pop();
+                  });
                 }
               } else {
                 Navigator.of(context).pop();
@@ -164,7 +169,26 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
               color: greenNotePaperColour,
             ),
             onPressed: () async {
+              String checkResults = VocabUtils.checkContent(contentController.text);
+              if (checkResults.isNotEmpty){
+                final bool goBack = await showConfirmationAlertDialog(
+                  context,
+                  title: 'Errors found!',
+                  message:
+                  "Line(s): $checkResults\n\n"
+                      "'Cancel' to fix the errors, 'Save' to continue saving.",
+                  positiveText: 'Save',
+                  negativeText: 'Cancel',
+                  highlightPositive: true,
+                );
+                if (goBack) {
+                  return;
+                }
+              } else {
+                Navigator.of(context).pop();
+              }
               if (_vocabularyFormKey.currentState!.validate()) {
+                // if (VocabularyPage().)
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                       backgroundColor: regularResultBGColour,
@@ -523,7 +547,6 @@ Future<bool> showConfirmationAlertDialog(
   required String positiveText,
   required String negativeText,
   bool highlightPositive = false,
-  bool highlightNegative = false,
 }) async {
   return await showDialog<bool>(
         barrierDismissible: true,
@@ -535,17 +558,17 @@ Future<bool> showConfirmationAlertDialog(
             actions: <Widget>[
               TextButton(
                 child: Text(negativeText.toUpperCase(),
-                    style: highlightNegative
+                    style: !highlightPositive
                         ? const TextStyle(color: Colors.red)
                         : const TextStyle(color: Colors.green)),
-                onPressed: () => Navigator.of(ctx).pop(false),
+                onPressed: () => Navigator.of(ctx).pop(true),
               ),
               TextButton(
                 child: Text(positiveText.toUpperCase(),
                     style: highlightPositive
                         ? const TextStyle(color: Colors.red)
                         : const TextStyle(color: Colors.green)),
-                onPressed: () => Navigator.of(ctx).pop(true),
+                onPressed: () => Navigator.of(ctx).pop(false),
               ),
             ],
           );

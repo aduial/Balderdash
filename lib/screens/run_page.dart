@@ -33,7 +33,7 @@ class _RunPageState extends State<RunPage> {
   }
 
   Future<Vocabulary> getVocabulary(String title, int projectId) {
-    return DatabaseHelper().getVocabularyByTitleAndProject(title, projectId);
+    return DatabaseHelper().getSingleVocabByTitleAndProject(title, projectId);
   }
 
   Future<void> doThings() async {

@@ -347,7 +347,7 @@ class _ImExportState extends State<ImExport> {
                 "to fail. You cannot undo a merge!",
             positiveText: 'Merge',
             negativeText: 'Cancel',
-            highlightPositive: true,
+            highlightNegative: false,
           );
         }
         nrLVocs = await insertVocs(false, mergeLibrary);
@@ -480,7 +480,7 @@ class _ImExportState extends State<ImExport> {
                 "This replaces all current vocabularies of '$impTitle'! You cannot undo this!",
             positiveText: 'Yes, Replace',
             negativeText: 'No, Cancel',
-            highlightPositive: true,
+            highlightNegative: false,
           );
         }
         if (isReplace) {
@@ -500,7 +500,7 @@ class _ImExportState extends State<ImExport> {
                 "name. You cannot undo this!",
             positiveText: 'Yes, Merge',
             negativeText: 'No, Cancel',
-            highlightPositive: true,
+            highlightNegative: true,
           );
         }
         if (isMerge) {
@@ -1056,7 +1056,6 @@ Future<bool> showConfirmationChoiceDialog(
   required String message,
   required String positiveText,
   required String negativeText,
-  bool highlightPositive = false,
   bool highlightNegative = false,
 }) async {
   return await showDialog<bool>(
@@ -1076,7 +1075,7 @@ Future<bool> showConfirmationChoiceDialog(
               ),
               TextButton(
                 child: Text(positiveText.toUpperCase(),
-                    style: highlightPositive
+                    style: !highlightNegative
                         ? const TextStyle(color: Colors.red)
                         : const TextStyle(color: Colors.green)),
                 onPressed: () => Navigator.of(ctx).pop(true),
