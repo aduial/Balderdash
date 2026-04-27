@@ -1,15 +1,13 @@
 import 'package:balderdash/config/colours.dart';
 import 'package:balderdash/config/config.dart';
-import 'package:flutter/gestures.dart';
+// import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_html/flutter_html.dart';
 
 class Quick extends StatelessWidget {
-  Quick({super.key});
-
-  Future<void>? _launched;
-
+  const Quick({super.key});
   Future<void> _launchInBrowser(Uri url) async {
     if (!await launchUrl(
       url,
@@ -18,15 +16,6 @@ class Quick extends StatelessWidget {
       throw Exception('Could not launch $url');
     }
   }
-
-  final Uri _humorixUrl = Uri.parse(
-      'https://web.archive.org/web/20010216043241/http://www.i-want-a-website.com/about-linux/');
-  final Uri _freshMeatUrl = Uri.parse(
-      'https://web.archive.org/web/20010515230012/http://freshmeat.net/');
-  final Uri _techDirtUrl = Uri.parse(
-      'https://web.archive.org/web/20000510013922/http://techdirt.com/');
-  final Uri _slashDotUrl = Uri.parse(
-      'https://web.archive.org/web/20010629214213/http://www.slashdot.org:80/');
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +26,7 @@ class Quick extends StatelessWidget {
         ),
         backgroundColor: mountainBlue,
         title: Text(
-          "Quickstart guide",
+          "About this app",
           style: Theme.of(context).textTheme.bodyLarge!.copyWith(
               color: ithildin,
               fontWeight: FontWeight.w500,
@@ -111,202 +100,148 @@ class Quick extends StatelessWidget {
                           20 * scaling, 0, 20 * scaling, 30 * scaling),
                       child: Scrollbar(
                         child: SingleChildScrollView(
-                          child: RichText(
-                            textAlign: TextAlign.left,
-                            text: TextSpan(
-                              text:
-                                  "The idea of this app doesn't go well with the TL;DR "
-                                  "attitude but if you want to see how it works, try one of the included text-only demo's.\n",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge!
-                                  .copyWith(
-                                      color: ithildin,
-                                      fontWeight: FontWeight.w300,
-                                      fontSize: 13 * scaling),
-                              children: <TextSpan>[
-                              TextSpan(
-                                  text: "Tap ",
-                                  style:
-                                  TextStyle(fontWeight: FontWeight.w300)),
-                                TextSpan(
-                                    text: "Run Balderdash!  ",
-                                    style:
-                                    TextStyle(fontWeight: FontWeight.w600)),
-                                TextSpan(
-                                    text: "in the app menu, then tap the gear icon "
-                                  "top right. In the drawer that opens, check if the first box says ",
-                                    style:
-                                    TextStyle(fontWeight: FontWeight.w300)),
-                                TextSpan(
-                                    text: "PROJECT",
-                                    style:
-                                    TextStyle(fontWeight: FontWeight.w600)),
-                                TextSpan(
-                                    text: " - if not tap the X button to the right. "
-                                        "Then check the 'Category' box below that says ",
-                                    style:
-                                    TextStyle(fontWeight: FontWeight.w300)),
-                                TextSpan(
-                                    text: "Bootstrap",
-                                    style:
-                                    TextStyle(fontWeight: FontWeight.w600)),
-                                TextSpan(
-                                    text: "; if not, tap it and select 'Bootstrap' from the list."
-                                  "Tap on the list screen left if it hasn't already moved "
-                                  "back. Find the item called ",
-                                    style:
-                                    TextStyle(fontWeight: FontWeight.w300)),
-                                TextSpan(
-                                    text: "KIFFAZ",
-                                    style:
-                                    TextStyle(fontWeight: FontWeight.w600)),
-                                TextSpan(
-                                    text: ". Tap the red triangle on its right. Tap the 'play' button "
-                                  "In the next screen to see a list of alliterative poetic descriptions of "
-                                  "a rock band that cultivated a ",
-                                    style:
-                                    TextStyle(fontWeight: FontWeight.w300)),
-                                TextSpan(
-                                    text: "'flirting with Evil' ",
-                                    style:
-                                    TextStyle(fontWeight: FontWeight.w500,
-                                        fontStyle: FontStyle.italic)),
-                                TextSpan(
-                                    text: "image.\n",
-                                    style:
-                                    TextStyle(fontWeight: FontWeight.w300)),
-                                TextSpan(
-                                    text: "EMBARRASSINGNAMES ",
-                                    style:
-                                    TextStyle(fontWeight: FontWeight.w600)),
-                                TextSpan(
-                                    text: "generates embarrassing names, ",
-                                    style:
-                                    TextStyle(fontWeight: FontWeight.w300)),
-                                TextSpan(
-                                    text: "WRITELC ",
-                                    style:
-                                    TextStyle(fontWeight: FontWeight.w600)),
-                                TextSpan(
-                                    text: "a Lovecraftian abomination of sorts, and ",
-                                    style:
-                                    TextStyle(fontWeight: FontWeight.w300)),
-                                TextSpan(
-                                    text: "YURPBLAH ",
-                                    style:
-                                    TextStyle(fontWeight: FontWeight.w600)),
-                                TextSpan(
-                                    text: "is the Executive's best friend.\n\n"
-                                  "If you speak Dutch, try ",
-                                    style:
-                                    TextStyle(fontWeight: FontWeight.w300)),
-                                TextSpan(
-                                    text: "BOEVEN",
-                                    style:
-                                    TextStyle(fontWeight: FontWeight.w600)),
-                                TextSpan(
-                                    text: ", ",
-                                    style:
-                                    TextStyle(fontWeight: FontWeight.w300)),
-                                TextSpan(
-                                    text: "MEDINIX",
-                                    style:
-                                    TextStyle(fontWeight: FontWeight.w600)),
-                                TextSpan(
-                                    text: " or ",
-                                    style:
-                                    TextStyle(fontWeight: FontWeight.w300)),
-                                TextSpan(
-                                    text: "DUTCHNAMES.\n\n",
-                                    style:
-                                    TextStyle(fontWeight: FontWeight.w600)),
-                                TextSpan(
-                                    text: "This app includes the original demo files from the ",
-                                    style:
-                                    TextStyle(fontWeight: FontWeight.w300)),
-                                TextSpan(
-                                    text: "Nonsense! ",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.w600)),
-                                TextSpan(
-                                    text:
-                                        "perl script, including several that use HTML or RDF templates "
-                                        "to generate parody versions of classic websites like ",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.w300)),
-                                TextSpan(
-                                  text: "Techdirt",
-                                  style: TextStyle(
-                                      color: regularFormColour,
-                                      fontWeight: FontWeight.w600,
-                                      decoration: TextDecoration.none),
-                                  recognizer: TapGestureRecognizer()
-                                    ..onTap = () async {
-                                      _launched =
-                                          _launchInBrowser(_techDirtUrl);
-                                    },
+                          child: Html(
+                            anchorKey: staticAnchorKey,
+                            data: htmlData,
+                            style: {
+                              "p": Style(
+                                color: ithildin,
+                                fontSize: FontSize.medium,
+                                lineHeight: const LineHeight(1.5),
+                              ),
+                              "a": Style(
+                                color: derivedFormColour,
+                                fontSize: FontSize.medium,
+                                fontWeight: FontWeight(600),
+                                textDecoration: TextDecoration.none,
+                                lineHeight: const LineHeight(1.5),
+                              ),
+                              "body": Style(
+                                fontFamily: balderDashFont,
+                                margin: Margins.zero,
+                                padding: HtmlPaddings.zero,
+                                color: ithildin,
+                                fontSize: FontSize.medium,
+                                lineHeight: const LineHeight(1.0),
+                              ),
+                              "table": Style(
+                                backgroundColor: const Color.fromARGB(0x50, 0xee, 0xee, 0xee),
+                              ),
+                              "th": Style(
+                                padding: HtmlPaddings.all(6),
+                                backgroundColor: Colors.grey,
+                              ),
+                              "td": Style(
+                                padding: HtmlPaddings.all(6),
+                                border: const Border(bottom: BorderSide(color: Colors.grey)),
+                              ),
+                              'h5': Style(maxLines: 2, textOverflow: TextOverflow.ellipsis),
+                              'flutter': Style(
+                                display: Display.block,
+                                fontSize: FontSize(5, Unit.em),
+                              ),
+                              ".second-table": Style(
+                                backgroundColor: Colors.transparent,
+                              ),
+                              ".second-table tr td:first-child": Style(
+                                fontWeight: FontWeight.bold,
+                                textAlign: TextAlign.end,
+                              ),
+                            },
+                            extensions: [
+                              TagWrapExtension(
+                                  tagsToWrap: {"table"},
+                                  builder: (child) {
+                                    return SingleChildScrollView(
+                                      scrollDirection: Axis.horizontal,
+                                      child: child,
+                                    );
+                                  }),
+
+                              TagExtension.inline(
+                                tagsToExtend: {"bird"},
+                                child: const TextSpan(text: "🐦"),
+                              ),
+                              TagExtension(
+                                tagsToExtend: {"flutter"},
+                                builder: (context) => CssBoxWidget(
+                                  style: context.styledElement!.style,
+                                  child: FlutterLogo(
+                                    style: context.attributes['horizontal'] != null
+                                        ? FlutterLogoStyle.horizontal
+                                        : FlutterLogoStyle.markOnly,
+                                    textColor: context.styledElement!.style.color!,
+                                    size: context.styledElement!.style.fontSize!.value,
+                                  ),
                                 ),
-                                TextSpan(
-                                    text: ", ",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.w300)),
-                                TextSpan(
-                                  text: "Slashdot",
-                                  style: TextStyle(
-                                      color: regularFormColour,
-                                      fontWeight: FontWeight.w600,
-                                      decoration: TextDecoration.none),
-                                  recognizer: TapGestureRecognizer()
-                                    ..onTap = () async {
-                                      _launched =
-                                          _launchInBrowser(_slashDotUrl);
-                                    },
-                                ),
-                                TextSpan(
-                                    text: ", ",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.w300)),
-                                TextSpan(
-                                  text: "Freshmeat",
-                                  style: TextStyle(
-                                      color: regularFormColour,
-                                      fontWeight: FontWeight.w600,
-                                      decoration: TextDecoration.none),
-                                  recognizer: TapGestureRecognizer()
-                                    ..onTap = () async {
-                                      _launched =
-                                          _launchInBrowser(_freshMeatUrl);
-                                    },
-                                ),
-                                TextSpan(
-                                    text: " and Nonsense! creator's own website ",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.w300)),
-                                TextSpan(
-                                  text: "Humorix",
-                                  style: TextStyle(
-                                      color: regularFormColour,
-                                      fontWeight: FontWeight.w600,
-                                      decoration: TextDecoration.none),
-                                  recognizer: TapGestureRecognizer()
-                                    ..onTap = () async {
-                                      _launched = _launchInBrowser(_humorixUrl);
-                                    },
-                                ),
-                                TextSpan(
-                                    text: " as they existed around 2001.\n\n\n\n\n",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.w300))
-                              ],
-                            ),
+                              ),
+                              ImageExtension(
+                                handleAssetImages: false,
+                                handleDataImages: false,
+                                networkDomains: {"flutter.dev"},
+                                child: const FlutterLogo(size: 36),
+                              ),
+                              ImageExtension(
+                                handleAssetImages: false,
+                                handleDataImages: false,
+                                networkDomains: {"mydomain.com"},
+                                networkHeaders: {"Custom-Header": "some-value"},
+                              ),
+                            ],
+                            onLinkTap: (url, _, __) {
+                              _launchInBrowser(Uri.parse(url!));
+                            },
+                            onCssParseError: (css, messages) {
+                              debugPrint("css that errored: $css");
+                              debugPrint("error messages:");
+                              for (var element in messages) {
+                                debugPrint(element.toString());
+                              }
+                              return '';
+                            },
                           ),
                         ),
-                      )),
+                      )
+                  ),
                 ),
               ),
-            ]),
+            ]
+        ),
       ),
     );
   }
 }
+const htmlData = r"""
+      <p>TThe idea of this app doesn't go well with the TL;DR attitude, but if 
+      you want to see how it works, try one of the included text-only demo's.</p>
+      <p>Tap <b>Run Balderdash!</b> in the app menu, then tap the gear icon top right. 
+      In the drawer that opens, check if the first box says <b>PROJECT</b> - if not 
+      tap the X button to the right. Then check if the box below that says 
+      <b>Bootstrap</b>; if not, tap it and select <b>Bootstrap</b> from the list.</p>
+      <p>Tap on the list screen left if it hasn't already moved back. Find the item 
+      called <b>KIFFAZ</b>. Tap the red triangle on its right and then the <b>play</b> 
+      button on the next screen to see a list of alliterative poetic descriptions 
+      of a former Scary Rock Band.</p>
+      
+      <p><b>EMBARRASSINGNAMES</b> generates embarrassing names, <b>WRITELC</b> 
+      a Lovecraftian abomination, and <b>WRITESOME</b> advertises the latest Fantasy- and SF 
+      book-titles. Try one of the <b>BLAHBLAHBLAH</b>'s if you need a snazzy 'Call 
+      to Action' - or why not one of the dozen or so name generators?</p>
+      <p>If you speak Dutch, try <b>BOEVEN</b>, <b>MEDILIST</b> or <b>AMGBOOKSERIE</b>.</p>
+      <p>This app includes the original demo files from the Nonsense! perl script, 
+      including several that use HTML or RDF templates to generate parody 
+      versions of early geek-favourites like 
+      <a href='https://web.archive.org/web/20000510013922/http://techdirt.com/'>Techdirt</a>, 
+      <a href='https://web.archive.org/web/20010629214213/http://www.slashdot.org:80/'>Slashdot</a>, 
+      <a href='https://web.archive.org/web/20010515230012/http://freshmeat.net/'>Freshmeat</a> 
+      and Nonsense! creator's own website 
+      <a href='https://web.archive.org/web/20010216043241/http://www.i-want-a-website.com/about-linux/'>
+      Humorix</a> as they existed around 2001.</p>
+     
+      
+  """;
+
+
+final balderDashFont = GoogleFonts.inter().fontFamily;
+
+final staticAnchorKey = GlobalKey();

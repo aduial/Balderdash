@@ -7,6 +7,7 @@ import 'package:balderdash/model/type.dart';
 import 'package:balderdash/views/project_view.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProjectDetail extends StatefulWidget {
   final ProjectView projectView;
@@ -16,6 +17,7 @@ class ProjectDetail extends StatefulWidget {
 }
 
 class _ProjectDetailState extends State<ProjectDetail> {
+  final SharedPreferencesAsync asyncPrefs = SharedPreferencesAsync();
   final _typeDDKey = GlobalKey<DropdownSearchState<Type>>();
   final _authDDKey = GlobalKey<DropdownSearchState<Author>>();
   final _projectFormKey = GlobalKey<FormState>();
@@ -23,8 +25,9 @@ class _ProjectDetailState extends State<ProjectDetail> {
   late Future<List<Author>> _authors;
   late List<ProjectView> pvList;
   final TextEditingController titleController = TextEditingController(text: '');
-  // final ScrollController contentScrollController = ScrollController();
   final TextEditingController notesController = TextEditingController(text: '');
+  bool initComplete = false;
+  int showNoNonsense = 1;
 
   bool pvListFetched = false;
   bool isExistingPV = false;
@@ -39,6 +42,7 @@ class _ProjectDetailState extends State<ProjectDetail> {
   @override
   void initState() {
     super.initState();
+    loadPreferences();
     _refreshLists();
     isExistingPV = (null != widget.projectView.id);
     if (isExistingPV) {
@@ -54,7 +58,10 @@ class _ProjectDetailState extends State<ProjectDetail> {
     newNotes = widget.projectView.notes ?? "";
   }
 
-  // _catDDKey.currentState.changeSelectedItem(currentCategory)
+  Future loadPreferences() async {
+    showNoNonsense = await asyncPrefs.getInt(noNonsense) ?? 1;
+    initComplete = true;
+  }
 
   void _refreshLists() {
     setState(() {
@@ -73,7 +80,7 @@ class _ProjectDetailState extends State<ProjectDetail> {
 
   onTitleChanged(String title) async {
     if (!pvListFetched) {
-      pvList = await DatabaseHelper().getProjectViews();
+      pvList = await DatabaseHelper().getProjectViews(showNoNonsense == 1);
       pvListFetched = true;
     }
     newTitle = title;
@@ -81,7 +88,7 @@ class _ProjectDetailState extends State<ProjectDetail> {
 
   onNotesChanged(String notes) async {
     if (!pvListFetched) {
-      pvList = await DatabaseHelper().getProjectViews();
+      pvList = await DatabaseHelper().getProjectViews(showNoNonsense == 1);
       pvListFetched = true;
     }
     newNotes = notes;
@@ -89,7 +96,7 @@ class _ProjectDetailState extends State<ProjectDetail> {
 
   initialisePvList() async {
     if (!pvListFetched) {
-      pvList = await DatabaseHelper().getProjectViews();
+      pvList = await DatabaseHelper().getProjectViews(showNoNonsense == 1);
       pvListFetched = true;
     }
   }

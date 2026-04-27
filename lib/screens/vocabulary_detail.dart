@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_code_editor/flutter_code_editor.dart';
 import 'package:widgets_easier/widgets_easier.dart';
 import '../utils/vocab_utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class VocabularyDetail extends StatefulWidget {
   final VocabularyView vocabularyView;
@@ -22,6 +23,7 @@ class VocabularyDetail extends StatefulWidget {
 }
 
 class _VocabularyDetailState extends State<VocabularyDetail> {
+  final SharedPreferencesAsync asyncPrefs = SharedPreferencesAsync();
   final _catDDKey = GlobalKey<DropdownSearchState<Category>>();
   final _prjDDKey = GlobalKey<DropdownSearchState<Project>>();
   final _vocabularyFormKey = GlobalKey<FormState>();
@@ -43,15 +45,19 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
   late int newCategoryId;
   late int newProjectId;
   late int newUsethis;
+  int showNoNonsense = 1;
+  int checkVocOnSave = 1;
 
   String titleStartState = '';
   String contentStartState = '';
   String commentStartState = '';
   bool categorySetStartState = false;
+  bool prefsLoaded = false;
 
   @override
   void initState() {
     super.initState();
+    loadPreferences();
     _refreshLists();
 
     isExistingVV = (null != widget.vocabularyView.id);
@@ -80,6 +86,14 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
     setStartState();
   }
 
+  Future loadPreferences() async {
+    checkVocOnSave = await asyncPrefs.getInt(checkOnSave) ?? 1;
+    showNoNonsense = await asyncPrefs.getInt(noNonsense) ?? 1;
+    _projects = DatabaseHelper().getProjectsAbove(0, showNoNonsense == 1);
+
+
+  }
+
   void setStartState() {
     titleStartState = titleController.text;
     contentStartState = contentController.text;
@@ -89,7 +103,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
 
   void _refreshLists() {
     setState(() {
-      _projects = DatabaseHelper().getProjectsAbove(0);
+      _projects = DatabaseHelper().getProjectsAbove(0, showNoNonsense == 1);
       _categories = DatabaseHelper().getCategoriesAbove(1);
     });
   }
@@ -169,23 +183,24 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
               color: greenNotePaperColour,
             ),
             onPressed: () async {
-              String checkResults = VocabUtils.checkContent(contentController.text);
-              if (checkResults.isNotEmpty){
-                final bool goBack = await showConfirmationAlertDialog(
-                  context,
-                  title: 'Errors found!',
-                  message:
-                  "Line(s): $checkResults\n\n"
-                      "'Cancel' to fix the errors, 'Save' to continue saving.",
-                  positiveText: 'Save',
-                  negativeText: 'Cancel',
-                  highlightPositive: true,
-                );
-                if (goBack) {
-                  return;
+              if (checkVocOnSave == 1) {
+                String checkResults = VocabUtils.checkContent(
+                    contentController.text);
+                if (checkResults.isNotEmpty) {
+                  final bool goBack = await showConfirmationAlertDialog(
+                    context,
+                    title: 'Errors found!',
+                    message:
+                    "Line(s): $checkResults\n\n"
+                        "'Cancel' to fix the errors, 'Save' to continue saving.",
+                    positiveText: 'Save',
+                    negativeText: 'Cancel',
+                    highlightPositive: true,
+                  );
+                  if (goBack) {
+                    return;
+                  }
                 }
-              } else {
-                Navigator.of(context).pop();
               }
               if (_vocabularyFormKey.currentState!.validate()) {
                 // if (VocabularyPage().)

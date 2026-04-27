@@ -1,6 +1,3 @@
-// ignore_for_file: sort_child_properties_last
-
-import 'dart:convert';
 import 'dart:core';
 
 import 'package:auto_size_text/auto_size_text.dart';
@@ -12,13 +9,11 @@ import 'package:balderdash/model/project.dart';
 import 'package:balderdash/screens/vocabulary_detail.dart';
 import 'package:balderdash/views/vocabulary_view.dart';
 import 'package:balderdash/widgets/voc_trace.dart';
-import 'package:diacritic/diacritic.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../config/config.dart';
 import '../model/vocabulary.dart';
 import '../utils/string_utils.dart';
 import '../utils/vocab_utils.dart';
@@ -56,6 +51,8 @@ class _VocabularyPageState extends State<VocabularyPage> {
   int searchInProjectId = 1;
   int usingProjectId = 1;
   int categoryId = 1;
+  int markVVListOnSave = 1;
+  int showNoNonsense = 1;
   int numItems = 0;
   late Project curProject;
   late Category curCategory;
@@ -72,7 +69,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
 
   Future<int> _getVocabularyListLength() async {
     return await _vocabularyViews.then((value) {
-      print("${value.length} vocs");
+      // print("${value.length} vocs");
       return value.length;
     });
   }
@@ -87,7 +84,9 @@ class _VocabularyPageState extends State<VocabularyPage> {
   Future loadPreferences() async {
     categoryId = await asyncPrefs.getInt(defaultCategory) ?? 1;
     projectId = await asyncPrefs.getInt(defaultProject) ?? 1;
-    _projects = DatabaseHelper().getProjectsAbove(0);
+    markVVListOnSave = await asyncPrefs.getInt(markOnSave) ?? 1;
+    showNoNonsense = await asyncPrefs.getInt(noNonsense) ?? 1;
+    _projects = DatabaseHelper().getProjectsAbove(0, showNoNonsense == 1);
     _categories = DatabaseHelper().getCategoriesAbove(0);
     await setCurrentCategory(categoryId);
     await setCurrentProject(projectId);
@@ -114,7 +113,8 @@ class _VocabularyPageState extends State<VocabularyPage> {
             usageSearchMode ? searchTitle : searchController.text,
             usageSearchMode ? searchInProjectId : projectId,
             categoryId,
-            usageSearchMode);
+            usageSearchMode,
+            showNoNonsense == 1);
       }
       subTitle = setSubTitle();
       _getVocabularyListLength().then((value) {
@@ -199,9 +199,9 @@ class _VocabularyPageState extends State<VocabularyPage> {
   */
   Future<void> parseVocabulary(Vocabulary voc) async {
     usingSet.add(voc.id ?? 0);
-    print(voc.title);
+    // print(voc.title);
     List<String> lines = [];
-    lines = splitVocabulary(voc.content!, true);
+    lines = VocabUtils.splitContent(voc.content!, true);
     for (vocLine in lines) {
       VocTrace vc = VocTrace(
           vocabulary: voc,
@@ -305,31 +305,6 @@ class _VocabularyPageState extends State<VocabularyPage> {
     return vc;
   }
 
-  List<String> splitVocabulary(String content, bool onlyVars) {
-    List<String> uniqueLines = [];
-    List<String> activeLines = [];
-    LineSplitter ls = LineSplitter();
-    uniqueLines = ls.convert(content);
-    if (uniqueLines[0].isEmpty) {
-      return [emptyFirstLineError];
-    }
-    for (var line in uniqueLines) {
-      if (line.isEmpty) {
-        break;
-      }
-      if (onlyVars) {
-        RegExp varMatch = RegExp(r'\{\^?\w+:?=?\^?\w+(#\d+-\d+)?\}');
-        if (line.contains(varMatch)) {
-          activeLines.add(
-              varMatch.allMatches(line).map((m) => m.group(0)).toString());
-        }
-      } else {
-        activeLines.add(line);
-      }
-    }
-    return activeLines;
-  }
-
   setBatchMode(bool batch) {
     setState(() {
       if (!batch) {
@@ -338,74 +313,6 @@ class _VocabularyPageState extends State<VocabularyPage> {
       batchMode = batch;
     });
   }
-
-  Future<String> checkVocabularyView(VocabularyView vv) async {
-    StringBuffer sb = StringBuffer();
-    Map<int, bool> lineErrorState = {};
-    int i = 0;
-    bool isOK = true;
-    for (String line in splitVocabulary(vv.content!, false)){
-      i++;
-      lineErrorState[i] = checkVocabulary(line);
-    }
-    if (lineErrorState.containsValue(false)){
-      lineErrorState.forEach((key, value) {
-        if (!value){
-          sb.write('$key ');
-        }
-      });
-    }
-    print(sb.toString());
-    return sb.toString().trimRight();
-  }
-
-
-
-  Future<void> checkVocabularyViews() async {
-    vvErrorState.clear();
-    bool isOK = true;
-    for (VocabularyView vv in await _vocabularyViews){
-      isOK = true;
-      for (String line in splitVocabulary(vv.content!, false)){
-        isOK = checkVocabulary(line);
-        if (!isOK){
-          break;
-        }
-      }
-      vvErrorState[vv.id!] = isOK;
-    }
-  }
-
-  bool checkVocabulary(String line) {
-    // weighting factor
-    line = line.replaceAll(RegExp(r'^#\d+#'), '');
-    // anonymous
-    line = removeDiacritics(line).replaceAll(RegExp(r'\{\[[\x27\w\s\\^@|()<>%*_";:?!\-+,.™©®]+\}'), '');
-    // special
-    line = line.replaceAll(RegExp(r'{\\[NRLnrl0]\}'), '');
-    // assign state var
-    line = removeDiacritics(line).replaceAll(RegExp(r'\{\w+:=[\x27\w\s\\^@|()<>%*_";:?!\-+,.]+\}'), '');
-    // assign state literal
-    line = removeDiacritics(line).replaceAll(RegExp(r'^\{\w*=([\w\s\\@()<>%*_";:?!\-+,.™©®])+\}'), '');
-    // vocabulary var
-    line = removeDiacritics(line).replaceAll(RegExp(r'\{\^?\w+(#\d+-\d+)?\}'), '');
-    // pointer
-    line = removeDiacritics(line).replaceAll(RegExp(r'\{\$\$\^?\w*\}'), '');
-    // strftime
-    line = removeDiacritics(line).replaceAll(RegExp(r'\{@(%-?\w\w?\W*)*(\|\d+\|\d+)?\}'), '');
-    // write state variable
-    line = removeDiacritics(line).replaceAll(RegExp(r'\{\$\^?\w*\}'), '');
-    // no more curly braces left, now remove all literals
-    line = removeDiacritics(line).replaceAll(RegExp(r'[\x27\w\s\\@()&<>%*_"/;:?!\-+,.™©®]'), '');
-    if (line.isNotEmpty) {
-      // if something's left, its an error
-      return false;
-    } else {
-      return true;
-    }
-  }
-
-
 
   void _showForm() async {
     await showDialog(
@@ -597,6 +504,194 @@ class _VocabularyPageState extends State<VocabularyPage> {
           ),
         ],
         borderRadius: BorderRadius.all(Radius.circular(16 * scaling)),
+      ),
+      drawer: SafeArea(
+        child: Container(
+          child: ListTileTheme(
+            textColor: Colors.white,
+            iconColor: Colors.white,
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Container(
+                  width: 128.0 * scaling,
+                  height: 128.0 * scaling,
+                  margin: EdgeInsets.only(
+                    top: 24.0 * scaling,
+                    bottom: 24.0 * scaling,
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    // color: Colors.black26,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Image.asset(
+                    getDrawerImg(),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(12.0 * scaling),
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: DropdownSearch<Project>(
+                          key: _prjDDKey,
+                          itemAsString: (item) => item.title!,
+                          items: (filter, t) => _projects,
+                          onSelected: (Project? item) {
+                            setState(() {
+                              if (item == null) {
+                                setFilterProject(1);
+                              } else {
+                                setFilterProject(item.id!);
+                              }
+                              _advancedDrawerController.hideDrawer();
+                            });
+                          },
+                          decoratorProps: DropDownDecoratorProps(
+                            decoration: InputDecoration(
+                                floatingLabelBehavior:
+                                    FloatingLabelBehavior.auto,
+                                isDense: true,
+                                filled: true,
+                                fillColor: offWhite,
+                                labelText: 'PROJECT',
+                                // labelText: widget.vocabularyView.project,
+                                floatingLabelStyle: TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.w500),
+                                border: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(10 * scaling),
+                                )),
+                          ),
+                          compareFn: (item, sItem) => item.title == sItem.title,
+                          popupProps: PopupProps.modalBottomSheet(
+                              showSelectedItems: true,
+                              showSearchBox: false,
+                              itemBuilder: projectModalItem),
+                        ),
+                      ),
+                      SizedBox(height: 30 * scaling, width: 8 * scaling),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          iconColor: orangeAppbarColour,
+                          shadowColor: Colors.black,
+                        ),
+                        onPressed: () {
+                          setFilterProject(1);
+                          setState(() {
+                            _prjDDKey.currentState?.clear();
+                            _advancedDrawerController.hideDrawer();
+                          });
+                        },
+                        child: const Icon(
+                          Icons.clear,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(12.0 * scaling),
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: DropdownSearch<Category>(
+                          key: _catDDKey,
+                          // selectedItem: _catDDKey.currentState?.getSelectedItem,
+                          itemAsString: (item) => item.name!,
+                          items: (filter, t) => _categories,
+                          onSelected: (Category? item) {
+                            setState(() {
+                              if (item == null) {
+                                setFilterCategory(1);
+                              } else {
+                                setFilterCategory(item.id!);
+                              }
+                              _advancedDrawerController.hideDrawer();
+                            });
+                          },
+                          decoratorProps: DropDownDecoratorProps(
+                            decoration: InputDecoration(
+                                floatingLabelBehavior:
+                                    FloatingLabelBehavior.auto,
+                                isDense: true,
+                                filled: true,
+                                fillColor: offWhite,
+                                labelText: 'CATEGORY',
+                                floatingLabelStyle: TextStyle(
+                                    fontSize: 18 * scaling,
+                                    fontWeight: FontWeight.w500),
+                                labelStyle: TextStyle(fontSize: 14 * scaling),
+                                border: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(10 * scaling),
+                                )),
+                          ),
+                          // selectedItem: currentCategory,
+                          compareFn: (item, sItem) => item.name == sItem.name,
+                          popupProps: PopupProps.modalBottomSheet(
+                              showSelectedItems: true,
+                              showSearchBox: false,
+                              itemBuilder: categoryModalItem),
+                        ),
+                      ),
+                      SizedBox(height: 30 * scaling, width: 8 * scaling),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          iconColor: cyanAppbarColour,
+                          shadowColor: Colors.black,
+                        ),
+                        onPressed: () {
+                          setFilterCategory(1);
+                          setState(() {
+                            _catDDKey.currentState?.clear();
+                            _advancedDrawerController.hideDrawer();
+                          });
+                        },
+                        child: const Icon(
+                          Icons.clear,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(12.0 * scaling),
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                  ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        shadowColor: Colors.black,
+                      ),
+                    onPressed: () async {
+                        vvErrorState = VocabUtils.checkVocabularyViews(await _vocabularyViews);
+                        setState(() {
+                          _advancedDrawerController.hideDrawer();
+                        });
+                        },
+                    child: const Text('Check current vocabularies'),
+                  ),
+                      ]
+                  ),
+                ),
+                Spacer(),
+                DefaultTextStyle(
+                  style: TextStyle(
+                    fontSize: 12 * scaling,
+                    color: Colors.white54,
+                  ),
+                  child: Container(
+                    margin: EdgeInsets.symmetric(
+                      vertical: 16.0 * scaling,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
       child: Scaffold(
         appBar: AppBar(
@@ -872,9 +967,16 @@ class _VocabularyPageState extends State<VocabularyPage> {
                                         vocabularyView: vocabularyView),
                                   ),
                                 ).then((value) async {
-                                  vvErrorState = VocabUtils.checkVocabularyViews(await _vocabularyViews);
-                                  setState(() {
+                                  if (markVVListOnSave == 1) {
                                     _refreshVocabularyViewList(true);
+                                    vvErrorState =
+                                        VocabUtils.checkVocabularyViews(
+                                            await _vocabularyViews);
+                                  } else {
+                                    vvErrorState.clear();
+                                  }
+                                  setState(() {
+                                    // _refreshVocabularyViewList(true);
                                   });
                                 });
                               },
@@ -950,194 +1052,6 @@ class _VocabularyPageState extends State<VocabularyPage> {
               });
             }
           },
-        ),
-      ),
-      drawer: SafeArea(
-        child: Container(
-          child: ListTileTheme(
-            textColor: Colors.white,
-            iconColor: Colors.white,
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                Container(
-                  width: 128.0 * scaling,
-                  height: 128.0 * scaling,
-                  margin: EdgeInsets.only(
-                    top: 24.0 * scaling,
-                    bottom: 24.0 * scaling,
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  decoration: BoxDecoration(
-                    // color: Colors.black26,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Image.asset(
-                    getDrawerImg(),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(12.0 * scaling),
-                  child: Row(
-                    children: [
-                      Flexible(
-                        child: DropdownSearch<Project>(
-                          key: _prjDDKey,
-                          itemAsString: (item) => item.title!,
-                          items: (filter, t) => _projects,
-                          onSelected: (Project? item) {
-                            setState(() {
-                              if (item == null) {
-                                setFilterProject(1);
-                              } else {
-                                setFilterProject(item.id!);
-                              }
-                              _advancedDrawerController.hideDrawer();
-                            });
-                          },
-                          decoratorProps: DropDownDecoratorProps(
-                            decoration: InputDecoration(
-                                floatingLabelBehavior:
-                                    FloatingLabelBehavior.auto,
-                                isDense: true,
-                                filled: true,
-                                fillColor: offWhite,
-                                labelText: 'PROJECT',
-                                // labelText: widget.vocabularyView.project,
-                                floatingLabelStyle: TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.w500),
-                                border: OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(10 * scaling),
-                                )),
-                          ),
-                          compareFn: (item, sItem) => item.title == sItem.title,
-                          popupProps: PopupProps.modalBottomSheet(
-                              showSelectedItems: true,
-                              showSearchBox: false,
-                              itemBuilder: projectModalItem),
-                        ),
-                      ),
-                      SizedBox(height: 30 * scaling, width: 8 * scaling),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          iconColor: orangeAppbarColour,
-                          shadowColor: Colors.black,
-                        ),
-                        onPressed: () {
-                          setFilterProject(1);
-                          setState(() {
-                            _prjDDKey.currentState?.clear();
-                            _advancedDrawerController.hideDrawer();
-                          });
-                        },
-                        child: const Icon(
-                          Icons.clear,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(12.0 * scaling),
-                  child: Row(
-                    children: [
-                      Flexible(
-                        child: DropdownSearch<Category>(
-                          key: _catDDKey,
-                          // selectedItem: _catDDKey.currentState?.getSelectedItem,
-                          itemAsString: (item) => item.name!,
-                          items: (filter, t) => _categories,
-                          onSelected: (Category? item) {
-                            setState(() {
-                              if (item == null) {
-                                setFilterCategory(1);
-                              } else {
-                                setFilterCategory(item.id!);
-                              }
-                              _advancedDrawerController.hideDrawer();
-                            });
-                          },
-                          decoratorProps: DropDownDecoratorProps(
-                            decoration: InputDecoration(
-                                floatingLabelBehavior:
-                                    FloatingLabelBehavior.auto,
-                                isDense: true,
-                                filled: true,
-                                fillColor: offWhite,
-                                labelText: 'CATEGORY',
-                                floatingLabelStyle: TextStyle(
-                                    fontSize: 18 * scaling,
-                                    fontWeight: FontWeight.w500),
-                                labelStyle: TextStyle(fontSize: 14 * scaling),
-                                border: OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(10 * scaling),
-                                )),
-                          ),
-                          // selectedItem: currentCategory,
-                          compareFn: (item, sItem) => item.name == sItem.name,
-                          popupProps: PopupProps.modalBottomSheet(
-                              showSelectedItems: true,
-                              showSearchBox: false,
-                              itemBuilder: categoryModalItem),
-                        ),
-                      ),
-                      SizedBox(height: 30 * scaling, width: 8 * scaling),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          iconColor: cyanAppbarColour,
-                          shadowColor: Colors.black,
-                        ),
-                        onPressed: () {
-                          setFilterCategory(1);
-                          setState(() {
-                            _catDDKey.currentState?.clear();
-                            _advancedDrawerController.hideDrawer();
-                          });
-                        },
-                        child: const Icon(
-                          Icons.clear,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(12.0 * scaling),
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                  ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        shadowColor: Colors.black,
-                      ),
-                    onPressed: () async {
-                        vvErrorState = VocabUtils.checkVocabularyViews(await _vocabularyViews);
-                        setState(() {
-                          _advancedDrawerController.hideDrawer();
-                        });
-                        },
-                    child: const Text('Check current vocabularies'),
-                  ),
-                      ]
-                  ),
-                ),
-                Spacer(),
-                DefaultTextStyle(
-                  style: TextStyle(
-                    fontSize: 12 * scaling,
-                    color: Colors.white54,
-                  ),
-                  child: Container(
-                    margin: EdgeInsets.symmetric(
-                      vertical: 16.0 * scaling,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
         ),
       ),
     );

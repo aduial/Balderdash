@@ -327,10 +327,12 @@ class DatabaseHelper {
   }
 
   // get list of projects starting at id = ?
-  Future<List<Project>> getProjectsAbove(int id) async {
+  Future<List<Project>> getProjectsAbove(int id, bool noNonsense) async {
     final db = await database;
-    final List<Map<String, dynamic>> results = await db.query(_projectTableName,
-        where: "id > ?", whereArgs: [id], orderBy: 'id ASC');
+    final List<Map<String, dynamic>> results = await db.rawQuery(
+        "SELECT * FROM $_projectTableName WHERE id > ? "
+            "AND typeId > ${noNonsense ? 1 : 0} "
+            "ORDER BY id ASC; ", [id]);
     List<Project> projects = [];
     for (var result in results) {
       Project project = Project.fromMap(result);
@@ -360,20 +362,19 @@ class DatabaseHelper {
       return Project.fromMap(map.first);
     } else {
       return null;
-      // throw Exception("Project with title $Project not found");
     }
-    return Project.fromMap(map.first);
   }
 
   // get list of Project views above id = 1
-  Future<List<ProjectView>> getProjectViews() async {
+  Future<List<ProjectView>> getProjectViews(bool noNonsense) async {
     final db = await database;
     // final List<Map<String, dynamic>> results = await db.query(_vocabularyTableName, orderBy: 'title ASC');
     final List<Map<String, dynamic>> results = await db.rawQuery(
         "SELECT p.id, p.typeId, t.name AS type, p.authorId, a.name AS author, p.title, p.notes "
         "FROM $_projectTableName p "
         "JOIN $_typeTableName t ON p.typeId = t.id "
-        "JOIN $_authorTableName a ON p.authorId = a.id ;");
+        "JOIN $_authorTableName a ON p.authorId = a.id "
+        "WHERE typeId > ${noNonsense ? 1 : 0}; ");
     List<ProjectView> projectViews = [];
     for (var result in results) {
       ProjectView projectView = ProjectView.fromMap(result);
@@ -383,14 +384,15 @@ class DatabaseHelper {
   }
 
   // get filtered list of Project views
-  Future<List<ProjectView>> getFilteredProjectViews(String searchTerm) async {
+  Future<List<ProjectView>> getFilteredProjectViews(String searchTerm, bool noNonsense) async {
     final db = await database;
     final List<Map<String, dynamic>> results = await db.rawQuery(
         "SELECT p.id, p.typeId, t.name AS type, p.authorId, a.name AS author, p.title, p.notes "
         "FROM $_projectTableName p "
         "JOIN $_typeTableName t ON p.typeId = t.id "
         "JOIN $_authorTableName a ON p.authorId = a.id "
-        "WHERE p.title like '%$searchTerm%'; ");
+        "WHERE p.title like '%$searchTerm%'; "
+        "AND typeId > ${noNonsense ? 1 : 0} ");
     List<ProjectView> projectViews = [];
     for (var result in results) {
       ProjectView projectView = ProjectView.fromMap(result);
@@ -834,7 +836,7 @@ class DatabaseHelper {
 
   // get list of vocabularyViews filtered on title, project and category
   Future<List<VocabularyView>> getFilteredVocabulariesBPAC(
-      String searchTerm, int projectId, int categoryId, bool findUsage) async {
+      String searchTerm, int projectId, int categoryId, bool findUsage, bool showNoNonsense) async {
     final db = await database;
     final List<Map<String, dynamic>> results = await db.rawQuery(
         "SELECT v.id, v.categoryId, c.name AS category, v.projectId, "
@@ -842,7 +844,7 @@ class DatabaseHelper {
         "FROM $_vocabularyTableName v "
         "JOIN $_projectTableName p ON v.projectId = p.id "
         "JOIN $_categoryTableName c ON v.categoryId = c.id "
-        "${vocabularyWhereClause(searchTerm, projectId, categoryId, findUsage)}");
+        "${vocabularyWhereClause(searchTerm, projectId, categoryId, findUsage, showNoNonsense)}");
     List<VocabularyView> vocabularyViews = [];
     for (var result in results) {
       VocabularyView vocabularyView = VocabularyView.fromMap(result);
@@ -895,7 +897,7 @@ class DatabaseHelper {
   }
 
   String vocabularyWhereClause(
-      String searchTerm, int projectId, int categoryId, bool findUsage) {
+      String searchTerm, int projectId, int categoryId, bool findUsage, bool showNoNonsense) {
     final whereClause = StringBuffer('WHERE 1 = 1 ');
     String orderByClause = '';
     if (findUsage && searchTerm.isNotEmpty) {
@@ -924,6 +926,9 @@ class DatabaseHelper {
       }
       if (categoryId > 1) {
         whereClause.write("AND v.categoryId = $categoryId ");
+      }
+      if (showNoNonsense){
+        whereClause.write("AND p.typeId > 1 ");
       }
     }
     whereClause.write(orderByClause);

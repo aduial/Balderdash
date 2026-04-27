@@ -133,7 +133,7 @@ class HomeScreenState extends State<HomeScreen> {
                   },
                   leading: Icon(Icons.auto_awesome_rounded,
                       color: redNotePaperColour),
-                  title: Text('Create Balderdash!'),
+                  title: Text('Run Balderdash!'),
                 ),
                 ListTile(
                   onTap: () {

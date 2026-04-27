@@ -28,7 +28,9 @@ class _UserPreferencesState extends State<UserPreferences> {
   late Future<List<Category>> _categories;
   int categoryId = 1;
   int projectId = 1;
+  late int newMarkOnSave;
   late int newCheckOnSave;
+  late int newNoNonsense;
   late Project curProject;
   late Category curCategory;
   bool initComplete = false;
@@ -40,13 +42,15 @@ class _UserPreferencesState extends State<UserPreferences> {
     initComplete = false;
     super.initState();
     loadPreferences();
+    loadProjects();
   }
 
   Future<void> loadPreferences() async {
+    newNoNonsense = await asyncPrefs.getInt(noNonsense) ?? 1;
+    newMarkOnSave = await asyncPrefs.getInt(markOnSave) ?? 1;
     newCheckOnSave = await asyncPrefs.getInt(checkOnSave) ?? 1;
     categoryId = await asyncPrefs.getInt(defaultCategory) ?? 1;
     projectId = await asyncPrefs.getInt(defaultProject) ?? 1;
-    _projects = DatabaseHelper().getProjectsAbove(0);
     _categories = DatabaseHelper().getCategoriesAbove(0);
     await setCurrentCategory(categoryId);
     await setCurrentProject(projectId);
@@ -54,10 +58,27 @@ class _UserPreferencesState extends State<UserPreferences> {
     setState(() {});
   }
 
+  // is nog even een dingetje
+  Future<void> loadProjects() async {
+    if (initComplete) {
+      _projects = DatabaseHelper().getProjectsAbove(0, newNoNonsense == 1);
+    }
+  }
+
+
+  Future<void> storeMarkVocabListOnSave(int value) async {
+    newMarkOnSave = value;
+    await asyncPrefs.setInt(markOnSave, value);
+  }
 
   Future<void> storeCheckVocabOnSave(int value) async {
     newCheckOnSave = value;
     await asyncPrefs.setInt(checkOnSave, value);
+  }
+
+  Future<void> storeNoNonsense(int value) async {
+    newNoNonsense = value;
+    await asyncPrefs.setInt(noNonsense, value);
   }
 
   // Future<void> setCheckVocabOnSave(bool value) async {
@@ -122,11 +143,10 @@ class _UserPreferencesState extends State<UserPreferences> {
                 children: [
                   Expanded(
                     child: DropdownSearch<Category>(
-                      // key: _catDDKey,
+                      key: _catDDKey,
                       itemAsString: (item) => item.name!,
                       items: (filter, t) => _categories,
                       onSelected: (Category? item) {
-                        if (_settingsFormKey.currentState!.validate()) {
                           if (initComplete) {
                             setState(() {
                               if (item == null) {
@@ -137,7 +157,6 @@ class _UserPreferencesState extends State<UserPreferences> {
                             });
                             buildSnackBar(context, 'Saving preference');
                           }
-                        }
                       },
                       decoratorProps: DropDownDecoratorProps(
                         decoration: InputDecoration(
@@ -168,12 +187,11 @@ class _UserPreferencesState extends State<UserPreferences> {
                   Padding(padding: EdgeInsets.all(4 * scaling)),
                   Expanded(
                     child: DropdownSearch<Project>(
-                      // key: _prjDDKey,
+                      key: _prjDDKey,
                       itemAsString: (item) => item.title!,
                       items: (filter, t) => _projects,
                       onSelected: (Project? item) {
                         if (initComplete) {
-                          if (_settingsFormKey.currentState!.validate()) {
                             setState(() {
                               if (item == null) {
                                 storeDefaultProject(1);
@@ -183,7 +201,6 @@ class _UserPreferencesState extends State<UserPreferences> {
                             });
                             buildSnackBar(context, 'Saving preference');
                           }
-                        }
                       },
                       decoratorProps: DropDownDecoratorProps(
                         decoration: InputDecoration(
@@ -254,36 +271,99 @@ class _UserPreferencesState extends State<UserPreferences> {
                 ),
               ],
               ),
+              Padding(padding: EdgeInsets.all(4 * scaling)),
               Row(children: [
+                Padding(
+                  padding: EdgeInsets.all(4.0 * scaling),
+                ),
+                Switch(
+                  value: initComplete? newMarkOnSave == 1 : false,
+                  activeThumbColor: greenNotePaperColour,
+                  activeTrackColor: greenAppbarColour,
+                  onChanged: (bool value) {
+                    setState(() {
+                      newMarkOnSave = value ? 1 : 0;
+                      print(newMarkOnSave);
+                      storeMarkVocabListOnSave(newMarkOnSave);
+
+                      buildSnackBar(context, 'Saving ...');
+                    });
+                  },
+                ),
+                Padding(
+                  padding: EdgeInsets.all(4.0 * scaling),
+                ),
                 Expanded(
                   flex: 1,
                   child: const Align(
-                    alignment: Alignment.centerRight,
-                    child: Text('Mark vocabulary list on save'),
+                    alignment: Alignment.centerLeft,
+                    child: Text('Mark errors in vocabulary list on save'),
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4.0 * scaling),
+                  padding: EdgeInsets.all(4.0 * scaling),
+                )
+              ]
+              ),
+              Row(children: [
+                Padding(
+                  padding: EdgeInsets.all(4.0 * scaling),
+                ),
+                Switch(
+                  value: initComplete? newCheckOnSave == 1 : false,
+                  activeThumbColor: greenNotePaperColour,
+                  activeTrackColor: greenAppbarColour,
+                  onChanged: (bool value) {
+                    setState(() {
+                      newCheckOnSave = value ? 1 : 0;
+                      storeCheckVocabOnSave(newCheckOnSave);
+                      buildSnackBar(context, 'Saving ...');
+                    });
+                  },
+                ),
+                Padding(
+                  padding: EdgeInsets.all(4.0 * scaling),
                 ),
                 Expanded(
-                  flex: 1,
-                  child: Switch(
-                    value: initComplete? newCheckOnSave == 1 : false,
-                    activeThumbColor: greenNotePaperColour,
-                    activeTrackColor: greenAppbarColour,
-                    onChanged: (bool value) {
-                      setState(() {
-                        newCheckOnSave = value ? 1 : 0;
-                        print(newCheckOnSave);
-                        storeCheckVocabOnSave(newCheckOnSave);
-
-                        buildSnackBar(context, 'Saving ...');
-                      });
-                      },
+                  flex: 2,
+                  child: const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Check vocabulary for errors on save'),
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4.0 * scaling),
+                  padding: EdgeInsets.all(4.0 * scaling),
+                )
+              ]
+              ),
+              Row(children: [
+                Padding(
+                  padding: EdgeInsets.all(4.0 * scaling),
+                ),
+                Switch(
+                  value: initComplete? newNoNonsense == 1 : false,
+                  activeThumbColor: greenNotePaperColour,
+                  activeTrackColor: greenAppbarColour,
+                  onChanged: (bool value) {
+                    setState(() {
+                      newNoNonsense = value ? 1 : 0;
+                      storeNoNonsense(newNoNonsense);
+                      buildSnackBar(context, 'Saving ...');
+                    });
+                  },
+                ),
+                Padding(
+                  padding: EdgeInsets.all(4.0 * scaling),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text("Hide original Nonsense! demo's"),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(4.0 * scaling),
                 )
               ]
               )

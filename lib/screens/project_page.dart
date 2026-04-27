@@ -5,6 +5,7 @@ import 'package:balderdash/database_helper/database_helper.dart';
 import 'package:balderdash/screens/project_detail.dart';
 import 'package:balderdash/views/project_view.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProjectPage extends StatefulWidget {
   const ProjectPage({super.key});
@@ -14,22 +15,30 @@ class ProjectPage extends StatefulWidget {
 }
 
 class _ProjectPageState extends State<ProjectPage> {
+  final SharedPreferencesAsync asyncPrefs = SharedPreferencesAsync();
   late Future<List<ProjectView>> _projectViews;
   final ScrollController _scrollController = ScrollController();
+  bool initComplete = false;
   int numItems = 0;
+  late int showNoNonsense = 1;
   String searchTerm = '';
-  Future<int> _getVocabularyListLength() async {
-    return await _projectViews.then((value) {
-      return value.length;
-    });
-  }
+
 
   List<ProjectView> filteredVocabularies = [];
 
   @override
   void initState() {
     super.initState();
+    loadPreferences();
     _refreshProjectViewList();
+  }
+
+  Future<void> loadPreferences() async {
+    showNoNonsense = await asyncPrefs.getInt(noNonsense) ?? 1;
+    _refreshProjectViewList();
+    setState(() {
+    });
+    initComplete = true;
   }
 
   onSearch(String value) {
@@ -40,15 +49,21 @@ class _ProjectPageState extends State<ProjectPage> {
   void _refreshProjectViewList() {
     setState(() {
       if (searchTerm == '') {
-        _projectViews = DatabaseHelper().getProjectViews();
+        _projectViews = DatabaseHelper().getProjectViews(showNoNonsense == 1);
       } else {
-        _projectViews = DatabaseHelper().getFilteredProjectViews(searchTerm);
+        _projectViews = DatabaseHelper().getFilteredProjectViews(searchTerm, showNoNonsense == 1);
       }
-      _getVocabularyListLength().then((value) {
+      _getProjectListLength().then((value) {
         setState(() {
           numItems = value;
         });
       });
+    });
+  }
+
+  Future<int> _getProjectListLength() async {
+    return await _projectViews.then((value) {
+      return value.length;
     });
   }
 

@@ -1,12 +1,13 @@
 import 'package:balderdash/config/colours.dart';
 import 'package:balderdash/config/config.dart';
+// import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_html/flutter_html.dart';
 
-class Intro extends StatelessWidget {
-  const Intro({super.key});
+class How extends StatelessWidget {
+  const How({super.key});
   Future<void> _launchInBrowser(Uri url) async {
     if (!await launchUrl(
       url,
@@ -25,7 +26,7 @@ class Intro extends StatelessWidget {
         ),
         backgroundColor: mountainBlue,
         title: Text(
-          "About this app",
+          "How Balderdash works",
           style: Theme.of(context).textTheme.bodyLarge!.copyWith(
               color: ithildin,
               fontWeight: FontWeight.w500,
@@ -135,9 +136,10 @@ class Intro extends StatelessWidget {
                                 border: const Border(bottom: BorderSide(color: Colors.grey)),
                               ),
                               'h5': Style(maxLines: 2, textOverflow: TextOverflow.ellipsis),
-                              'flutter': Style(
+                              'vocab': Style(
                                 display: Display.block,
-                                fontSize: FontSize(5, Unit.em),
+                                fontSize: FontSize(2, Unit.em),
+                                fontFamily: balderDashFont,
                               ),
                               ".second-table": Style(
                                 backgroundColor: Colors.transparent,
@@ -210,32 +212,45 @@ class Intro extends StatelessWidget {
     );
   }
 }
-
 const htmlData = r"""
-      <p>This app is a continuation of a context-free grammar text generator from 2001 
-      called Nonsense, that you can still download from 
-      <a href='https://nonsense.sourceforge.net/'>nonsense.sourceforge.net</a>. 
-      A slightly extended version 0.7.1 that fixes the issue with cgi-bin deployment 
-      and adds some minor features is available <a href='https://github.com/aduial/nonsense'>
-      here</a> on GitHub. </p>
-      <p>Nonsense defines the grammar in <b>.data files</b>, each containing many 
-      <b>vocabularies</b> (groups of lines containing text and commands). 
-      Balderdash! is fully compatible with grammars written for Nonsense (it 
-      contains the original demo content), though it uses a local <b>SQLite</b> 
-      database instead.</p>
-      <p>This allows structuring the process with entities like 'users', 
-      'categories' and 'projects' that you can use or ignore as you see fit. 
-      The smaller screen size gave rise to the <b>Vocabulary</b> as the basic unit of a 
-      grammar, instead of .data file containing dozens of vocabularies each. </p>
-      <p>How Balderdash! works, how to write vocabularies and managing projects in 
-      the app is all described in help pages.</p>
-      
-
-      <div style="width: 350px; height: 20px; text-align: center; color: darkmagenta; background-color: #ff9999;">bbb</div>
+      <p>The idea is that you provide <b>Balderdash!</b> with a bootstrap vocabulary, 
+      say, <b>VOC1</b>. This provides Balderdash! with a starting point for your 
+      grammar. Its 'Category' doesn't matter because that's just a label: all 
+      vocabularies are processed in the same way.</p>
+      <p>All vocabularies contain lines with text and commands between curly 
+      braces {} that refer to other vocabularies (and perform some other functions 
+      that we'll get into later).</p>
+      <p>Balderdash! randomly selects a line from <b>VOC1</b> and starts working its 
+      way through it. Any plain text it finds is added to the result. When a 
+      command - say, <b>{VOC2}</b> - is encountered, work on <b>VOC1</b> is put on 
+      hold. If it identifies <b>{VOC2}</b> as referring to another Vocabulary called 
+      <b>VOC2</b>, it gets that from the database and starts working on that: 
+      pick a line, add plain text to the result, until it either comes across 
+      another variable (and the process repeats one level deeper). </p>
+      <p>When Balderdash!  reaches the end of the current line, it returns to where 
+      it left off and continues there. This goes on until Balderdash! reaches the 
+      end of the line in the bootstrap vocabulary, and it presets whatever it 
+      has collected.</p>
+      <p>As can be imagined, this can become quite a convoluted leapfrog journey 
+      across vocabularies, and the results of a well-written grammar (set of 
+      vocabularies) can be surprising. Balderdash! can produce combinations 
+      of phrases (and, for the bold & brave: new words from separate syllables 
+      or even letters) that you would never have thought of.</p>
+      <p>In that sense, Balderdash! is (or, really, YOU are) way more creative 
+      and free than an AI that obediently regurgitates content found elsewhere.</p>
+      <p>Balderdash! can walk the narrow path between meaningless chaos and boring 
+      copy-pasting, but it is up to you, dear user, to lead the way.</p>
+      <p>Copy-pasting and generating chaos are simple; compiling text alternatives, 
+      crafting phrase patterns and using variables as contextual cement to produce 
+      a grammar that leaves you in stitches is hard, but immensely rewarding.</p>
+      <p>And, of course, it's a magnificent brain workout and a well-deserved 
+      slap in the face of Big-Buck generative AI.</p>
+     
       
   """;
 
 
 final balderDashFont = GoogleFonts.inter().fontFamily;
+final vocabFont = GoogleFonts.robotoMono().fontFamily;
 
 final staticAnchorKey = GlobalKey();

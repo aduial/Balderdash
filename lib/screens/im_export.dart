@@ -15,6 +15,7 @@ import '../config/config.dart';
 import '../database_helper/database_helper.dart';
 import '../model/project.dart';
 import '../screens/template_detail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ImExport extends StatefulWidget {
   const ImExport({super.key});
@@ -25,6 +26,7 @@ class ImExport extends StatefulWidget {
 }
 
 class _ImExportState extends State<ImExport> {
+  final SharedPreferencesAsync asyncPrefs = SharedPreferencesAsync();
   final _prjDDKey = GlobalKey<DropdownSearchState<Project>>();
   final _settingsFormKey = GlobalKey<FormState>();
   late Future<List<Project>> _projects;
@@ -33,6 +35,7 @@ class _ImExportState extends State<ImExport> {
   late List<Vocabulary> _projectVocabularies;
   late List<Template> _projectTemplates;
   bool initComplete = false;
+  int showNoNonsense = 1;
 
   final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   final _dialogTitleController = TextEditingController();
@@ -72,7 +75,8 @@ class _ImExportState extends State<ImExport> {
   void printInDebug(Object object) => debugPrint(object.toString());
 
   Future<void> loadProjects() async {
-    _projects = DatabaseHelper().getProjectsAbove(0);
+    showNoNonsense = await asyncPrefs.getInt(noNonsense) ?? 1;
+    _projects = DatabaseHelper().getProjectsAbove(0, showNoNonsense == 1);
     initComplete = true;
   }
 

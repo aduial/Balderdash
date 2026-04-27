@@ -40,6 +40,7 @@ class _SelectVocPageState extends State<SelectVocPage> {
   String searchTerm = '';
   int projectId = 1;
   int categoryId = 1;
+  int showNoNonsense = 1;
   int numItems = 0;
   late Project curProject;
   late Category curCategory;
@@ -61,7 +62,8 @@ class _SelectVocPageState extends State<SelectVocPage> {
   Future loadPreferences() async {
     categoryId = await asyncPrefs.getInt(defaultCategory) ?? 1;
     projectId = await asyncPrefs.getInt(defaultProject) ?? 1;
-    _projects = DatabaseHelper().getProjectsAbove(0);
+    showNoNonsense = await asyncPrefs.getInt(noNonsense) ?? 1;
+    _projects = DatabaseHelper().getProjectsAbove(0, showNoNonsense == 1);
     _categories = DatabaseHelper().getCategoriesAbove(0);
     await setCurrentCategory(categoryId);
     await setCurrentProject(projectId);
@@ -83,7 +85,7 @@ class _SelectVocPageState extends State<SelectVocPage> {
   void _refreshVocabularyViewList(bool findUsage) {
     setState(() {
       _vocabularyViews = DatabaseHelper().getFilteredVocabulariesBPAC(
-          searchTerm, projectId, categoryId, findUsage);
+          searchTerm, projectId, categoryId, findUsage, showNoNonsense == 1);
       subTitle = setSubTitle();
       _getVocabularyListLength().then((value) {
         setState(() {

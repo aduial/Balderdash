@@ -1,15 +1,14 @@
 import 'package:balderdash/config/colours.dart';
 import 'package:balderdash/config/config.dart';
 import 'package:balderdash/main.dart';
-import 'package:balderdash/screens/about_voc1.dart';
 import 'package:balderdash/screens/cgi.dart';
 import 'package:balderdash/screens/fixing.dart';
-import 'package:balderdash/screens/how1.dart';
 import 'package:balderdash/screens/intro.dart';
 import 'package:balderdash/screens/prefs.dart';
-import 'package:balderdash/screens/quick.dart';
 import 'package:balderdash/screens/usage1.dart';
-import 'package:balderdash/screens/intro2.dart';
+import 'package:balderdash/screens/quick.dart';
+import 'package:balderdash/screens/how.dart';
+import 'package:balderdash/screens/vocabularies.dart';
 import 'package:flutter/material.dart';
 
 class Help extends StatelessWidget {
@@ -64,7 +63,7 @@ class Help extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => Intro()),
+                    MaterialPageRoute(builder: (context) => const Intro()),
                   );
                 },
                 leading: Icon(Icons.auto_awesome_rounded),
@@ -74,7 +73,7 @@ class Help extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => Quick()),
+                    MaterialPageRoute(builder: (context) => const Quick()),
                   );
                 },
                 leading: Icon(Icons.rocket_launch_rounded),
@@ -84,7 +83,7 @@ class Help extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const How1()),
+                    MaterialPageRoute(builder: (context) => How()),
                   );
                 },
                 leading: Icon(Icons.question_answer_rounded),
@@ -94,7 +93,7 @@ class Help extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const AboutVoc1()),
+                    MaterialPageRoute(builder: (context) => const Vocabularies()),
                   );
                 },
                 leading: Icon(Icons.article_rounded),
@@ -144,7 +143,7 @@ class Help extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => Intro2()),
+                    MaterialPageRoute(builder: (context) => Vocabularies()),
                   );
                 },
                 leading: Icon(Icons.heart_broken_rounded),

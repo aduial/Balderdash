@@ -2,6 +2,8 @@ import 'package:balderdash/database_helper/database_helper.dart';
 import 'package:balderdash/model/project.dart';
 import 'package:balderdash/views/vocabulary_view.dart';
 import 'package:flutter/material.dart';
+import 'package:balderdash/config/config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProjectDropdown extends StatefulWidget {
   const ProjectDropdown({super.key, required this.vocabularyView});
@@ -11,19 +13,28 @@ class ProjectDropdown extends StatefulWidget {
 }
 
 class _ProjectDropdownState extends State<ProjectDropdown> {
+  final SharedPreferencesAsync asyncPrefs = SharedPreferencesAsync();
   late Future<List<Project>> projects;
   var _selectedValue;
+  int showNoNonsense = 1;
+  bool initComplete = false;
 
   @override
   void initState() {
     super.initState();
+    loadPreferences();
     _getProjectList();
     // late Category _selected;
   }
 
+  Future loadPreferences() async {
+    showNoNonsense = await asyncPrefs.getInt(noNonsense) ?? 1;
+    initComplete = true;
+  }
+
   void _getProjectList() {
     setState(() {
-      projects = DatabaseHelper().getProjectsAbove(0);
+      projects = DatabaseHelper().getProjectsAbove(0, showNoNonsense == 1);
     });
   }
 

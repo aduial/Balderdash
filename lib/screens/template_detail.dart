@@ -10,6 +10,7 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_code_editor/flutter_code_editor.dart';
 import 'package:widgets_easier/widgets_easier.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TemplateDetail extends StatefulWidget {
   final TemplateView templateView;
@@ -19,6 +20,7 @@ class TemplateDetail extends StatefulWidget {
 }
 
 class _TemplateDetailState extends State<TemplateDetail> {
+  final SharedPreferencesAsync asyncPrefs = SharedPreferencesAsync();
   final _prjDDKey = GlobalKey<DropdownSearchState<Project>>();
   final _templateFormKey = GlobalKey<FormState>();
   late Future<List<Project>> _projects;
@@ -34,10 +36,12 @@ class _TemplateDetailState extends State<TemplateDetail> {
   late Template newTemplate;
   late int newProjectId;
   late int newIsHtml;
+  int showNoNonsense = 1;
 
   @override
   void initState() {
     super.initState();
+    loadPreferences();
     _refreshLists();
     isExistingTV = (null != widget.templateView.id);
     if (isExistingTV) {
@@ -55,9 +59,14 @@ class _TemplateDetailState extends State<TemplateDetail> {
         widget.templateView.notes == "" ? " " : widget.templateView.notes ?? '';
   }
 
+  Future loadPreferences() async {
+    showNoNonsense = await asyncPrefs.getInt(noNonsense) ?? 1;
+    _projects = DatabaseHelper().getProjectsAbove(0, showNoNonsense == 1);
+  }
+
   void _refreshLists() {
     setState(() {
-      _projects = DatabaseHelper().getProjectsAbove(0);
+      _projects = DatabaseHelper().getProjectsAbove(0, showNoNonsense == 1);
     });
   }
 
