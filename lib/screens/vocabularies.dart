@@ -123,6 +123,11 @@ class Vocabularies extends StatelessWidget {
                                 fontSize: FontSize.medium,
                                 lineHeight: const LineHeight(1.0),
                               ),
+                              "ul": Style(
+                                color: laurelin,
+                                fontSize: FontSize.medium,
+                                lineHeight: const LineHeight(1.3),
+                              ),
                               "table": Style(
                                 backgroundColor: const Color.fromARGB(0x50, 0x77, 0xff, 0xff),
                               ),
@@ -188,15 +193,15 @@ formatted date/time, numbers or special characters. </p>
 <p>We'll describe all that here, so just keep a-scrolling until you reach the 
 bottom.</p>
 
-<p>Lines can be any length, and must be separated by a newline (return / linefeed) character.</p>
-
-<p>A vocabulary can’t be empty: empty lines and anything below them are ignored 
-(useful for testing a line: put it on top and add a return after it).</p>
-<p>A vocabulary title must be unique within a project.</p>
-
-<p>Vocabularies can be set active or inactive in the editor: when inactive, 
+<ul>
+<li>Lines can be any length, and must be separated by a newline (return / linefeed) character.<br></li>
+<li>A vocabulary can’t be empty: empty lines and anything below them are ignored 
+<i>(useful for testing a line: put it on top and add a return after it).</i><br></li>
+<li>A vocabulary title must be unique within a project.<br></li>
+<li>Vocabularies can be set active or inactive in the editor: when inactive, 
 vocabularies are ignored by Balderdash! and appear greyed out in the 
-'Run Balderdash! and vocabulary editor lists.</p>
+'Run Balderdash! and vocabulary editor lists.<br></li>
+</ul>
 
 <h2>Example Vocabulary</h2>
 
@@ -238,7 +243,7 @@ drop by<br>
 <br>
 SOMETHINGELSE<br>
 wait for {[me|you}<br>
-start playing {[an|the|her} electric wah-wah guitar{[ very loudly}</p>
+start playing {[an|the|her} electric wah-wah guitar{[ very menacingly}</p>
 
 <h2>Anonymous Vocabularies</h2>
 
@@ -271,7 +276,7 @@ but the case of the <b>{commands}</b> referring to them determines the case of t
 text they return:</p>
 
 <p class="fix">{Whoknows}</p>
-<p><b>(mixed case)</b> returns the case unchanged: <b>'If we don't fix that stereo set,'</b></p>
+<p><b>(Mixed Case)</b> returns the case unchanged: <b>'If we don't fix that stereo set,'</b></p>
 <p class="fix">{whoknows}</p>
 <p><b>(all lowercase)</b> returns the text in lowercase: <b>'maybe'</b></p>
 
@@ -282,60 +287,206 @@ text they return:</p>
 <p><b>(prefixed with ^)</b> returns the text with the first letter capitalised:
 <b>'If nothing comes between,'</b></p>
 
-So, the example grammar might result in: 
-'If nothing comes between, Charles might slap neighbour Todd next week'
-'Maybe neighbour Todd could drop by tomorrow'
-'If we don't fix that stereo set, auntie Bertha might start playing her electric wah-wah guitar very loudly one of these days'
-... or some variation thereof.
+<p>The example grammar might result in: </p>
+<ul><li>'If nothing comes between, Charles might slap neighbour Todd next week'</li>
+<li>'Maybe neighbour Todd could drop by tomorrow'</li>
+<li>'If we don't fix that stereo set, auntie Bertha might start playing her 
+electric wah-wah guitar very menacingly one of these days'</li></ul>
+<p>... or some variation thereof.</p>
+
+<h2>Variables</h2>
+<p>To maintain some context amidst the random chaos that contex-free grammars 
+are habitually prone to, Balderdash! provides (state) variables that create 
+blissful oases of sanity, ready at hand when you need them.</p> 
+<p>Variables are created by assigning them a value from either a fixed string, 
+or from a {command} (e.g. the output of a vocabulary). Once set, they can be 
+recalled as often as needed until Balderdash! reaches the end of the starting 
+vocabulary:</p>
+
+<p class="fix">{var1=some text}</p> 
+<p>stores <b>'some text'</b>  in variable <b>$var1</b><p>
+
+<p class="fix">{var2:=command}</p>  
+<p>stores the result of <b>command</b> in variable <b>$var2</b><p>
+
+<p>Setting state variables does not directly add text to the result.</p>
+<p>To add the content of a variable to the result, put it between curly braces 
+prefixed with a dollar sign:<p>
+
+<p class="fix">{$var1} {$var2}</p>
+<p><i><b>after</b></i> you have set them.</p>
+
+<h3>Pointers</h3>
+
+<p>If a variable is read prefixed by two dollar signs:</p>
+<p class="fix">{$$var1}</p>
+<p>(a <b>pointer</b>) it's interpreted as a <b>command</b> referring to a 
+<b>Vocabulary</b>. This allows creating interesting dynamic behaviour, but be 
+warned that it can make things <i>really</i> complex  <i>really</i> fast.</p>
+<p>To give a very basic example:</p>
+
+<p class="fix">POINTERDEMO<br>
+{Fixpplwords}{$Name} is my {$person}<br>
+{Fixpplwords}{$$Name} is {$$person}<br>
+<br>
+FIXPPLWORDS<br>
+{Name:=Malename}{Person:=Maleperson}<br>
+{Name:=Femalename}{Person:=Femaleperson}<br>
+<br>
+MALENAME<br>
+John<br>
+Robert<br>
+Giovanni<br>
+<br>
+JOHN<br>
+Johnny<br>
+Jan<br>
+Yannis Papadopoulos<br>
+<br>
+ROBERT<br>
+Roberto<br>
+Robbie<br>
+Rob<br>
+<br>
+GIOVANNI<br>
+Iohan<br>
+<br>
+MALEPERSON<br>
+uncle<br>
+nephew<br>
+grandpa<br>
+<br>
+UNCLE<br>
+an uncle-of-sorts<br>
+actually called Ranucle<br>
+my German 'Onkel'<br>
+<br>
+NEPHEW<br>
+my most untrustworthy familymember<br>
+my best friend<br>
+kind of a German 'Dieter'<br>
+<br>
+GRANDPA<br>
+a blunderbuss-wielding old-timer grandpa<br>
+an ancestor<br>
+my hero<br>
+<br>
+FEMALENAME<br>
+Petra<br>
+Purkje<br>
+Eline<br>
+<br>
+PETRA<br>
+Petraya<br>
+Pie-traa<br>
+Mrs. P<br>
+<br>
+PURKJE<br>
+Pien<br>
+Petronella<br>
+Plien<br>
+<br>
+ELINE<br>
+Vere<br>
+Klapsie<br>
+<br>
+FEMALEPERSON<br>
+aunt<br>
+niece<br>
+maternal grandma<br>
+<br>
+AUNT<br>
+affectionally called "tantetje"<br>
+my mother<br>
+really something else<br>
+<br>
+NIECE<br>
+a nice niece<br>
+actually my mother's neigbour lady<br>
+known by some as "Noes"<br>
+<br>
+GRANDMA<br>
+Mrs.-Grandma-to-you<br>
+a true "Grammy Award"
+</p>
+
+<p>The first line in <b>POINTERDEMO</b> could produce:</p>
+<p><b>Giovanni is my grandpa<br>
+Eline is my niece</b> (etcetera)</p>
+<p>while the second line might give:</p>
+<p><b>Yannis Papadopoulos is my most untrustworthy familymember<br>
+Rob is my blunderbuss-wielding old-timer grandpa<br>
+Petronella is really something else<br>
+Klapsie is my mother's neighbour lady</b> (etcetera)</p>
+
+<p>Just sayin' ... you best understand the above before you start messing around with
+it. And this is just one level of pointers: there's nothing stopping you from
+using them in, say, <b>MALENAME</b> - but let me stop here, before people get
+funny ideas about warping reality or messing with the Noosphere (or what have you) 
+- let's leave that to the good folk of the <a href="https://scp-wiki.wikidot.com/">
+SCP wiki</a>.</p>
+
+<p>It's best practice to set all variables together in a dedicated one-line 
+vocabulary, and call that in the starting vocabulary. Note that case formatting 
+also works for variables; it is applied when you read them, eg.</p>
+
+<p class="fix">{$var} {$VAR} {$Var} {$^var}</p>
+
+<p> - see above under <b>Text case</b> for the details.</p>
+
+<h2>Numbers and repetitions</h2>
+
+<p>Balderdash! will replace this command:</p>
+<p class="fix">{#number1-number2}</p>
+<p><b>(whole numbers only!)</b> with a random whole number between <b>number1</b> 
+and <b>number2</b> (inclusive).</p>
+
+<p>When processing a vocabulary, Balderdash! randomly picks one of the lines. 
+However, you can influence the odds a line is selected by prefixing the line 
+with a weight factor <b>#number#</b> (a whole number), for instance:</p>
+
+<p class="fix">...<br>
+random chance being picked<br>
+#2#twice as {often}<br>
+#7#seven times as {[likely|often}<br>
+...</p>
+
+<p>This goes for all lines regardless their content.</p>
+
+<p>You can have Balderdash! evaluate a command multiple times using this format:</p>
+<p class="fix">{command#number1-number2}</p>
+<p><b>(whole numbers only!)</b> which will repeat it a random whole number between 
+<b>number1</b> and <b>number2</b> (inclusive) times.
+<br>This is especially useful in starting (bootstrap) vocabularies.</p>
 
 
-VariablesTo preserve a semblance of context amidst the random chaos, Balderdash! offers variables. These contain either fixed text or the result of a {command} and once set, they can be recalled as often as needed until Balderdash! reaches the end of the starting vocabulary:
+<h2>Special characters & strftime</h2>
+<p>A newline (return / linefeed), curly brackets {} and NULL a.k.a. 'nothing' can 
+be included in a Vocabulary like this:</p>
 
-{var1=some text} stores 'some text'  in variable \$var1
+<p class="fix">{\n}</p>
+<p> = newline (return / linefeed)</p>
+<p class="fix">{\\L} {\\R}</p>
+<p> = left & right curly braces</p>
+<p class="fix">{\\0}</p> 
+<p> = nothing, empty string</p>
 
-{var2:=command} stores the result of command in variable \$var2
+<p>Last but not least, we pay homage to the good old <b>strftime</b> datetime format 
+that was so harshly deprecated in php 8.1.<br>
+Hah! With that, Balderdash! may be the only IOS app that supports it.
+Use the simple <b>{@strftime format}</b> as in, for instance,</p>
 
-SETTING state variables does not add text to the result. To GET text from a variable, put it between curly brackets prefixed with a dollar sign: {\$var1} {\$var2} after you have set them.
-It's best practice to set all variables together in a dedicated one-line vocabulary, and call that in the starting vocabulary. Note that case formatting also works for variables; it is applied when you read them, eg. {\$var} {\$VAR} {\$Var} {\$^var} - see the previous page.
-
-A variable prefixed with TWO dollar signs: {\$\$var1} {\$\$var2} functions as a pointer: its value is interpreted as a Vocabulary name, allowing for interesting dynamic behaviour.
-
-
-Numbers and repetitionsBalderdash! will replace this command:
-{#number1-number2}(whole numbers only!)
-with a random whole number between number1 and number2 (inclusive).
-
-When processing a vocabulary, Balderdash! randomly picks one of the lines. However, you can influence the odds a line is selected by prefixing the line with a weight factor #number# (a whole number), for instance:
-...
-random chance being picked
-#2#twice as {often}
-#7#seven times as {[likely|often}
-...
-This goes for all lines regardless their content.
-
-You can have Balderdash! evaluate a command multiple times using this format:
-{command#number1-number2}(whole numbers only!)
-which will repeat it a random whole number between number1 and number2 (inclusive) times. This is especially useful in starting (bootstrap) vocabularies.
-
-
-
-Special characters & strftimeA \
- newline (return / linefeed), curly brackets {} and NULL a.k.a. 'nothing') can be included in a Vocabulary like this:
-
-{\
-} newline (return / linefeed)
-{\\L} {\\R} left & right curly braces
-{\\0} Null (i.e. nothing)
-
-Last but not least, we pay homage to the good old strftime datetime format that was so harshly deprecated in php 8.1. Hah! With that, Balderdash! may be the only IOS app that supports it. You can use:
-{@strftime format} e.g. {@%Y}
-that returns the current date & time; or:
-{@strftime format|number1|number2} e.g.
-{@%H:%M:%S|0|86400} (... whole numbers!)
-
-The latter returning a timestamp between number1 and number2 seconds ago (ie. one day), of which original Nonsense author James Baughn says it is 'actually more useful than it might first appear…' though I haven't been able to discover what that is about. A strftime format cheat sheet is available on
-https://strftime.org/.
-</p>   
+<p class="fix">{@%Y}</p>
+<p>to return the current date & time; and together with a numerical range
+<b>{@strftime format|number1|number2}</b> e.g.</p>
+<p class="fix">{@%H:%M:%S|0|86400}</p> 
+<p>(... whole numbers only!) if you want a timestamp between <b>number1</b> and 
+<b>number2</b> seconds ago (in this case, between "now" and one day ago), of 
+which original Nonsense author James Baughn says it is <i>'actually more useful 
+than it might first appear…'</i> though I haven't been able to figure out what 
+that was all about.</p> 
+<p>A <b>strftime format cheat sheet</b> is available on
+<a href="https://strftime.org/"> strftime.org</a>.</p>   
   """;
 
 
