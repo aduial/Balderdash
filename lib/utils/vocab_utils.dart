@@ -91,7 +91,7 @@ class VocabUtils {
     // write state variable
     line = removeDiacritics(line).replaceAll(RegExp(r'\{\$\^?\w*\}'), '');
     // no more curly braces left, now remove all literals
-    line = removeDiacritics(line).replaceAll(RegExp(r'[\x27\w\s\\@()&<>%*_"/;:?!\-+,.™©®]'), '');
+    line = removeDiacritics(line).replaceAll(RegExp(r'[\x27\w\s\\@()&\$<>%*_"/;:?!\-+,.™©®]'), '');
     if (line.isNotEmpty) {
       // if something's left, its an error
       return false;

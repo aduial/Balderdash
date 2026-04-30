@@ -26,7 +26,7 @@ class Quick extends StatelessWidget {
         ),
         backgroundColor: mountainBlue,
         title: Text(
-          "About this app",
+          "Quick start guide",
           style: Theme.of(context).textTheme.bodyLarge!.copyWith(
               color: ithildin,
               fontWeight: FontWeight.w500,

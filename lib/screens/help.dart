@@ -5,7 +5,7 @@ import 'package:balderdash/screens/cgi.dart';
 import 'package:balderdash/screens/fixing.dart';
 import 'package:balderdash/screens/intro.dart';
 import 'package:balderdash/screens/prefs.dart';
-import 'package:balderdash/screens/usage1.dart';
+import 'package:balderdash/screens/usage.dart';
 import 'package:balderdash/screens/quick.dart';
 import 'package:balderdash/screens/how.dart';
 import 'package:balderdash/screens/vocabularies.dart';
@@ -103,7 +103,7 @@ class Help extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const Usage1()),
+                    MaterialPageRoute(builder: (context) => const Usage()),
                   );
                 },
                 leading: Icon(Icons.category_rounded),

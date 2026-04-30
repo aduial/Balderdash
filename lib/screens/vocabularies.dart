@@ -25,7 +25,7 @@ class Vocabularies extends StatelessWidget {
         ),
         backgroundColor: mountainBlue,
         title: Text(
-          "About this app",
+          "About Vocabularies",
           style: Theme.of(context).textTheme.bodyLarge!.copyWith(
               color: ithildin,
               fontWeight: FontWeight.w500,
@@ -243,13 +243,13 @@ drop by<br>
 <br>
 SOMETHINGELSE<br>
 wait for {[me|you}<br>
-start playing {[an|the|her} electric wah-wah guitar{[ very menacingly}</p>
+start playing {[an|the|her} wah-wah guitar{[, and what's next?}</p>
 
 <h2>Anonymous Vocabularies</h2>
 
 <p>Maybe you noticed these in the example:</p>
 
-<p class="fix">{[me|you} {[an|the|her} {[ very loudly}</p>
+<p class="fix">{[me|you} {[an|the|her} {[, and what's next?}</p>
 
 <p>These <b>Anonymous Vocabularies</b> act like inline mini-vocabularies. They start with 
 a curly bracket and a left square bracket <b>{[</b>, close with a right curly bracket <b>}</b>, 
@@ -291,12 +291,12 @@ text they return:</p>
 <ul><li>'If nothing comes between, Charles might slap neighbour Todd next week'</li>
 <li>'Maybe neighbour Todd could drop by tomorrow'</li>
 <li>'If we don't fix that stereo set, auntie Bertha might start playing her 
-electric wah-wah guitar very menacingly one of these days'</li></ul>
+wah-wah guitar, and what's next?'</li></ul>
 <p>... or some variation thereof.</p>
 
 <h2>Variables</h2>
 <p>To maintain some context amidst the random chaos that contex-free grammars 
-are habitually prone to, Balderdash! provides (state) variables that create 
+tend to produce, Balderdash! provides (state) variables that create 
 blissful oases of sanity, ready at hand when you need them.</p> 
 <p>Variables are created by assigning them a value from either a fixed string, 
 or from a {command} (e.g. the output of a vocabulary). Once set, they can be 
@@ -304,13 +304,13 @@ recalled as often as needed until Balderdash! reaches the end of the starting
 vocabulary:</p>
 
 <p class="fix">{var1=some text}</p> 
-<p>stores <b>'some text'</b>  in variable <b>$var1</b><p>
+<p>stores <b>'some text'</b>  in variable <b>$var1</b>.<p>
 
 <p class="fix">{var2:=command}</p>  
-<p>stores the result of <b>command</b> in variable <b>$var2</b><p>
+<p>stores the result of <b>command</b> in variable <b>$var2</b>.<p>
 
-<p>Setting state variables does not directly add text to the result.</p>
-<p>To add the content of a variable to the result, put it between curly braces 
+<p>Setting state variables does not directly add text to the result. To add the 
+content of a variable to the result, put it between curly braces 
 prefixed with a dollar sign:<p>
 
 <p class="fix">{$var1} {$var2}</p>
@@ -330,8 +330,27 @@ warned that it can make things <i>really</i> complex  <i>really</i> fast.</p>
 {Fixpplwords}{$$Name} is {$$person}<br>
 <br>
 FIXPPLWORDS<br>
+{Name:=Femname}{Person:=Femperson}<br>
 {Name:=Malename}{Person:=Maleperson}<br>
-{Name:=Femalename}{Person:=Femaleperson}<br>
+<br>
+FEMNAME<br>
+Petra<br>
+Purkje<br>
+Eline<br>
+<br>
+PETRA<br>
+Petraya<br>
+Pie-traa<br>
+Mrs. P<br>
+<br>
+PURKJE<br>
+Pien<br>
+Petronella<br>
+Plien<br>
+<br>
+ELINE<br>
+Vere<br>
+Klapsie<br>
 <br>
 MALENAME<br>
 John<br>
@@ -371,26 +390,7 @@ a blunderbuss-wielding old-timer grandpa<br>
 an ancestor<br>
 my hero<br>
 <br>
-FEMALENAME<br>
-Petra<br>
-Purkje<br>
-Eline<br>
-<br>
-PETRA<br>
-Petraya<br>
-Pie-traa<br>
-Mrs. P<br>
-<br>
-PURKJE<br>
-Pien<br>
-Petronella<br>
-Plien<br>
-<br>
-ELINE<br>
-Vere<br>
-Klapsie<br>
-<br>
-FEMALEPERSON<br>
+FEMPERSON<br>
 aunt<br>
 niece<br>
 maternal grandma<br>
@@ -422,13 +422,22 @@ Klapsie is my mother's neighbour lady</b> (etcetera)</p>
 <p>Just sayin' ... you best understand the above before you start messing around with
 it. And this is just one level of pointers: there's nothing stopping you from
 using them in, say, <b>MALENAME</b> - but let me stop here, before people get
-funny ideas about warping reality or messing with the Noosphere (or what have you) 
-- let's leave that to the good folk of the <a href="https://scp-wiki.wikidot.com/">
-SCP wiki</a>.</p>
+funny ideas about warping reality or messing with the Noosphere, and we best leave 
+that sort of thing to the good folk at the <a href="https://scp-wiki.wikidot.com/">
+SCP wiki</a>, shall we?</p>
 
-<p>It's best practice to set all variables together in a dedicated one-line 
-vocabulary, and call that in the starting vocabulary. Note that case formatting 
-also works for variables; it is applied when you read them, eg.</p>
+<p>It's probably best to set all variables together in a dedicated one-line 
+vocabulary titled <b>{SETVARIABLES}</b> (set it to the 'set variables' category), 
+and call it first thing in the starting vocabulary. Don't forget that any regular
+text and white-spaces between variable assignments <b>will be</b> 
+added to the result! I once spent way too much time figuring out where some pesky
+extra whitespace came from, and finally found that it was hiding between variable 
+assignments:</p>
+
+<p class="fix">{var1:=schnoll}{var2:=sloepp}{var3:=toet} {var4:=brol}</p>
+
+<p>Note that case formatting also works for variables; it is applied when you 
+read them, eg.</p>
 
 <p class="fix">{$var} {$VAR} {$Var} {$^var}</p>
 
@@ -456,8 +465,8 @@ random chance being picked<br>
 <p>You can have Balderdash! evaluate a command multiple times using this format:</p>
 <p class="fix">{command#number1-number2}</p>
 <p><b>(whole numbers only!)</b> which will repeat it a random whole number between 
-<b>number1</b> and <b>number2</b> (inclusive) times.
-<br>This is especially useful in starting (bootstrap) vocabularies.</p>
+<b>number1</b> and <b>number2</b> (inclusive) times. This is especially useful 
+in starting (bootstrap) vocabularies.</p>
 
 
 <h2>Special characters & strftime</h2>
@@ -466,9 +475,9 @@ be included in a Vocabulary like this:</p>
 
 <p class="fix">{\n}</p>
 <p> = newline (return / linefeed)</p>
-<p class="fix">{\\L} {\\R}</p>
+<p class="fix">{\L} {\R}</p>
 <p> = left & right curly braces</p>
-<p class="fix">{\\0}</p> 
+<p class="fix">{\0}</p> 
 <p> = nothing, empty string</p>
 
 <p>Last but not least, we pay homage to the good old <b>strftime</b> datetime format 
