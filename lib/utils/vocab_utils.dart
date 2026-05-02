@@ -12,20 +12,19 @@ class VocabUtils {
 
   static String checkContent(String vcc) {
     StringBuffer sb = StringBuffer();
-    Map<int, bool> lineErrorState = {};
+    Map<int, String> lineErrorState = {};
     int i = 0;
-    bool isOK = true;
     for (String line in splitContent(vcc, false)){
       i++;
       lineErrorState[i] = checkLine(line);
     }
-    if (lineErrorState.containsValue(false)){
-      lineErrorState.forEach((key, value) {
-        if (!value){
-          sb.write('$key ');
-        }
-      });
-    }
+    // if (lineErrorState.containsValue(false)){
+    lineErrorState.forEach((key, value) {
+      if (value.isNotEmpty){
+        sb.write("$key: $value ");
+      }
+    });
+    // }
     // print(sb.toString());
     return sb.toString().trimRight();
   }
@@ -36,7 +35,7 @@ class VocabUtils {
     for (VocabularyView vv in vvs){
       isOK = true;
       for (String line in splitContent(vv.content!, false)){
-        isOK = checkLine(line);
+        isOK = checkLine(line).isEmpty;
         if (!isOK){
           break;
         }
@@ -71,7 +70,7 @@ class VocabUtils {
     return activeLines;
   }
 
-  static bool checkLine(String line) {
+  static String checkLine(String line) {
     // weighting factor
     line = line.replaceAll(RegExp(r'^#\d+#'), '');
     // anonymous
@@ -92,12 +91,7 @@ class VocabUtils {
     line = removeDiacritics(line).replaceAll(RegExp(r'\{\$\^?\w*\}'), '');
     // no more curly braces left, now remove all literals
     line = removeDiacritics(line).replaceAll(RegExp(r'[\x27\w\s\\@()&\$<>%*_"/;:?!\-+,.™©®]'), '');
-    if (line.isNotEmpty) {
-      // if something's left, its an error
-      return false;
-    } else {
-      return true;
-    }
+    return line;
   }
 
 

@@ -229,7 +229,7 @@ const htmlData = r"""
       another variable (and the process repeats one level deeper). </p>
       <p>When Balderdash!  reaches the end of the current line, it returns to where 
       it left off and continues there. This goes on until Balderdash! reaches the 
-      end of the line in the bootstrap vocabulary, and it presets whatever it 
+      end of the line in the bootstrap vocabulary, and it presents whatever it 
       has collected.</p>
       <p>As can be imagined, this can become quite a convoluted leapfrog journey 
       across vocabularies, and the results of a well-written grammar (set of 

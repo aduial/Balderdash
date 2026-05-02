@@ -171,6 +171,7 @@ class _RunPageState extends State<RunPage> {
     int between = 0;
     if (vc.line.contains(RegExp(r'\|\d+\|\d+'))) {
       int eerste = vc.line.indexOf('|');
+      end = eerste;
       int tweede = vc.line.indexOf('|', eerste + 1);
       int laatste = vc.line.indexOf('}');
       String numberOne = vc.line.substring(eerste + 1, tweede);
@@ -180,14 +181,11 @@ class _RunPageState extends State<RunPage> {
       int small = min(nr1, nr2);
       int large = max(nr1, nr2) + 1;
       between = small + random.nextInt(large - small);
-    }
-    DateTime someTimeAgo = DateTime.now().subtract(Duration(seconds: between));
-    begin = vc.line.indexOf('@') + 1;
-    if (vc.line.contains('|')) {
-      end = vc.line.indexOf('|');
     } else {
       end = vc.line.indexOf('}');
     }
+    DateTime someTimeAgo = DateTime.now().subtract(Duration(seconds: between));
+    begin = vc.line.indexOf('@') + 1;
     String strfTime = vc.line.substring(begin, end);
     strfTime = strfTime.replaceFirst('%f', '%f%g');
     List<String> strfTokens = strfTime.split('%');

@@ -9,6 +9,7 @@ import 'package:balderdash/screens/usage.dart';
 import 'package:balderdash/screens/quick.dart';
 import 'package:balderdash/screens/how.dart';
 import 'package:balderdash/screens/vocabularies.dart';
+import 'package:balderdash/screens/imexport.dart';
 import 'package:flutter/material.dart';
 
 class Help extends StatelessWidget {
@@ -143,11 +144,11 @@ class Help extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => Vocabularies()),
+                    MaterialPageRoute(builder: (context) => Imexport()),
                   );
                 },
-                leading: Icon(Icons.heart_broken_rounded),
-                title: Text("markdown"),
+                leading: Icon(Icons.drive_folder_upload),
+                title: Text("Import & Export"),
               ),
               Spacer(),
               DefaultTextStyle(

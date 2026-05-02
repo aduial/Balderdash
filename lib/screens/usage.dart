@@ -330,17 +330,18 @@ const htmlData = r"""
       a single button that will run the current vocabulary and display the result.</p>
       
       <h3>Vocabulary error checking</h3>
-      <p>Because recursion so easily leads to endless loops, we took some effort
-      to catch such errors. When Balderdash detects a repeating loop, it will show
-      <b>ENDLESS_LOOP_ERROR</b>. It will also show an error when it finds double 
-      curly braces <b>{{</b> or <b>}}</b>.<br>
-      You can check multiple vocabularies for such errors: open the right-hand 
-      drawer on the Vocabularies screen and tap the "Check current vocabularies" 
+      <p>Balderdash detects errors when running. It will halt and report any 
+      repeating loops en some obvious errors in Vocabularies it finds, like 
+      references to non-existing vocabularies.</p>
+      
+      <p>You can also check vocabularies beforehand: open the right-hand drawer on 
+      the Vocabularies screen and tap the "Check current vocabularies" 
       button underneath the Project- and Category filters. This will check the 
       vocabularies that are currently listed and mark those with errors by 
-      displaying the <span class="redntp">title in red</span>.<br>
-      If it is enabled in the User Settings, the app will also check your Vocabulary 
-      when you save it and show in what line or lines it found errors.</p>
+      displaying the <span class="redntp">title in red</span>.</p>
+      <p>And lastly, if enabled in the User Settings, Balderdash will check your 
+      Vocabulary when you save it, and show in what line or lines it found what 
+      errors.</p>
      
       
   """;

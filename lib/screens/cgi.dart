@@ -282,7 +282,7 @@ const htmlData = r"""
       permissions issues.</p>
 
       <p>If there's a <b>cgi-bin</b> directory, create a folder for your project there 
-      and upload <b>.data</b> files, <b>template(s)</b> and <b>nonsense.pl</b> all in there. <b>CSS and 
+      and upload <b>.data</b> files, <b>template(s)</b> and <b>nonsense.pl</b> all in there. <b>CSS</b> and 
       <b>images</b> best go in their own folders, just make sure the paths in the 
       <b>template</b> or <b>.data</b> files are correct.</p>
 
