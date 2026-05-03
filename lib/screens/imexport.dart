@@ -176,45 +176,6 @@ class Imexport extends StatelessWidget {
                                 fontWeight: FontWeight.bold,
                               ),
                             },
-                            extensions: [
-                              TagWrapExtension(
-                                  tagsToWrap: {"table"},
-                                  builder: (child) {
-                                    return SingleChildScrollView(
-                                      scrollDirection: Axis.horizontal,
-                                      child: child,
-                                    );
-                                  }),
-                              TagExtension.inline(
-                                tagsToExtend: {"bird"},
-                                child: const TextSpan(text: "🐦"),
-                              ),
-                              TagExtension(
-                                tagsToExtend: {"flutter"},
-                                builder: (context) => CssBoxWidget(
-                                  style: context.styledElement!.style,
-                                  child: FlutterLogo(
-                                    style: context.attributes['horizontal'] != null
-                                        ? FlutterLogoStyle.horizontal
-                                        : FlutterLogoStyle.markOnly,
-                                    textColor: context.styledElement!.style.color!,
-                                    size: context.styledElement!.style.fontSize!.value,
-                                  ),
-                                ),
-                              ),
-                              ImageExtension(
-                                handleAssetImages: false,
-                                handleDataImages: false,
-                                networkDomains: {"flutter.dev"},
-                                child: const FlutterLogo(size: 36),
-                              ),
-                              ImageExtension(
-                                handleAssetImages: false,
-                                handleDataImages: false,
-                                networkDomains: {"mydomain.com"},
-                                networkHeaders: {"Custom-Header": "some-value"},
-                              ),
-                            ],
                             onLinkTap: (url, _, __) {
                               _launchInBrowser(Uri.parse(url!));
                             },

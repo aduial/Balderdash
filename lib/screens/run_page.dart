@@ -75,7 +75,7 @@ class _RunPageState extends State<RunPage> {
       });
     } else {
       setState(() {
-        htmlData = "<p>$htmlResult</p>";
+        htmlData = htmlResult;
       });
 
       print(htmlData);
@@ -548,11 +548,13 @@ class _RunPageState extends State<RunPage> {
                                     anchorKey: staticAnchorKey,
                                     data: htmlData,
                                     style: {
-                                        "body": Style(
-                                          backgroundColor: inActiveMinimalSetColour,
-                                          color: Colors.yellowAccent,
-                                          fontSize: FontSize.medium,
-                                          lineHeight: const LineHeight(1.5),
+                                      "body": Style(
+                                        fontFamily: balderDashFont,
+                                        margin: Margins.zero,
+                                        padding: HtmlPaddings.zero,
+                                        color: ithildin,
+                                        fontSize: FontSize.medium,
+                                        lineHeight: const LineHeight(1.5),
                                         ),
                                       "p": Style(
                                         color: ithildin,
@@ -570,14 +572,6 @@ class _RunPageState extends State<RunPage> {
                                         fontWeight: FontWeight(600),
                                         textDecoration: TextDecoration.none,
                                         lineHeight: const LineHeight(1.5),
-                                      ),
-                                      "body": Style(
-                                        fontFamily: balderDashFont,
-                                        margin: Margins.zero,
-                                        padding: HtmlPaddings.zero,
-                                        color: ithildin,
-                                        fontSize: FontSize.medium,
-                                        lineHeight: const LineHeight(1.0),
                                       ),
                                       "table": Style(
                                         backgroundColor: const Color.fromARGB(0x50, 0xee, 0xee, 0xee),
