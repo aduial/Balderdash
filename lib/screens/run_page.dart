@@ -8,9 +8,14 @@ import 'package:balderdash/database_helper/database_helper.dart';
 import 'package:balderdash/model/vocabulary.dart';
 import 'package:balderdash/utils/string_utils.dart';
 import 'package:balderdash/views/vocabulary_view.dart';
+import 'package:balderdash/config/colours.dart';
 import 'package:balderdash/widgets/voc_trace.dart';
 import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_html/flutter_html.dart';
+
 
 class RunPage extends StatefulWidget {
   final VocabularyView _vocabularyView;
@@ -22,6 +27,12 @@ class RunPage extends StatefulWidget {
 }
 
 class _RunPageState extends State<RunPage> {
+  String htmlData = "";
+
+  final balderDashFont = GoogleFonts.inter().fontFamily;
+  final vocabFont = GoogleFonts.robotoMono().fontFamily;
+  final staticAnchorKey = GlobalKey();
+
   Map<String, String> stateVariables = {};
   final TextEditingController resultController =
       TextEditingController(text: '');
@@ -53,13 +64,22 @@ class _RunPageState extends State<RunPage> {
         line: pickRandomLine(splitVocabulary(voc.content!)),
         variableName: StringUtils.capitalise(voc.title!.toLowerCase()));
     String result = await parseVocabulary(vc);
+    String htmlResult = result.replaceAll("\n", "<br>");
     stateVariables.clear();
     if (result.contains(doubleCurlyBracesError)) {
-      resultController.text =
-          "Vocabulary '${vc.variableName}' contains double curly "
-          "braces ( {{ or }} ) leading to infinite loops. Please fix this first.";
+      // resultController.text =
+      setState(() {
+        htmlData =
+        "Vocabulary '${vc.variableName}' contains double curly "
+            "braces ( {{ or }} ) leading to infinite loops. Please fix this first.";
+      });
     } else {
-      resultController.text = result;
+      setState(() {
+        htmlData = "<p>$htmlResult</p>";
+      });
+
+      print(htmlData);
+      // resultController.text = result;
     }
   }
 
@@ -411,6 +431,16 @@ class _RunPageState extends State<RunPage> {
             ],
           ));
 
+
+  Future<void> _launchInBrowser(Uri url) async {
+    if (!await launchUrl(
+      url,
+      mode: LaunchMode.externalApplication,
+    )) {
+      throw Exception('Could not launch $url');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -458,7 +488,6 @@ class _RunPageState extends State<RunPage> {
                       ),
                       child: Image.asset(
                         getRBDImg(),
-                        // 'assets/images/shampoo.png',
                       ),
                     ),
                     ElevatedButton(
@@ -486,25 +515,159 @@ class _RunPageState extends State<RunPage> {
                         height: 8.0 * scaling,
                       ),
                       Expanded(
-                        child: TextField(
-                          controller: resultController,
-                          decoration: InputDecoration(
-                              isDense: true,
-                              filled: true,
-                              fillColor: offWhite,
-                              border: OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.circular(10 * scaling),
-                              )),
-                          maxLines: null,
+                        flex: 4,
+                        child: Container(
+                          decoration: BoxDecoration(
+                              boxShadow: [
+                                const BoxShadow(
+                                  color: darkerBlueGrey,
+                                ),
+                                const BoxShadow(
+                                  color: regularResultBGColour,
+                                  spreadRadius: -4.0,
+                                  blurRadius: 4.0,
+                                ),
+                              ],
+                            border: Border.all(
+                              style: BorderStyle.solid,
+                              width: 1,
+                              // color: mountainBlue,
+                            ),
+                            borderRadius: BorderRadius.circular(40 * scaling),
+                            // color: offWhite
+                          ),
+                          width: double.infinity,
+                          alignment: Alignment.topCenter,
+                          child: Padding(
+                              padding: EdgeInsetsDirectional.fromSTEB(
+                                  20 * scaling, 20, 20 * scaling, 30 * scaling),
+                              child: Scrollbar(
+                                child: SingleChildScrollView(
+                                  child: Html(
+                                      key: Key(htmlData),
+                                    anchorKey: staticAnchorKey,
+                                    data: htmlData,
+                                    style: {
+                                        "body": Style(
+                                          backgroundColor: inActiveMinimalSetColour,
+                                          color: Colors.yellowAccent,
+                                          fontSize: FontSize.medium,
+                                          lineHeight: const LineHeight(1.5),
+                                        ),
+                                      "p": Style(
+                                        color: ithildin,
+                                        fontSize: FontSize.medium,
+                                        lineHeight: const LineHeight(1.5),
+                                      ),
+                                      "ul": Style(
+                                        color: laurelin,
+                                        fontSize: FontSize.medium,
+                                        lineHeight: const LineHeight(1.5),
+                                      ),
+                                      "a": Style(
+                                        color: derivedFormColour,
+                                        fontSize: FontSize.medium,
+                                        fontWeight: FontWeight(600),
+                                        textDecoration: TextDecoration.none,
+                                        lineHeight: const LineHeight(1.5),
+                                      ),
+                                      "body": Style(
+                                        fontFamily: balderDashFont,
+                                        margin: Margins.zero,
+                                        padding: HtmlPaddings.zero,
+                                        color: ithildin,
+                                        fontSize: FontSize.medium,
+                                        lineHeight: const LineHeight(1.0),
+                                      ),
+                                      "table": Style(
+                                        backgroundColor: const Color.fromARGB(0x50, 0xee, 0xee, 0xee),
+                                      ),
+                                      "th": Style(
+                                        padding: HtmlPaddings.all(6),
+                                        backgroundColor: Colors.grey,
+                                      ),
+                                      "td": Style(
+                                        padding: HtmlPaddings.all(6),
+                                        border: const Border(bottom: BorderSide(color: Colors.grey)),
+                                      ),
+                                      'h5': Style(maxLines: 2, textOverflow: TextOverflow.ellipsis),
+                                      "span.ylw": Style(
+                                        color: Colors.yellowAccent,
+                                        fontWeight: FontWeight.bold,
+                                      ),"span.greentp": Style(
+                                        color: greenNotePaperColour,
+                                        fontWeight: FontWeight.w700,
+                                      ),"span.violntp": Style(
+                                        color: violetNotePaperColour,
+                                        fontWeight: FontWeight.w800,
+                                      ),"span.brigrn": Style(
+                                        color: brightGreen,
+                                        fontWeight: FontWeight.bold,
+                                      ),"span.cyantp": Style(
+                                        color: cyanNotePaperColour,
+                                        fontWeight: FontWeight.bold,
+                                      ),"span.orantp": Style(
+                                        color: orangeNotePaperColour,
+                                        fontWeight: FontWeight.bold,
+                                      ),"span.bluntp": Style(
+                                        color: blueNotePaperColour,
+                                        fontWeight: FontWeight.bold,
+                                      ),"span.yelntp": Style(
+                                        color: yellowNotePaperColour,
+                                        fontWeight: FontWeight.bold,
+                                      ),"span.redntp": Style(
+                                        color: redNotePaperColour,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                      "p.fix": Style(
+                                        padding: HtmlPaddings.all(6),
+                                        fontFamily: vocabFont,
+                                        color: laurelin,
+                                        fontSize: FontSize(15, Unit.px),
+                                        backgroundColor: const Color.fromARGB(0x50, 0x40, 0x80, 0xff),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    },
+                                    onLinkTap: (url, _, __) {
+                                      _launchInBrowser(Uri.parse(url!));
+                                    },
+                                    onCssParseError: (css, messages) {
+                                      debugPrint("css that errored: $css");
+                                      debugPrint("error messages:");
+                                      for (var element in messages) {
+                                        debugPrint(element.toString());
+                                      }
+                                      return '';
+                                    },
+                                  ),
+                                ),
+                              )
+                          ),
                         ),
                       ),
+
+                      // Expanded(
+                      //   child: TextField(
+                      //     controller: resultController,
+                      //     decoration: InputDecoration(
+                      //         isDense: true,
+                      //         filled: true,
+                      //         fillColor: offWhite,
+                      //         border: OutlineInputBorder(
+                      //           borderRadius:
+                      //               BorderRadius.circular(10 * scaling),
+                      //         )),
+                      //     maxLines: null,
+                      //   ),
+                      // ),
+
                       SizedBox(width: 16.0 * scaling, height: 8.0 * scaling),
                     ],
                   ),
                 ),
                 Padding(padding: EdgeInsets.all(12 * scaling)),
-              ]),
+              ]
+          ),
         ),
       ),
     );
