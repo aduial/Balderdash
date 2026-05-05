@@ -73,6 +73,8 @@ class VocabUtils {
   static String checkLine(String line) {
     // weighting factor
     line = line.replaceAll(RegExp(r'^#\d+#'), '');
+    // rnd number ranges
+    line = line.replaceAll(RegExp(r'\{#\d+-\d+\}'), '');
     // anonymous
     line = removeDiacritics(line).replaceAll(RegExp(r'\{\[[\x27\w\s\\^@|()<>%*_";:?!\-+,.™©®]+\}'), '');
     // special

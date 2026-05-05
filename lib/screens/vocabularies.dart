@@ -3,7 +3,7 @@ import 'package:balderdash/config/config.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
 class Vocabularies extends StatelessWidget {
   const Vocabularies({super.key});
@@ -99,77 +99,75 @@ class Vocabularies extends StatelessWidget {
                           20 * scaling, 0, 20 * scaling, 30 * scaling),
                       child: Scrollbar(
                         child: SingleChildScrollView(
-                          child: Html(
-                            anchorKey: staticAnchorKey,
-                            data: htmlData,
-                            style: {
-                              "p": Style(
-                                color: ithildin,
-                                fontSize: FontSize.medium,
-                                lineHeight: const LineHeight(1.5),
-                              ),
-                              "a": Style(
-                                color: derivedFormColour,
-                                fontSize: FontSize.medium,
-                                fontWeight: FontWeight(600),
-                                textDecoration: TextDecoration.none,
-                                lineHeight: const LineHeight(1.5),
-                              ),
-                              "body": Style(
-                                fontFamily: balderDashFont,
-                                margin: Margins.zero,
-                                padding: HtmlPaddings.zero,
-                                color: ithildin,
-                                fontSize: FontSize.medium,
-                                lineHeight: const LineHeight(1.0),
-                              ),
-                              "ul": Style(
-                                color: laurelin,
-                                fontSize: FontSize.medium,
-                                lineHeight: const LineHeight(1.3),
-                              ),
-                              "table": Style(
-                                backgroundColor: const Color.fromARGB(0x50, 0x77, 0xff, 0xff),
-                              ),
-                              "th": Style(
-                                padding: HtmlPaddings.all(6),
-                                backgroundColor: Colors.grey,
-                              ),
-                              "td": Style(
-                                padding: HtmlPaddings.all(6),
-                                border: const Border(bottom: BorderSide(color: Colors.grey)),
-                              ),
-                              'h5': Style(
-                                  maxLines: 2,
-                                  textOverflow: TextOverflow.ellipsis
-                              ),
-                              ".second-table": Style(
-                                backgroundColor: Colors.transparent,
-                              ),
-                              ".second-table tr td:first-child": Style(
-                                fontWeight: FontWeight.bold,
-                                textAlign: TextAlign.end,
-                              ),
-                              "p.fix": Style(
-                                padding: HtmlPaddings.all(6),
-                                fontFamily: vocabFont,
-                                color: laurelin,
-                                fontSize: FontSize(15, Unit.px),
-                                backgroundColor: const Color.fromARGB(0x50, 0x40, 0x80, 0xff),
-                                fontWeight: FontWeight.bold,
-                              ),
+                          child: HtmlWidget(htmlData,
+                            key: Key(htmlData),
+                            onTapUrl: (url) {
+                              _launchInBrowser(Uri.parse(url));
+                              return true;
                             },
-                            onLinkTap: (url, _, __) {
-                              _launchInBrowser(Uri.parse(url!));
-                            },
-                            onCssParseError: (css, messages) {
-                              debugPrint("css that errored: $css");
-                              debugPrint("error messages:");
-                              for (var element in messages) {
-                                debugPrint(element.toString());
+                            customStylesBuilder: (element) {
+                              if (element.localName == 'a') {
+                                return const {
+                                  'color': '#40EFC4',
+                                  'font-weight': 'bold',
+                                  'text-decoration': 'none'
+                                };
                               }
-                              return '';
+                              if (element.localName == 'li') {
+                                return const {
+                                  'font-weight': '400',
+                                  'color': '#C0FEE8',
+                                };
+                              }
+                              // if (element.localName == 'body') {
+                              //   return const {
+                              //     'background-color': '#27466F',
+                              //     'font-weight': '400',
+                              //     'color': '#C0FEE8',
+                              //   };
+                              // }
+                              if (element.classes.contains('ylw')){
+                                return {'color': '#FFEF40'};
+                              } else if (element.classes.contains('greentp')){
+                                return {'color': '#BAFFBC'};
+                              } else if (element.classes.contains('violntp')){
+                                return {'color': '#C090FF'};
+                              } else if (element.classes.contains('brigrn')){
+                                return {'color': '#90FF40'};
+                              } else if (element.classes.contains('cyantp')){
+                                return {'color': '#83FFFF'};
+                              } else if (element.classes.contains('orantp')){
+                                return {
+                                  'font-weight': '900',
+                                  'color': '#FFA265',
+                                };
+                              } else if (element.classes.contains('bluntp')){
+                                return {'color': '#4B89FF'};
+                              } else if (element.classes.contains('yelntp')){
+                                return {'color': '#FCFF7F'};
+                              } else if (element.classes.contains('redntp')){
+                                return {
+                                  'color': '#FF4C4F',
+                                  'font-weight': '900'
+                                };
+                              } else if (element.classes.contains('fix')){
+                                return {
+                                  'color': '#FFF7BC',
+                                  'padding': '6px',
+                                  'background-color': '#27466F',
+                                  'font-family' : '"Lucida Console", "Courier New", monospace',
+                                  'font-size': '12px',
+                                  'font-weight': '600'
+                                };
+                              }
+                              return null;
                             },
+                            textStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                              fontFamily: '"Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+                              fontWeight: FontWeight.w400,
+                              fontSize: 12,
+                              color: ithildin,
+                            ),
                           ),
                         ),
                       )
@@ -183,8 +181,7 @@ class Vocabularies extends StatelessWidget {
   }
 }
 
-const htmlData = r"""
-<h2>What is a Vocabulary?</h2>
+const htmlData = """<h2>What is a Vocabulary?</h2>
 <p>A Vocabulary is a named group of one to many lines containing plain text and 
 {commands} between curly braces. These commands can be references to other 
 vocabularies, inline alternatives (anonymous vocabularies), state variables, 
@@ -208,7 +205,7 @@ vocabularies are ignored by Balderdash! and appear greyed out in the
 <p>Consider this example:</p>
 
 <p class="fix">START<br>
-{^Whoknows} {Person} {Dothis} {sometime}<br><br>
+$lc^Whoknows} ${lc}Person$rc ${lc}Dothis$rc ${lc}sometime${rc}<br><br>
 WHOKNOWS<br>
 Maybe<br>
 if nothing comes between, <br>
@@ -225,8 +222,8 @@ Next week<br>
 One of these days<br>
 <br>
 DOTHIS<br>
-{maybe} {something}<br>
-{surely} {somethingelse}<br>
+${lc}maybe$rc ${lc}something$rc<br>
+${lc}surely$rc ${lc}somethingelse$rc<br>
 <br>
 MAYBE<br>
 could<br>
@@ -234,64 +231,65 @@ might<br>
 <br>
 SURELY<br>
 will<br>
-might{[ instead}<br>
+might${lan} instead$rc<br>
 <br>
 SOMETHING<br>
 start sneezing<br>
 drop by<br>
-{[slap|hit} {Person}<br>
+${lan}slap${p}hit$rc ${lc}Person$rc<br>
 <br>
 SOMETHINGELSE<br>
 wait for {[me|you}<br>
-start playing {[an|the|her} wah-wah guitar{[, and what's next?}</p>
+start playing ${lan}a${p}the${p}her$rc wah-wah guitar${lan}, and what's next?$rc</p>
 
 <h2>Anonymous Vocabularies</h2>
 
-<p>Maybe you noticed these in the example:</p>
+<p>Maybe you noticed these in the example? The colors are just to help keeping those
+pesky <b>${lan}${pp}${rc}</b> brackets apart:</p>
 
-<p class="fix">{[me|you} {[an|the|her} {[, and what's next?}</p>
+<p class="fix">${lan}me${p}you$rc ${lan}a${p}the${p}her$rc $lan, and what's next?$rc</p>
 
 <p>These <b>Anonymous Vocabularies</b> act like inline mini-vocabularies. They start with 
-a curly bracket and a left square bracket <b>{[</b>, close with a right curly bracket <b>}</b>, 
-with alternatives separated by a pipe <b>|</b> character. Balderdash! randomly picks 
-one of the alternatives. When just s single choice is given:</p>
-<p class="fix">{[50% chance of me showing up}</p>
+a curly bracket and a left square bracket <b>${lan}</b>, close with a right curly bracket <b>$rc</b>, 
+with alternatives separated by a pipe <b>$p</b> character. Balderdash! randomly picks one of the alternatives. When just 
+s single choice is given:</p>
+<p class="fix">${lan}50% chance of me showing up$rc</p>
 <p>... it has a 50% chance of being selected. With more than one choice, chances 
 are equally distributed. You can tweak the odds by duplicating words and/or adding empty terms. 
 These are not ignored as in regular Vocabularies, so you can use:</p>
 
-<p class="fix">{[|||Tom|Harry|Harry}</p>
+<p class="fix">${lan}${ppp}Tom${p}Harry${p}Harry$rc</p>
 
-<p><b>|||</b> represents three 'empty strings'; and with one <b>Tom</b> and two <b>Harry</b>'s 
-there's six choices in total, meaning there's a 50% chance this anonymous vocabulary 
-produces <b>''</b> (nothing); one in three of <b>'Harry'</b> and one in six of <b>'Tom'</b>.</p>
+<p><b>${ppp}</b> represents three 'empty strings', so with one <b>Tom</b> 
+and two <b>Harry</b>'s there's six choices in total, meaning there's a 50% chance 
+this anonymous vocabulary produces <b>''</b> (nothing); one in three of 
+<b>'Harry'</b> and one in six of <b>'Tom'</b>.</p>
 
 
 <h2>Text case</h2>
 
-<p>Vocabulary START of the example grammar started with: <b>{^Whoknows}</b>, which 
-referred to vocabulary <b>WHOKNOWS</b>. </p>
-<p>Vocabulary titles are always <b>UPPERCASE</b>, 
-but the case of the <b>{commands}</b> referring to them determines the case of the 
-text they return:</p>
+<p>Vocabulary <b>START</b> of the example grammar started with: <b>{^Whoknows}</b>, 
+which referred to vocabulary <b>WHOKNOWS</b>. </p>
+<p>Vocabulary titles are always <b>UPPERCASE</b>, but the case of the <b>{commands}</b> 
+referring to them determines the case of the text they return:</p>
 
-<p class="fix">{Whoknows}</p>
+<p class="fix">${lc}Whoknows$rc</p>
 <p><b>(Mixed Case)</b> returns the case unchanged: <b>'If we don't fix that stereo set,'</b></p>
-<p class="fix">{whoknows}</p>
+<p class="fix">${lc}whoknows$rc</p>
 <p><b>(all lowercase)</b> returns the text in lowercase: <b>'maybe'</b></p>
 
-<p class="fix">{WHOKNOWS}</p> 
-<p><b>(all UPPERCASE)</b> returns the text in UPPERCASE:<b>'MAYBE'</b></p>
+<p class="fix">${lc}WHOKNOWS$rc</p> 
+<p><b>(all UPPERCASE)</b> returns the text in UPPERCASE: <b>'MAYBE'</b></p>
 
-<p class="fix">{^Whoknows}</p> 
+<p class="fix">${lc}^Whoknows$rc</p> 
 <p><b>(prefixed with ^)</b> returns the text with the first letter capitalised:
 <b>'If nothing comes between,'</b></p>
 
 <p>The example grammar might result in: </p>
-<ul><li>'If nothing comes between, Charles might slap neighbour Todd next week'</li>
-<li>'Maybe neighbour Todd could drop by tomorrow'</li>
-<li>'If we don't fix that stereo set, auntie Bertha might start playing her 
-wah-wah guitar, and what's next?'</li></ul>
+<ul><li><i>If nothing comes between, Charles might slap neighbour Todd next week</i></li>
+<li><i>Maybe neighbour Todd could drop by tomorrow</i></li>
+<li><i>If we don't fix that stereo set, auntie Bertha might start playing her 
+wah-wah guitar, and what's next?</i></li></ul>
 <p>... or some variation thereof.</p>
 
 <h2>Variables</h2>
@@ -303,35 +301,35 @@ or from a {command} (e.g. the output of a vocabulary). Once set, they can be
 recalled as often as needed until Balderdash! reaches the end of the starting 
 vocabulary:</p>
 
-<p class="fix">{var1=some text}</p> 
-<p>stores <b>'some text'</b>  in variable <b>$var1</b>.<p>
+<p class="fix">${lc}var1${as}some text$rc</p> 
+<p>stores <b>'some text'</b>  in variable <b>\$var1</b>.<p>
 
-<p class="fix">{var2:=command}</p>  
-<p>stores the result of <b>command</b> in variable <b>$var2</b>.<p>
+<p class="fix">${lc}var2${av}command$rc</p>  
+<p>stores the result of <b>command</b> in variable <b>\$var2</b>.<p>
 
 <p>Setting state variables does not directly add text to the result. To add the 
 content of a variable to the result, put it between curly braces 
 prefixed with a dollar sign:<p>
 
-<p class="fix">{$var1} {$var2}</p>
+<p class="fix">$lc${dl}var1$rc $lc${dl}var2$rc</p>
 <p><i><b>after</b></i> you have set them.</p>
 
 <h3>Pointers</h3>
 
 <p>If a variable is read prefixed by two dollar signs:</p>
-<p class="fix">{$$var1}</p>
+<p class="fix">$lc$dl${dl}var1$rc</p>
 <p>(a <b>pointer</b>) it's interpreted as a <b>command</b> referring to a 
 <b>Vocabulary</b>. This allows creating interesting dynamic behaviour, but be 
 warned that it can make things <i>really</i> complex  <i>really</i> fast.</p>
 <p>To give a very basic example:</p>
 
 <p class="fix">POINTERDEMO<br>
-{Fixpplwords}{$Name} is my {$person}<br>
-{Fixpplwords}{$$Name} is {$$person}<br>
+${lc}Fixpplwords$rc$lc${dl}Name$rc is my $lc${dl}person$rc<br>
+${lc}Fixpplwords$rc$lc$dl${dl}Name$rc is $lc$dl${dl}person$rc<br>
 <br>
 FIXPPLWORDS<br>
-{Name:=Femname}{Person:=Femperson}<br>
-{Name:=Malename}{Person:=Maleperson}<br>
+${lc}Name${av}Femname$rc${lc}Person${av}Femperson}<br>
+${lc}Name${av}Malename$rc${lc}Person${av}Maleperson}<br>
 <br>
 FEMNAME<br>
 Petra<br>
@@ -360,7 +358,7 @@ Giovanni<br>
 JOHN<br>
 Johnny<br>
 Jan<br>
-Yannis Papadopoulos<br>
+Sjon 'the Knife'<br>
 <br>
 ROBERT<br>
 Roberto<br>
@@ -381,7 +379,7 @@ actually called Ranucle<br>
 my German 'Onkel'<br>
 <br>
 NEPHEW<br>
-my most untrustworthy familymember<br>
+actually quite a good guitar-player<br>
 my best friend<br>
 kind of a German 'Dieter'<br>
 <br>
@@ -411,20 +409,21 @@ a true "Grammy Award"
 </p>
 
 <p>The first line in <b>POINTERDEMO</b> could produce:</p>
-<p><b>Giovanni is my grandpa<br>
-Eline is my niece</b> (etcetera)</p>
+<ul>
+<li><b>Giovanni is my grandpa</b></li>
+<li><b>Eline is my niece</b> ... etcetera.</li></ul>
 <p>while the second line might give:</p>
-<p><b>Yannis Papadopoulos is my most untrustworthy familymember<br>
-Rob is my blunderbuss-wielding old-timer grandpa<br>
-Petronella is really something else<br>
-Klapsie is my mother's neighbour lady</b> (etcetera)</p>
+<ul><li><b>Sjon 'the Knife' is actually quite a good guitar-player</b></li>
+<li><b>Rob is my blunderbuss-wielding old-timer grandpa</b></li>
+<li><b>Petronella is really something else</b></li>
+<li><b>Klapsie is my mother's neighbour lady</b> ... etcetera.</li></ul>
 
 <p>Just sayin' ... you best understand the above before you start messing around with
 it. And this is just one level of pointers: there's nothing stopping you from
 using them in, say, <b>MALENAME</b> - but let me stop here, before people get
-funny ideas about warping reality or messing with the Noosphere, and we best leave 
-that sort of thing to the good folk at the <a href="https://scp-wiki.wikidot.com/">
-SCP wiki</a>, shall we?</p>
+funny ideas about warping reality or messing with the Noosphere, which is best 
+left to the good folk at the <a href="https://scp-wiki.wikidot.com/">
+SCP wiki</a>.</p>
 
 <p>It's probably best to set all variables together in a dedicated one-line 
 vocabulary titled <b>{SETVARIABLES}</b> (set it to the 'set variables' category), 
@@ -434,72 +433,95 @@ added to the result! I once spent way too much time figuring out where some pesk
 extra whitespace came from, and finally found that it was hiding between variable 
 assignments:</p>
 
-<p class="fix">{var1:=schnoll}{var2:=sloepp}{var3:=toet} {var4:=brol}</p>
+<p class="fix">${lc}var1${av}bon$rc${lc}var2${av}bam$rc${lc}var3${av}ips$rc ${lc}var4${av}kip$rc</p>
 
 <p>Note that case formatting also works for variables; it is applied when you 
 read them, eg.</p>
 
-<p class="fix">{$var} {$VAR} {$Var} {$^var}</p>
+<p class="fix">$lc${dl}var$rc $lc${dl}VAR$rc $lc${dl}Var$rc $lc$dl^var$rc</p>
 
 <p> - see above under <b>Text case</b> for the details.</p>
 
 <h2>Numbers and repetitions</h2>
 
 <p>Balderdash! will replace this command:</p>
-<p class="fix">{#number1-number2}</p>
-<p><b>(whole numbers only!)</b> with a random whole number between <b>number1</b> 
-and <b>number2</b> (inclusive).</p>
+<p class="fix">$lc$spr#$cs${spg}number1$cs$spr-$cs${spb}number1$cs$rc</p>
+<p><b>(whole numbers only!)</b> with a random whole number between $spg<b>number1</b>$cs 
+and $spb<b>number2</b>$cs (inclusive).</p>
 
 <p>When processing a vocabulary, Balderdash! randomly picks one of the lines. 
 However, you can influence the odds a line is selected by prefixing the line 
-with a weight factor <b>#number#</b> (a whole number), for instance:</p>
+with a weight factor <b>$spr#${cs}number$spr#$cs</b> (a whole number), for instance:</p>
 
 <p class="fix">...<br>
 random chance being picked<br>
-#2#twice as {often}<br>
-#7#seven times as {[likely|often}<br>
+$spr#${cs}${spg}2$cs$spr#${cs}twice as ${lc}often$rc<br>
+$spr#${cs}${spg}7$cs$spr#${cs}seven times as ${lan}likely$spr|${cs}often$rc<br>
 ...</p>
 
 <p>This goes for all lines regardless their content.</p>
 
 <p>You can have Balderdash! evaluate a command multiple times using this format:</p>
-<p class="fix">{command#number1-number2}</p>
+<p class="fix">$spc{${cs}command$cs$spr#$cs${spg}number1$cs$spr-$cs${spb}number2$cs$spc}$cs</p>
 <p><b>(whole numbers only!)</b> which will repeat it a random whole number between 
-<b>number1</b> and <b>number2</b> (inclusive) times. This is especially useful 
+$spg<b>number1</b>$cs and $spb<b>number2</b>$cs (inclusive) times. This is especially useful 
 in starting (bootstrap) vocabularies.</p>
 
 
-<h2>Special characters & strftime</h2>
+<h2>HTML, special characters & strftime</h2>
+<p>You can use most (or maybe all) regular <b>HTML</b> in your vocabularies to make 
+text <b>bold</b> or <i>italic</i> or <b>${spc}ha$cs${spr}v${cs}i${spg}n$cs${spc}g$cs 
+${spr}fu$cs${spc}n$cs${spg}ny$cs ${spg}c$cs${spr}o${cs}l${spc}o$cs${spg}u$cs${spr}r$cs${spc}s$cs</b>
+(see <a href='https://demo.fwfh.dev/supported/tags.html'>here</a> for the full list
+of supported html elements.</p>
+
+
 <p>A newline (return / linefeed), curly brackets {} and NULL a.k.a. 'nothing' can 
 be included in a Vocabulary like this:</p>
 
-<p class="fix">{\n}</p>
-<p> = newline (return / linefeed)</p>
-<p class="fix">{\L} {\R}</p>
+<p class="fix">$spc{$cs\\n$spc}$cs</p>
+<p> = newline (return / linefeed). This is converted into a $br HTML tag for display,
+so you can use either one.</p>
+<p class="fix">$spc{$cs\\L$spc}$cs $spc{$cs\\R$spc}$cs</p>
 <p> = left & right curly braces</p>
-<p class="fix">{\0}</p> 
+<p class="fix">$spc{$cs\\0$spc}$cs</p> 
 <p> = nothing, empty string</p>
 
 <p>Last but not least, we pay homage to the good old <b>strftime</b> datetime format 
 that was so harshly deprecated in php 8.1.<br>
 Hah! With that, Balderdash! may be the only IOS app that supports it.
-Use the simple <b>{@strftime format}</b> as in, for instance,</p>
+Use the simple <b>$lc$spc@${cs}strftime format$rc</b> as in, for instance,</p>
 
-<p class="fix">{@%Y}</p>
-<p>to return the current date & time; and together with a numerical range
-<b>{@strftime format|number1|number2}</b> e.g.</p>
-<p class="fix">{@%H:%M:%S|0|86400}</p> 
-<p>(... whole numbers only!) if you want a timestamp between <b>number1</b> and 
-<b>number2</b> seconds ago (in this case, between "now" and one day ago), of 
+<p class="fix">$lc$spc@$cs%Y$rc</p>
+<p>to return the current date & time; or, together with a numerical range
+<b>$lc$spc@${cs}strftime format$spr|$cs${spg}number1$cs$spr|$cs${spb}number1$cs$rc</b> e.g.</p>
+<p class="fix">$lc$spc@${cs}%H:%M:%S$spr|$cs${spg}0$cs$spr|$cs${spb}86400$cs$rc</p>
+
+
+<p>(... whole numbers only!) if you want a timestamp between $spg<b>number1</b>$cs 
+and $spb<b>number2</b>$cs seconds ago (in this case, between "now" and one day ago), of 
 which original Nonsense author James Baughn says it is <i>'actually more useful 
 than it might first appear…'</i> though I haven't been able to figure out what 
 that was all about.</p> 
 <p>A <b>strftime format cheat sheet</b> is available on
 <a href="https://strftime.org/"> strftime.org</a>.</p>   
+
   """;
 
 
-final balderDashFont = GoogleFonts.inter().fontFamily;
-final vocabFont = GoogleFonts.robotoMono().fontFamily;
-
-final staticAnchorKey = GlobalKey();
+const String spg = "<span class='brigrn'>";
+const String spr = "<span class='redntp'>";
+const String spc = "<span class='cyantp'>";
+const String spb = "<span class='bluntp'>";
+const String cs = "</span>";
+const String lc = "$spc{$cs";
+const String lb = "$spg[$cs";
+const String lan = "$lc$lb";
+const String rc = "$spc}$cs";
+const String p = "$spr|$cs";
+const String pp = "$spr||$cs";
+const String ppp = "$spr|||$cs";
+const String as = "$spr=$cs";
+const String av = "$spr:=$cs";
+const String dl = "$spg\$$cs";
+const String br = "&lt;br&gt;";

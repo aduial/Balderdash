@@ -14,7 +14,7 @@ import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
 
 class RunPage extends StatefulWidget {
@@ -441,6 +441,8 @@ class _RunPageState extends State<RunPage> {
     }
   }
 
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -533,107 +535,80 @@ class _RunPageState extends State<RunPage> {
                               width: 1,
                               // color: mountainBlue,
                             ),
-                            borderRadius: BorderRadius.circular(40 * scaling),
+                            borderRadius: BorderRadius.circular(30 * scaling),
                             // color: offWhite
                           ),
                           width: double.infinity,
-                          alignment: Alignment.topCenter,
+                          alignment: Alignment.topLeft,
                           child: Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
-                                  20 * scaling, 20, 20 * scaling, 30 * scaling),
+                                  14 * scaling, 16 * scaling, 14 * scaling, 16 * scaling),
                               child: Scrollbar(
                                 child: SingleChildScrollView(
-                                  child: Html(
-                                      key: Key(htmlData),
-                                    anchorKey: staticAnchorKey,
-                                    data: htmlData,
-                                    style: {
-                                      "body": Style(
-                                        fontFamily: balderDashFont,
-                                        margin: Margins.zero,
-                                        padding: HtmlPaddings.zero,
-                                        color: ithildin,
-                                        fontSize: FontSize.medium,
-                                        lineHeight: const LineHeight(1.5),
-                                        ),
-                                      "p": Style(
-                                        color: ithildin,
-                                        fontSize: FontSize.medium,
-                                        lineHeight: const LineHeight(1.5),
-                                      ),
-                                      "ul": Style(
-                                        color: laurelin,
-                                        fontSize: FontSize.medium,
-                                        lineHeight: const LineHeight(1.5),
-                                      ),
-                                      "a": Style(
-                                        color: derivedFormColour,
-                                        fontSize: FontSize.medium,
-                                        fontWeight: FontWeight(600),
-                                        textDecoration: TextDecoration.none,
-                                        lineHeight: const LineHeight(1.5),
-                                      ),
-                                      "table": Style(
-                                        backgroundColor: const Color.fromARGB(0x50, 0xee, 0xee, 0xee),
-                                      ),
-                                      "th": Style(
-                                        padding: HtmlPaddings.all(6),
-                                        backgroundColor: Colors.grey,
-                                      ),
-                                      "td": Style(
-                                        padding: HtmlPaddings.all(6),
-                                        border: const Border(bottom: BorderSide(color: Colors.grey)),
-                                      ),
-                                      'h5': Style(maxLines: 2, textOverflow: TextOverflow.ellipsis),
-                                      "span.ylw": Style(
-                                        color: Colors.yellowAccent,
-                                        fontWeight: FontWeight.bold,
-                                      ),"span.greentp": Style(
-                                        color: greenNotePaperColour,
-                                        fontWeight: FontWeight.w700,
-                                      ),"span.violntp": Style(
-                                        color: violetNotePaperColour,
-                                        fontWeight: FontWeight.w800,
-                                      ),"span.brigrn": Style(
-                                        color: brightGreen,
-                                        fontWeight: FontWeight.bold,
-                                      ),"span.cyantp": Style(
-                                        color: cyanNotePaperColour,
-                                        fontWeight: FontWeight.bold,
-                                      ),"span.orantp": Style(
-                                        color: orangeNotePaperColour,
-                                        fontWeight: FontWeight.bold,
-                                      ),"span.bluntp": Style(
-                                        color: blueNotePaperColour,
-                                        fontWeight: FontWeight.bold,
-                                      ),"span.yelntp": Style(
-                                        color: yellowNotePaperColour,
-                                        fontWeight: FontWeight.bold,
-                                      ),"span.redntp": Style(
-                                        color: redNotePaperColour,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                      "p.fix": Style(
-                                        padding: HtmlPaddings.all(6),
-                                        fontFamily: vocabFont,
-                                        color: laurelin,
-                                        fontSize: FontSize(15, Unit.px),
-                                        backgroundColor: const Color.fromARGB(0x50, 0x40, 0x80, 0xff),
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                  child: HtmlWidget(htmlData,
+                                    key: Key(htmlData),
+                                    onTapUrl: (url) {
+                                      _launchInBrowser(Uri.parse(url));
+                                      return true;
                                     },
-                                    onLinkTap: (url, _, __) {
-                                      _launchInBrowser(Uri.parse(url!));
-                                    },
-                                    onCssParseError: (css, messages) {
-                                      debugPrint("css that errored: $css");
-                                      debugPrint("error messages:");
-                                      for (var element in messages) {
-                                        debugPrint(element.toString());
+                                    customStylesBuilder: (element) {
+                                      if (element.localName == 'a') {
+                                        return const {
+                                          'color': '#40EFC4',
+                                          'font-weight': 'bold',
+                                          'text-decoration': 'none'
+                                        };
                                       }
-                                      return '';
+                                      if (element.localName == 'li') {
+                                        return const {
+                                          'font-weight': '400',
+                                          'color': '#C0FEE8',
+                                        };
+                                      }
+                                      if (element.classes.contains('ylw')){
+                                        return {'color': '#FFEF40'};
+                                      } else if (element.classes.contains('greentp')){
+                                        return {'color': '#BAFFBC'};
+                                      } else if (element.classes.contains('violntp')){
+                                        return {'color': '#C090FF'};
+                                      } else if (element.classes.contains('brigrn')){
+                                        return {'color': '#90FF40'};
+                                      } else if (element.classes.contains('cyantp')){
+                                        return {'color': '#83FFFF'};
+                                      } else if (element.classes.contains('orantp')){
+                                        return {
+                                          'font-weight': '900',
+                                          'color': '#FFA265',
+                                        };
+                                      } else if (element.classes.contains('bluntp')){
+                                        return {'color': '#4B89FF'};
+                                      } else if (element.classes.contains('yelntp')){
+                                        return {'color': '#FCFF7F'};
+                                      } else if (element.classes.contains('redntp')){
+                                        return {
+                                          'color': '#FF4C4F',
+                                          'font-weight': '900'
+                                        };
+                                      } else if (element.classes.contains('fix')){
+                                        return {
+                                          'color': '#FFF7BC',
+                                          'padding': '6px',
+                                          'background-color': '#27466F',
+                                          'font-family' : '"Lucida Console", "Courier New", monospace',
+                                          'font-size': '12px',
+                                          'font-weight': '600'
+                                        };
+                                      }
+                                      return null;
                                     },
+                                    textStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                                      fontFamily: '"Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 13,
+                                      color: ithildin,
+                                    ),
                                   ),
+
                                 ),
                               )
                           ),

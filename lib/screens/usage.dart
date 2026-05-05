@@ -1,10 +1,9 @@
 import 'package:balderdash/config/colours.dart';
 import 'package:balderdash/config/config.dart';
-// import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
 class Usage extends StatelessWidget {
   const Usage({super.key});
@@ -98,121 +97,46 @@ class Usage extends StatelessWidget {
                           20 * scaling, 0, 20 * scaling, 30 * scaling),
                       child: Scrollbar(
                         child: SingleChildScrollView(
-                          child: Html(
-                            anchorKey: staticAnchorKey,
-                            data: htmlData,
-                            style: {
-                              "p": Style(
-                                color: ithildin,
-                                fontSize: FontSize.medium,
-                                lineHeight: const LineHeight(1.5),
-                              ),
-                              "a": Style(
-                                color: derivedFormColour,
-                                fontSize: FontSize.medium,
-                                fontWeight: FontWeight(600),
-                                textDecoration: TextDecoration.none,
-                                lineHeight: const LineHeight(1.5),
-                              ),
-                              "body": Style(
-                                fontFamily: balderDashFont,
-                                margin: Margins.zero,
-                                padding: HtmlPaddings.zero,
-                                color: ithildin,
-                                fontSize: FontSize.medium,
-                                lineHeight: const LineHeight(1.0),
-                              ),
-                              "table": Style(
-                                backgroundColor: const Color.fromARGB(0x50, 0xee, 0xee, 0xee),
-                              ),
-                              "th": Style(
-                                padding: HtmlPaddings.all(6),
-                                backgroundColor: Colors.grey,
-                              ),
-                              "td": Style(
-                                padding: HtmlPaddings.all(6),
-                                border: const Border(bottom: BorderSide(color: Colors.grey)),
-                              ),
-                              'h5': Style(maxLines: 2, textOverflow: TextOverflow.ellipsis),
-                              "span.ylw": Style(
-                                color: Colors.yellowAccent,
-                                fontWeight: FontWeight.bold,
-                              ),"span.greentp": Style(
-                                color: greenNotePaperColour,
-                                fontWeight: FontWeight.w700,
-                              ),"span.violntp": Style(
-                                color: violetNotePaperColour,
-                                fontWeight: FontWeight.w800,
-                              ),"span.brigrn": Style(
-                                color: brightGreen,
-                                fontWeight: FontWeight.bold,
-                              ),"span.cyantp": Style(
-                                color: cyanNotePaperColour,
-                                fontWeight: FontWeight.bold,
-                              ),"span.orantp": Style(
-                                color: orangeNotePaperColour,
-                                fontWeight: FontWeight.bold,
-                              ),"span.bluntp": Style(
-                                color: blueNotePaperColour,
-                                fontWeight: FontWeight.bold,
-                              ),"span.yelntp": Style(
-                                color: yellowNotePaperColour,
-                                fontWeight: FontWeight.bold,
-                              ),"span.redntp": Style(
-                                color: redNotePaperColour,
-                                fontWeight: FontWeight.w700,
-                              ),
+                          child: HtmlWidget(htmlData,
+                            key: Key(htmlData),
+                            onTapUrl: (url) {
+                              _launchInBrowser(Uri.parse(url));
+                              return true;
                             },
-                            extensions: [
-                              TagWrapExtension(
-                                  tagsToWrap: {"table"},
-                                  builder: (child) {
-                                    return SingleChildScrollView(
-                                      scrollDirection: Axis.horizontal,
-                                      child: child,
-                                    );
-                                  }),
-                              TagExtension.inline(
-                                tagsToExtend: {"bird"},
-                                child: const TextSpan(text: "🐦"),
-                              ),
-                              TagExtension(
-                                tagsToExtend: {"flutter"},
-                                builder: (context) => CssBoxWidget(
-                                  style: context.styledElement!.style,
-                                  child: FlutterLogo(
-                                    style: context.attributes['horizontal'] != null
-                                        ? FlutterLogoStyle.horizontal
-                                        : FlutterLogoStyle.markOnly,
-                                    textColor: context.styledElement!.style.color!,
-                                    size: context.styledElement!.style.fontSize!.value,
-                                  ),
-                                ),
-                              ),
-                              ImageExtension(
-                                handleAssetImages: false,
-                                handleDataImages: false,
-                                networkDomains: {"flutter.dev"},
-                                child: const FlutterLogo(size: 36),
-                              ),
-                              ImageExtension(
-                                handleAssetImages: false,
-                                handleDataImages: false,
-                                networkDomains: {"mydomain.com"},
-                                networkHeaders: {"Custom-Header": "some-value"},
-                              ),
-                            ],
-                            onLinkTap: (url, _, __) {
-                              _launchInBrowser(Uri.parse(url!));
-                            },
-                            onCssParseError: (css, messages) {
-                              debugPrint("css that errored: $css");
-                              debugPrint("error messages:");
-                              for (var element in messages) {
-                                debugPrint(element.toString());
+                            customStylesBuilder: (element) {
+                              if (element.localName == 'a') {
+                                return const {
+                                  'color': '#40EFC4',
+                                  'font-weight': 'bold',
+                                  'text-decoration': 'none'
+                                };
                               }
-                              return '';
+                              if (element.classes.contains('ylw')){
+                                return {'color': '#FFEF40'};
+                              } else if (element.classes.contains('greentp')){
+                                return {'color': '#BAFFBC'};
+                              } else if (element.classes.contains('violntp')){
+                                return {'color': '#C090FF'};
+                              } else if (element.classes.contains('brigrn')){
+                                return {'color': '#97FFCD'};
+                              } else if (element.classes.contains('cyantp')){
+                                return {'color': '#83FFFF'};
+                              } else if (element.classes.contains('orantp')){
+                                return {'color': '#FFA265'};
+                              } else if (element.classes.contains('bluntp')){
+                                return {'color': '#78B1FF'};
+                              } else if (element.classes.contains('yelntp')){
+                                return {'color': '#FCFF7F'};
+                              } else if (element.classes.contains('redntp')){
+                                return {'color': '#FF7F7F'};
+                              }
+                              return null;
                             },
+                            textStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                              fontFamily: balderDashFont,
+                              fontWeight: FontWeight.w300,
+                              color: ithildin,
+                            ),
                           ),
                         ),
                       )
@@ -346,6 +270,5 @@ const htmlData = r"""
       
   """;
 
-
-final balderDashFont = GoogleFonts.inter().fontFamily;
-final staticAnchorKey = GlobalKey();
+final balderDashFont = GoogleFonts.merriweatherSans().fontFamily;
+final vocabFont = GoogleFonts.robotoMono().fontFamily;
