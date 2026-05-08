@@ -71,6 +71,9 @@ class VocabUtils {
   }
 
   static String checkLine(String line) {
+    print(line);
+    // HTML tags
+    line = line.replaceAll(RegExp(r'<.*?>'), '');
     // weighting factor
     line = line.replaceAll(RegExp(r'^#\d+#'), '');
     // rnd number ranges
