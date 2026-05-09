@@ -113,6 +113,12 @@ class How extends StatelessWidget {
                                   'text-decoration': 'none'
                                 };
                               }
+                              if (element.localName == 'li') {
+                                return const {
+                                  'font-weight': '400',
+                                  'color': '#C0FEE8',
+                                };
+                              }
                               if (element.classes.contains('ylw')){
                                 return {'color': '#FFEF40'};
                               } else if (element.classes.contains('greentp')){
@@ -120,23 +126,39 @@ class How extends StatelessWidget {
                               } else if (element.classes.contains('violntp')){
                                 return {'color': '#C090FF'};
                               } else if (element.classes.contains('brigrn')){
-                                return {'color': '#97FFCD'};
+                                return {'color': '#90FF40'};
                               } else if (element.classes.contains('cyantp')){
                                 return {'color': '#83FFFF'};
                               } else if (element.classes.contains('orantp')){
-                                return {'color': '#FFA265'};
+                                return {
+                                  'font-weight': '900',
+                                  'color': '#FFA265',
+                                };
                               } else if (element.classes.contains('bluntp')){
-                                return {'color': '#78B1FF'};
+                                return {'color': '#4B89FF'};
                               } else if (element.classes.contains('yelntp')){
-                                return {'color': '#FCFF7F'};
+                                return {'color': '#FFEF40'};
                               } else if (element.classes.contains('redntp')){
-                                return {'color': '#FF7F7F'};
+                                return {
+                                  'color': '#FF4C4F',
+                                  'font-weight': '900'
+                                };
+                              } else if (element.classes.contains('fix')){
+                                return {
+                                  'color': '#FFF7BC',
+                                  'padding': '6px',
+                                  'background-color': '#27466F',
+                                  'font-family' : '"Lucida Console", "Courier New", monospace',
+                                  'font-size': '12px',
+                                  'font-weight': '600'
+                                };
                               }
                               return null;
                             },
                             textStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                              fontFamily: balderDashFont,
-                              fontWeight: FontWeight.w300,
+                              fontFamily: '"Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+                              fontWeight: FontWeight.w400,
+                              fontSize: 12,
                               color: ithildin,
                             ),
                           ),

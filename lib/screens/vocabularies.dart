@@ -119,13 +119,6 @@ class Vocabularies extends StatelessWidget {
                                   'color': '#C0FEE8',
                                 };
                               }
-                              // if (element.localName == 'body') {
-                              //   return const {
-                              //     'background-color': '#27466F',
-                              //     'font-weight': '400',
-                              //     'color': '#C0FEE8',
-                              //   };
-                              // }
                               if (element.classes.contains('ylw')){
                                 return {'color': '#FFEF40'};
                               } else if (element.classes.contains('greentp')){
@@ -144,7 +137,7 @@ class Vocabularies extends StatelessWidget {
                               } else if (element.classes.contains('bluntp')){
                                 return {'color': '#4B89FF'};
                               } else if (element.classes.contains('yelntp')){
-                                return {'color': '#FCFF7F'};
+                                return {'color': '#FFEF40'};
                               } else if (element.classes.contains('redntp')){
                                 return {
                                   'color': '#FF4C4F',
@@ -158,6 +151,14 @@ class Vocabularies extends StatelessWidget {
                                   'font-family' : '"Lucida Console", "Courier New", monospace',
                                   'font-size': '12px',
                                   'font-weight': '600'
+                                };
+                              } else if (element.classes.contains('title')){
+                                return {
+                                  'color': '#FFFFFF',
+                                  // 'padding': '6px',
+                                  // 'font-family' : '"Lucida Console", "Courier New", monospace',
+                                  // 'font-size': '12px',
+                                  'font-weight': '800'
                                 };
                               }
                               return null;
@@ -200,47 +201,67 @@ vocabularies are ignored by Balderdash! and appear greyed out in the
 'Run Balderdash! and vocabulary editor lists.<br></li>
 </ul>
 
-<h2>Example Vocabulary</h2>
+<h2>Example Vocabularies</h2>
 
-<p>Consider this example:</p>
+<p>Take a look at these example vocabularies:</p>
 
-<p class="fix">START<br>
-$lc^Whoknows} ${lc}Person$rc ${lc}Dothis$rc ${lc}sometime${rc}<br><br>
-WHOKNOWS<br>
+<p class='fix'><span class='title'>START</span><br>
+$lc^Whoknows$rc ${lc}Person$rc ${lc}Dothis$rc ${lc}sometime${rc}</p>
+
+<p class='fix'><span class='title'>WHOKNOWS</span><br>
 Maybe<br>
 if nothing comes between, <br>
-If we don't fix that stereo set, <br>
-<br>
-PERSON<br>
+If we don't fix that stereo set,</p>
+
+<p class='fix'><span class='title'>PERSON</span><br>
 Charles<br>
 neighbour Todd<br>
-auntie Bertha<br>
-<br>
-SOMETIME<br>
+auntie Bertha</p>
+
+<p class='fix'><span class='title'>SOMETIME</span><br>
 Tomorrow<br>
 Next week<br>
-One of these days<br>
-<br>
-DOTHIS<br>
+One of these days</p>
+
+<p class='fix'><span class='title'>DOTHIS</span><br>
 ${lc}maybe$rc ${lc}something$rc<br>
-${lc}surely$rc ${lc}somethingelse$rc<br>
-<br>
-MAYBE<br>
+${lc}surely$rc ${lc}somethingelse$rc</p>
+
+<p class='fix'><span class='title'>SOMETIME</span><br>
+Tomorrow<br>
+Next week<br>
+One of these days</p>
+
+<p class='fix'><span class='title'>MAYBE</span><br>
 could<br>
-might<br>
-<br>
-SURELY<br>
+might</p>
+
+<p class='fix'><span class='title'>SURELY</span><br>
 will<br>
-might${lan} instead$rc<br>
-<br>
-SOMETHING<br>
+might${lan} instead$rc</p>
+
+<p class='fix'><span class='title'>SOMETHING</span><br>
 start sneezing<br>
 drop by<br>
-${lan}slap${p}hit$rc ${lc}Person$rc<br>
-<br>
-SOMETHINGELSE<br>
+${lan}slap${p}hit$rc ${lc}Person$rc</p>
+
+<p class='fix'><span class='title'>SOMETHINGELSE</span><br>
 wait for {[me|you}<br>
 start playing ${lan}a${p}the${p}her$rc wah-wah guitar${lan}, and what's next?$rc</p>
+
+<h2>Regular Vocabulary commands</h2>
+
+<p>The first command in the <span class='title'>START</span> vocabulary is <b>$lc^Whoknows$rc</b>:
+a word put between curly brackets refers to a vocabulary with that title (for the <b>^</b>
+see <b>Text Case</b> below). If that vocabulary does not exist, Balderdash will throw
+an error. Text <b>not</b> between curly brackets (either HTML or plain text) is added
+to the result of the vocabulary when Balderdash works its way through it.</p>
+<p>You can refer to any vocabulary from the current vocabulary's own project or
+from the <b>Library</b>. You can even refer to the vocabulary itself, but make sure
+that that's not the only possible line that Balderdash can choose, because this 
+will quickly crash the app - please read the <i>common errors</i> paragraph in the 
+<b>"It doesn't work!"</b> help screen before you try recursive (self-referring) 
+calls.</p>
 
 <h2>Anonymous Vocabularies</h2>
 

@@ -712,6 +712,25 @@ class DatabaseHelper {
     return vocabularyViews;
   }
 
+  // get VocabularyViews containing a string
+  Future<List<VocabularyView>> getVocabularyViewsContaining(String searchTerm) async {
+    final db = await database;
+    final List<Map<String, dynamic>> results = await db
+        .rawQuery("SELECT v.id, v.categoryId, c.name AS category, v.projectId, "
+        "p.title AS project, v.title, v.content, v.comment, v.useThis "
+        "FROM $_vocabularyTableName v "
+        "JOIN $_projectTableName p ON v.projectId = p.id "
+        "JOIN $_categoryTableName c ON v.categoryId = c.id "
+        "WHERE v.content like '%$searchTerm%' "
+        "ORDER BY v.projectId asc, v.title asc; ");
+    List<VocabularyView> vocabularyViews = [];
+    for (var result in results) {
+      VocabularyView vocabularyView = VocabularyView.fromMap(result);
+      vocabularyViews.add(vocabularyView);
+    }
+    return vocabularyViews;
+  }
+
   Future<List<VocabularyView>> getVocabularyViewList(Set<int> usingSet) async {
     List<VocabularyView> vocabularyViews = [];
     for (int id in usingSet) {

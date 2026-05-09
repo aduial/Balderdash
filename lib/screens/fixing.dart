@@ -111,6 +111,12 @@ class Fixing extends StatelessWidget {
                                   'text-decoration': 'none'
                                 };
                               }
+                              if (element.localName == 'li') {
+                                return const {
+                                  'font-weight': '400',
+                                  'color': '#C0FEE8',
+                                };
+                              }
                               if (element.classes.contains('ylw')){
                                 return {'color': '#FFEF40'};
                               } else if (element.classes.contains('greentp')){
@@ -118,23 +124,39 @@ class Fixing extends StatelessWidget {
                               } else if (element.classes.contains('violntp')){
                                 return {'color': '#C090FF'};
                               } else if (element.classes.contains('brigrn')){
-                                return {'color': '#97FFCD'};
+                                return {'color': '#90FF40'};
                               } else if (element.classes.contains('cyantp')){
                                 return {'color': '#83FFFF'};
                               } else if (element.classes.contains('orantp')){
-                                return {'color': '#FFA265'};
+                                return {
+                                  'font-weight': '900',
+                                  'color': '#FFA265',
+                                };
                               } else if (element.classes.contains('bluntp')){
-                                return {'color': '#78B1FF'};
+                                return {'color': '#4B89FF'};
                               } else if (element.classes.contains('yelntp')){
-                                return {'color': '#FCFF7F'};
+                                return {'color': '#FFEF40'};
                               } else if (element.classes.contains('redntp')){
-                                return {'color': '#FF7F7F'};
+                                return {
+                                  'color': '#FF4C4F',
+                                  'font-weight': '900'
+                                };
+                              } else if (element.classes.contains('fix')){
+                                return {
+                                  'color': '#FFF7BC',
+                                  'padding': '6px',
+                                  'background-color': '#27466F',
+                                  'font-family' : '"Lucida Console", "Courier New", monospace',
+                                  'font-size': '12px',
+                                  'font-weight': '600'
+                                };
                               }
                               return null;
                             },
                             textStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                              fontFamily: balderDashFont,
-                              fontWeight: FontWeight.w300,
+                              fontFamily: '"Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+                              fontWeight: FontWeight.w400,
+                              fontSize: 12,
                               color: ithildin,
                             ),
                           ),
@@ -195,6 +217,38 @@ const htmlData = r"""
 
       <h3>Common errors</h3>
       <ul>
+      <li><b>Short-circuiting the app</b> It's perfectly OK to refer to the current 
+      vocabulary, but make sure that the app can exit the loop. For instance, say 
+      you have a vocabulary called <b>MYQUALITIES</b> and would like Balderdash to
+      occasionally add more than just one to the result. You can do that like this:
+      <p class="fix"><b>MYQUALITIES</b><br>
+      <span class="yelntp">{Myqualities} and</span><br>
+      Polyglot<br>
+      Polymath<br>
+      Humble<br>
+      IQ > 170<br>
+      Smashingly beautiful<br>
+      Caring<br>
+      Daring<br>
+      Best singing voice of the country<br>
+      Trustworthy
+      </p> 
+      This is safe, because Balderdash randomly picks a line, so the chance that
+      it will loop here is 10% (for 1 recursive call in 10 lines) - there's 90% 
+      chance that the loop exits every time it recurs - there is a clear exit condition
+      for the loop to end. However, if you do this:
+      <p class="fix"><b>BETTERNOT</b><br>
+      <span class="yelntp">{Betternot} and</span><br>
+      <span class="yelntp">{Betternot}, also</span><br><br><br>
+      </p> 
+      ... there's no exit condition. Balderdash will enter a loop which shows as
+      if nothing happens - no text appears, nothing. If this happens, tap the Back
+      button top left as quick as possible, save your vocabulary and restart 
+      Balderdash. That's because this looping fills up the memory of your device, 
+      and it will crash the app after a short time. We're working on a way to trap
+      this error, but it's best to avoid it nonetheless: put at least the same
+      amount of regular lines in a vocabulary as recursive calls - also consider
+      the <b>#3#</b> repetition markers! </li>
       <li><b>Using out-of-scope vocabularies</b> (from another project) - remember 
       that you can only access vocabularies in the same project and those in the 
       Library. Note that Library vocabularies can <i>only</i> access other 

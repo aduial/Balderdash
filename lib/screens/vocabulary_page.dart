@@ -35,8 +35,9 @@ class _VocabularyPageState extends State<VocabularyPage> {
   final _prjDDMoveKey = GlobalKey<DropdownSearchState<Project>>();
 
   final ScrollController _scrollController = ScrollController();
-  final TextEditingController searchController =
-      TextEditingController(text: '');
+  final TextEditingController searchController = TextEditingController(
+    text: '',
+  );
 
   late Future<List<Project>> _projects;
   late Future<List<Category>> _categories;
@@ -45,8 +46,9 @@ class _VocabularyPageState extends State<VocabularyPage> {
   final batchList = <int>[];
   Set<int> usingSet = {};
 
-  String subTitle = BootstrapSubTitle;
+  String subTitle = bootstrapSubTitle;
   String searchTitle = '';
+  String searchTerm = '';
   int projectId = 1;
   int searchInProjectId = 1;
   int usingProjectId = 1;
@@ -59,13 +61,13 @@ class _VocabularyPageState extends State<VocabularyPage> {
   bool initComplete = false;
   bool usageSearchMode = false;
   bool usingSearchMode = false;
+  bool wordSearchMode = false;
   bool batchMode = false;
   int moveToProject = 0;
   String vocLine = '';
   String previousLine = '';
 
   Map<int, bool> vvErrorState = {};
-
 
   Future<int> _getVocabularyListLength() async {
     return await _vocabularyViews.then((value) {
@@ -110,13 +112,16 @@ class _VocabularyPageState extends State<VocabularyPage> {
     setState(() {
       if (doFetch) {
         _vocabularyViews = DatabaseHelper().getFilteredVocabulariesBPAC(
-            usageSearchMode ? searchTitle : searchController.text,
-            usageSearchMode ? searchInProjectId : projectId,
-            categoryId,
-            usageSearchMode,
-            showNoNonsense == 1);
+          usageSearchMode ? searchTitle : searchController.text,
+          usageSearchMode ? searchInProjectId : projectId,
+          categoryId,
+          usageSearchMode,
+          showNoNonsense == 1,
+        );
       }
-      subTitle = setSubTitle();
+      if (!wordSearchMode) {
+        subTitle = setSubTitle();
+      }
       _getVocabularyListLength().then((value) {
         setState(() {
           _checkedVVs = List<bool>.filled(value, false, growable: true);
@@ -129,19 +134,22 @@ class _VocabularyPageState extends State<VocabularyPage> {
   String setSubTitle() {
     final whereTitle = StringBuffer('');
     if (projectId == 1 && categoryId == 1) {
-      return BootstrapSubTitle;
+      return bootstrapSubTitle;
     } else {
       if (projectId > 1 && categoryId > 1) {
         whereTitle.write(
-            "${_catDDKey.currentState?.getSelectedItem?.name} for ${_prjDDKey.currentState?.getSelectedItem?.title}");
+          "${_catDDKey.currentState?.getSelectedItem?.name} for ${_prjDDKey.currentState?.getSelectedItem?.title}",
+        );
       }
       if (projectId == 1 && categoryId > 1) {
         whereTitle.write(
-            "${_catDDKey.currentState?.getSelectedItem?.name} vocabularies");
+          "${_catDDKey.currentState?.getSelectedItem?.name} vocabularies",
+        );
       }
       if (projectId > 1 && categoryId == 1) {
         whereTitle.write(
-            "Vocabularies for ${_prjDDKey.currentState?.getSelectedItem?.title}");
+          "Vocabularies for ${_prjDDKey.currentState?.getSelectedItem?.title}",
+        );
       }
       return whereTitle.toString();
     }
@@ -149,9 +157,32 @@ class _VocabularyPageState extends State<VocabularyPage> {
 
   onSearch() {
     setState(() {
-      usageSearchMode = false;
-      usingSearchMode = false;
-      _refreshVocabularyViewList(true);
+      if (wordSearchMode) {
+        if (searchController.text.length > 2) {
+          _vocabularyViews = DatabaseHelper().getVocabularyViewsContaining(
+            searchController.text,
+          );
+          _refreshVocabularyViewList(false);
+        }
+      } else {
+        usageSearchMode = false;
+        usingSearchMode = false;
+        _refreshVocabularyViewList(true);
+      }
+    });
+  }
+
+  onWordSearch() {
+    wordSearchMode = !wordSearchMode;
+    setState(() {
+      if (wordSearchMode) {
+        searchTerm = searchController.text;
+        searchController.clear();
+        subTitle = wordSearchSubTitle;
+      } else {
+        searchController.text = searchTerm;
+        _refreshVocabularyViewList(true);
+      }
     });
   }
 
@@ -204,9 +235,10 @@ class _VocabularyPageState extends State<VocabularyPage> {
     lines = VocabUtils.splitContent(voc.content!, true);
     for (vocLine in lines) {
       VocTrace vc = VocTrace(
-          vocabulary: voc,
-          line: vocLine.replaceAll(RegExp(r'^#\d+#'), ''), // remove weight tag
-          variableName: StringUtils.capitalise(voc.title!.toLowerCase()));
+        vocabulary: voc,
+        line: vocLine.replaceAll(RegExp(r'^#\d+#'), ''), // remove weight tag
+        variableName: StringUtils.capitalise(voc.title!.toLowerCase()),
+      );
       previousLine = '';
       await parseVocabTrace(vc);
     }
@@ -231,13 +263,13 @@ class _VocabularyPageState extends State<VocabularyPage> {
     } else if (vc.line.contains(RegExp(r'^\{@(%-?\w\w?\W*)*(\|\d+\|\d+)?\}'))) {
       // strftime, ignore, remove tag and proceed
       vc = removeTag(vc);
-    } else if (vc
-        .getNormaLine()
-        .contains(RegExp(r'^\{\w*=([\w\s\\@()<>%*_";:?!\-+,.])+\}'))) {
+    } else if (vc.getNormaLine().contains(
+      RegExp(r'^\{\w*=([\w\s\\@()<>%*_";:?!\-+,.])+\}'),
+    )) {
       vc = removeTag(vc);
-    } else if (vc
-        .getNormaLine()
-        .contains(RegExp(r'^\{\w+:=[\x27\w\s\\^@|()<>%*_";:?!\-+,.]+\}'))) {
+    } else if (vc.getNormaLine().contains(
+      RegExp(r'^\{\w+:=[\x27\w\s\\^@|()<>%*_";:?!\-+,.]+\}'),
+    )) {
       // state variable assignment via Vocabulary: treat as a regular
       // vocabulary variable, proces recursively + add to using list
       vc = await parseStateVariable(vc);
@@ -261,18 +293,21 @@ class _VocabularyPageState extends State<VocabularyPage> {
   }
 
   Future<List<Vocabulary>> getVocabulary(int pId, String title) async {
-      return await DatabaseHelper().getVocabularyByTitleAndProject(title, pId);
+    return await DatabaseHelper().getVocabularyByTitleAndProject(title, pId);
   }
 
   /*
     retrieve vocabulary {var:=vocab} <- and recurse
   */
-  Future<VocTrace> parseStateVariable(VocTrace vc)  async {
+  Future<VocTrace> parseStateVariable(VocTrace vc) async {
     int start = vc.line.indexOf('{');
     int equals = vc.line.indexOf(':=', start + 1);
     int end = vc.line.indexOf('}');
     String vocabTitle = vc.line.substring(equals + 2, end);
-    List<Vocabulary> nexts = await getVocabulary(usingProjectId, vocabTitle.replaceFirst('^', '').toUpperCase());
+    List<Vocabulary> nexts = await getVocabulary(
+      usingProjectId,
+      vocabTitle.replaceFirst('^', '').toUpperCase(),
+    );
     if (nexts.isNotEmpty && !usingSet.contains(nexts.first.id)) {
       await parseVocabulary(nexts.first);
     }
@@ -287,7 +322,10 @@ class _VocabularyPageState extends State<VocabularyPage> {
     RegExp varMatch = RegExp(r'^\{\^?(\w+?)(#\d+-\d+)?\}');
     if (vc.line.contains(varMatch)) {
       vocabTitle = varMatch.firstMatch(vc.line)?.group(1) ?? '';
-      List<Vocabulary> nexts = await getVocabulary(usingProjectId, vocabTitle.replaceFirst('^', '').toUpperCase());
+      List<Vocabulary> nexts = await getVocabulary(
+        usingProjectId,
+        vocabTitle.replaceFirst('^', '').toUpperCase(),
+      );
       if (nexts.isNotEmpty && !usingSet.contains(nexts.first.id)) {
         await parseVocabulary(nexts.first);
       }
@@ -319,7 +357,8 @@ class _VocabularyPageState extends State<VocabularyPage> {
       context: context,
       builder: (_) => AlertDialog(
         title: Text(
-            "${batchList.length} vocabular${batchList.length == 1 ? "y" : "ies"}"),
+          "${batchList.length} vocabular${batchList.length == 1 ? "y" : "ies"}",
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -327,8 +366,10 @@ class _VocabularyPageState extends State<VocabularyPage> {
               children: [
                 Text(
                   "to:",
-                  style:
-                      TextStyle(color: darkerBlueGrey, fontSize: 20 * scaling),
+                  style: TextStyle(
+                    color: darkerBlueGrey,
+                    fontSize: 20 * scaling,
+                  ),
                 ),
                 SizedBox(width: 10 * scaling),
                 Flexible(
@@ -345,17 +386,20 @@ class _VocabularyPageState extends State<VocabularyPage> {
                     },
                     decoratorProps: DropDownDecoratorProps(
                       decoration: InputDecoration(
-                          floatingLabelBehavior: FloatingLabelBehavior.auto,
-                          isDense: true,
-                          filled: true,
-                          fillColor: offWhite,
-                          labelText: 'PROJECT',
-                          // labelText: widget.vocabularyView.project,
-                          floatingLabelStyle: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.w500),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10 * scaling),
-                          )),
+                        floatingLabelBehavior: FloatingLabelBehavior.auto,
+                        isDense: true,
+                        filled: true,
+                        fillColor: offWhite,
+                        labelText: 'PROJECT',
+                        // labelText: widget.vocabularyView.project,
+                        floatingLabelStyle: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10 * scaling),
+                        ),
+                      ),
                     ),
                     compareFn: (item, sItem) => item.title == sItem.title,
                     validator: (item) {
@@ -368,9 +412,10 @@ class _VocabularyPageState extends State<VocabularyPage> {
                       return null;
                     },
                     popupProps: PopupProps.modalBottomSheet(
-                        showSelectedItems: true,
-                        showSearchBox: false,
-                        itemBuilder: projectModalItem),
+                      showSelectedItems: true,
+                      showSearchBox: false,
+                      itemBuilder: projectModalItem,
+                    ),
                   ),
                 ),
               ],
@@ -387,8 +432,10 @@ class _VocabularyPageState extends State<VocabularyPage> {
           TextButton(
             onPressed: () async {
               if (moveToProject > 0) {
-                await DatabaseHelper()
-                    .batchCopyVocabularies(batchList, moveToProject);
+                await DatabaseHelper().batchCopyVocabularies(
+                  batchList,
+                  moveToProject,
+                );
                 setBatchMode(false);
                 handleRightActionModePressed();
                 batchList.clear();
@@ -401,8 +448,10 @@ class _VocabularyPageState extends State<VocabularyPage> {
           TextButton(
             onPressed: () async {
               if (moveToProject > 0) {
-                await DatabaseHelper()
-                    .batchMoveVocabularies(batchList, moveToProject);
+                await DatabaseHelper().batchMoveVocabularies(
+                  batchList,
+                  moveToProject,
+                );
                 setBatchMode(false);
                 handleRightActionModePressed();
                 batchList.clear();
@@ -424,17 +473,16 @@ class _VocabularyPageState extends State<VocabularyPage> {
       if (usageSearchMode || usingSearchMode) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              backgroundColor: greenAppbarColour,
-              behavior: SnackBarBehavior.floating,
-              duration: Duration(milliseconds: 1200),
-              content: Text(
-                "back to Vocabulary list",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18 * scaling,
-                ),
-              ),
-              dismissDirection: DismissDirection.up),
+            backgroundColor: greenAppbarColour,
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(milliseconds: 1200),
+            content: Text(
+              "back to Vocabulary list",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 18 * scaling),
+            ),
+            dismissDirection: DismissDirection.up,
+          ),
         );
       }
       (usageSearchMode || usingSearchMode)
@@ -444,24 +492,25 @@ class _VocabularyPageState extends State<VocabularyPage> {
   }
 
   void showError(String title, String msg) => showDialog<String>(
-      context: navigatorKey.currentContext!,
-      builder: (BuildContext context) => AlertDialog(
-            title: Text(title),
-            content: Text(msg),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () {
-                  int count = 0;
-                  Navigator.of(context).popUntil((_) => count++ >= 2);
-                },
-                child: const Text('Go back'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, 'OK'),
-                child: const Text('OK'),
-              ),
-            ],
-          ));
+    context: navigatorKey.currentContext!,
+    builder: (BuildContext context) => AlertDialog(
+      title: Text(title),
+      content: Text(msg),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            int count = 0;
+            Navigator.of(context).popUntil((_) => count++ >= 2);
+          },
+          child: const Text('Go back'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, 'OK'),
+          child: const Text('OK'),
+        ),
+      ],
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -470,7 +519,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
         WidgetState.pressed,
         WidgetState.hovered,
         WidgetState.focused,
-        WidgetState.selected
+        WidgetState.selected,
       };
       if (states.any(interactiveStates.contains)) {
         return orangeCheckColour;
@@ -498,10 +547,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
       disabledGestures: false,
       childDecoration: BoxDecoration(
         boxShadow: const <BoxShadow>[
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 10.0,
-          ),
+          BoxShadow(color: Colors.black12, blurRadius: 10.0),
         ],
         borderRadius: BorderRadius.all(Radius.circular(16 * scaling)),
       ),
@@ -525,9 +571,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                     // color: Colors.black26,
                     shape: BoxShape.circle,
                   ),
-                  child: Image.asset(
-                    getDrawerImg(),
-                  ),
+                  child: Image.asset(getDrawerImg()),
                 ),
                 Padding(
                   padding: EdgeInsets.all(12.0 * scaling),
@@ -550,25 +594,29 @@ class _VocabularyPageState extends State<VocabularyPage> {
                           },
                           decoratorProps: DropDownDecoratorProps(
                             decoration: InputDecoration(
-                                floatingLabelBehavior:
-                                    FloatingLabelBehavior.auto,
-                                isDense: true,
-                                filled: true,
-                                fillColor: offWhite,
-                                labelText: 'PROJECT',
-                                // labelText: widget.vocabularyView.project,
-                                floatingLabelStyle: TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.w500),
-                                border: OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(10 * scaling),
-                                )),
+                              floatingLabelBehavior: FloatingLabelBehavior.auto,
+                              isDense: true,
+                              filled: true,
+                              fillColor: offWhite,
+                              labelText: 'PROJECT',
+                              // labelText: widget.vocabularyView.project,
+                              floatingLabelStyle: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(
+                                  10 * scaling,
+                                ),
+                              ),
+                            ),
                           ),
                           compareFn: (item, sItem) => item.title == sItem.title,
                           popupProps: PopupProps.modalBottomSheet(
-                              showSelectedItems: true,
-                              showSearchBox: false,
-                              itemBuilder: projectModalItem),
+                            showSelectedItems: true,
+                            showSearchBox: false,
+                            itemBuilder: projectModalItem,
+                          ),
                         ),
                       ),
                       SizedBox(height: 30 * scaling, width: 8 * scaling),
@@ -584,9 +632,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                             _advancedDrawerController.hideDrawer();
                           });
                         },
-                        child: const Icon(
-                          Icons.clear,
-                        ),
+                        child: const Icon(Icons.clear),
                       ),
                     ],
                   ),
@@ -613,27 +659,30 @@ class _VocabularyPageState extends State<VocabularyPage> {
                           },
                           decoratorProps: DropDownDecoratorProps(
                             decoration: InputDecoration(
-                                floatingLabelBehavior:
-                                    FloatingLabelBehavior.auto,
-                                isDense: true,
-                                filled: true,
-                                fillColor: offWhite,
-                                labelText: 'CATEGORY',
-                                floatingLabelStyle: TextStyle(
-                                    fontSize: 18 * scaling,
-                                    fontWeight: FontWeight.w500),
-                                labelStyle: TextStyle(fontSize: 14 * scaling),
-                                border: OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(10 * scaling),
-                                )),
+                              floatingLabelBehavior: FloatingLabelBehavior.auto,
+                              isDense: true,
+                              filled: true,
+                              fillColor: offWhite,
+                              labelText: 'CATEGORY',
+                              floatingLabelStyle: TextStyle(
+                                fontSize: 18 * scaling,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              labelStyle: TextStyle(fontSize: 14 * scaling),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(
+                                  10 * scaling,
+                                ),
+                              ),
+                            ),
                           ),
                           // selectedItem: currentCategory,
                           compareFn: (item, sItem) => item.name == sItem.name,
                           popupProps: PopupProps.modalBottomSheet(
-                              showSelectedItems: true,
-                              showSearchBox: false,
-                              itemBuilder: categoryModalItem),
+                            showSelectedItems: true,
+                            showSearchBox: false,
+                            itemBuilder: categoryModalItem,
+                          ),
                         ),
                       ),
                       SizedBox(height: 30 * scaling, width: 8 * scaling),
@@ -649,9 +698,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                             _advancedDrawerController.hideDrawer();
                           });
                         },
-                        child: const Icon(
-                          Icons.clear,
-                        ),
+                        child: const Icon(Icons.clear),
                       ),
                     ],
                   ),
@@ -659,21 +706,23 @@ class _VocabularyPageState extends State<VocabularyPage> {
                 Padding(
                   padding: EdgeInsets.all(12.0 * scaling),
                   child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                  ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        shadowColor: Colors.black,
-                      ),
-                    onPressed: () async {
-                        vvErrorState = VocabUtils.checkVocabularyViews(await _vocabularyViews);
-                        setState(() {
-                          _advancedDrawerController.hideDrawer();
-                        });
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          shadowColor: Colors.black,
+                        ),
+                        onPressed: () async {
+                          vvErrorState = VocabUtils.checkVocabularyViews(
+                            await _vocabularyViews,
+                          );
+                          setState(() {
+                            _advancedDrawerController.hideDrawer();
+                          });
                         },
-                    child: const Text('Check current vocabularies'),
-                  ),
-                      ]
+                        child: const Text('Check current vocabularies'),
+                      ),
+                    ],
                   ),
                 ),
                 Spacer(),
@@ -683,9 +732,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                     color: Colors.white54,
                   ),
                   child: Container(
-                    margin: EdgeInsets.symmetric(
-                      vertical: 16.0 * scaling,
-                    ),
+                    margin: EdgeInsets.symmetric(vertical: 16.0 * scaling),
                   ),
                 ),
               ],
@@ -695,20 +742,23 @@ class _VocabularyPageState extends State<VocabularyPage> {
       ),
       child: Scaffold(
         appBar: AppBar(
+          leadingWidth: 46,
+          titleSpacing: 6,
           toolbarHeight: 70 * scaling,
-          iconTheme: IconThemeData(
-            color: greenNotePaperColour,
-          ),
+          iconTheme: IconThemeData(color: greenNotePaperColour),
           backgroundColor: inActiveLargeSetColour,
           title: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              Padding(padding: EdgeInsets.all(4 * scaling)),
               SizedBox(
                 height: 30 * scaling,
                 child: TextField(
-                  style:
-                      TextStyle(color: darkerBlueGrey, fontSize: 16 * scaling),
+                  style: TextStyle(
+                    color: darkerBlueGrey,
+                    fontSize: 16 * scaling,
+                  ),
                   onChanged: (value) => onSearch(),
                   controller: searchController,
                   decoration: InputDecoration(
@@ -719,79 +769,166 @@ class _VocabularyPageState extends State<VocabularyPage> {
                     contentPadding: EdgeInsets.all(0),
                     prefixIcon: Icon(Icons.search, color: darkerBlueGrey),
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(50 * scaling),
-                        borderSide: BorderSide.none),
+                      borderRadius: BorderRadius.circular(50 * scaling),
+                      borderSide: BorderSide.none,
+                    ),
                     hintStyle: TextStyle(
-                        fontSize: 14 * scaling, color: darkerBlueGrey),
+                      fontSize: 14 * scaling,
+                      color: darkerBlueGrey,
+                    ),
                   ),
                 ),
               ),
-              Padding(padding: EdgeInsets.all(4 * scaling)),
+              Padding(padding: EdgeInsets.all(2 * scaling)),
               Text(
                 subTitle,
-                style:
-                    TextStyle(color: notepaperWhite, fontSize: 14.0 * scaling),
+                style: TextStyle(
+                  color: notepaperWhite,
+                  fontSize: 14.0 * scaling,
+                ),
               ),
               Padding(padding: EdgeInsets.all(4 * scaling)),
             ],
           ),
           actions: <Widget>[
             IconButton(
+              iconSize: 25.0, // desired size
+              padding: EdgeInsets.fromLTRB(6, 0, 6, 14),
+              constraints:
+                  const BoxConstraints(), // override default min size of 48px
+              style: const ButtonStyle(
+                tapTargetSize:
+                    MaterialTapTargetSize.shrinkWrap, // the '2023' part
+              ),
               icon: Icon(
                 batchMode ? Icons.cancel_rounded : Icons.checklist_outlined,
-                color: batchMode ? orangeCheckColour : greenNotePaperColour,
+                color: wordSearchMode
+                    ? lightGreenGrey
+                    : batchMode
+                    ? orangeCheckColour
+                    : greenNotePaperColour,
               ),
               onPressed: () {
                 // if (!usageSearchMode && !usingSearchMode) {
-                if (batchMode) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                if (!wordSearchMode) {
+                  if (batchMode) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
                         backgroundColor: greenAppbarColour,
                         behavior: SnackBarBehavior.floating,
                         duration: Duration(milliseconds: 1200),
                         content: Text(
-                          "quit Batch Mode",
+                          "quit batch mode",
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 18 * scaling,
-                          ),
+                          style: TextStyle(fontSize: 18 * scaling),
                         ),
-                        dismissDirection: DismissDirection.up),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                        dismissDirection: DismissDirection.up,
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
                         backgroundColor: orangeCheckColour,
                         behavior: SnackBarBehavior.floating,
                         duration: Duration(milliseconds: 1200),
                         content: Text(
-                          "enter Batch Mode",
+                          "enter batch mode",
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 18 * scaling,
-                          ),
+                          style: TextStyle(fontSize: 18 * scaling),
                         ),
-                        dismissDirection: DismissDirection.up),
-                  );
+                        dismissDirection: DismissDirection.up,
+                      ),
+                    );
+                  }
+                  batchMode ? setBatchMode(false) : setBatchMode(true);
                 }
-                batchMode ? setBatchMode(false) : setBatchMode(true);
               },
             ),
             IconButton(
+              iconSize: 25.0, // desired size
+              padding: EdgeInsets.fromLTRB(6, 0, 6, 14),
+              constraints:
+                  const BoxConstraints(), // override default min size of 48px
+              style: const ButtonStyle(
+                tapTargetSize:
+                    MaterialTapTargetSize.shrinkWrap, // the '2023' part
+              ),
               icon: Icon(
                 (usageSearchMode || usingSearchMode)
                     ? Icons.cancel_rounded
                     : Icons.settings,
-                color: usageSearchMode
+                color: wordSearchMode || batchMode
+                    ? lightGreenGrey
+                    : usageSearchMode
                     ? neoFormColour
                     : usingSearchMode
-                        ? lightVerbatimMatchColour
-                        : greenNotePaperColour,
+                    ? lightVerbatimMatchColour
+                    : greenNotePaperColour,
               ),
               onPressed: () {
-                handleRightActionModePressed();
+                if (!wordSearchMode) {
+                  handleRightActionModePressed();
+                }
               },
-            )
+            ),
+            IconButton(
+              iconSize: 25.0, // desired size
+              padding: EdgeInsets.fromLTRB(6, 0, 10, 14),
+              constraints:
+                  const BoxConstraints(), // override default min size of 48px
+              style: const ButtonStyle(
+                tapTargetSize:
+                    MaterialTapTargetSize.shrinkWrap, // the '2023' part
+              ),
+              icon: Icon(
+                wordSearchMode ? Icons.cancel_rounded : Icons.search,
+                color: wordSearchMode
+                    ? reformulatedFormColour
+                    : batchMode
+                    ? lightGreenGrey
+                    : greenNotePaperColour,
+              ),
+              onPressed: () {
+                if (!batchMode) {
+                  onWordSearch();
+                  if (wordSearchMode) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        backgroundColor: yellowNotePaperColour,
+                        behavior: SnackBarBehavior.floating,
+                        duration: Duration(milliseconds: 1200),
+                        content: Text(
+                          "enter word search mode",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 18 * scaling,
+                            color: darkerBlueGrey,
+                          ),
+                        ),
+                        dismissDirection: DismissDirection.up,
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        backgroundColor: yellowNotePaperColour,
+                        behavior: SnackBarBehavior.floating,
+                        duration: Duration(milliseconds: 1200),
+                        content: Text(
+                          "quit word search mode",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 18 * scaling,
+                            color: darkerBlueGrey,
+                          ),
+                        ),
+                        dismissDirection: DismissDirection.up,
+                      ),
+                    );
+                  }
+                }
+              },
+            ),
           ],
         ),
         body: Container(
@@ -799,7 +936,10 @@ class _VocabularyPageState extends State<VocabularyPage> {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [notepaperWhite, blueGrey],
+              colors: [
+                wordSearchMode ? notepaperYellow : notepaperWhite,
+                blueGrey,
+              ],
             ),
           ),
           child: FutureBuilder<List<VocabularyView>>(
@@ -821,13 +961,21 @@ class _VocabularyPageState extends State<VocabularyPage> {
                     final vocabularyView = snapshot.data![index];
                     return Container(
                       height: 40 * scaling,
-                      padding:
-                          EdgeInsets.fromLTRB(0.0, 0.0, 4.0 * scaling, 0.0),
+                      padding: EdgeInsets.fromLTRB(
+                        0.0,
+                        0.0,
+                        4.0 * scaling,
+                        0.0,
+                      ),
                       decoration: BoxDecoration(
                         border: Border(
                           bottom: BorderSide(width: scaling, color: tanteRia),
                         ),
-                        color: notepaperWhite,
+                        color: wordSearchMode
+                            ? notepaperYellow
+                            : batchMode
+                            ? notepaperOrange
+                            : notepaperWhite,
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -837,8 +985,9 @@ class _VocabularyPageState extends State<VocabularyPage> {
                               flex: 1,
                               child: Checkbox(
                                 checkColor: Colors.white,
-                                fillColor:
-                                    WidgetStateProperty.resolveWith(getColor),
+                                fillColor: WidgetStateProperty.resolveWith(
+                                  getColor,
+                                ),
                                 value: _checkedVVs[index],
                                 onChanged: (bool? value) {
                                   setState(() {
@@ -854,43 +1003,54 @@ class _VocabularyPageState extends State<VocabularyPage> {
                             Expanded(
                               flex: 1,
                               child: IconButton(
-                                  icon: const Icon(Icons.search_rounded),
-                                  color: vocabularyView.useThis == 1
-                                      ? violetAppbarColour
-                                      : lightBlueGrey,
-                                  onPressed: () {
-                                    searchInProjectId = vocabularyView.projectId!;
-                                    onUsageSearch(vocabularyView.title ?? '');
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                          backgroundColor: violetAppbarColour,
-                                          behavior: SnackBarBehavior.floating,
-                                          duration:
-                                              Duration(milliseconds: 1200),
-                                          content: Text(
-                                            "vocabularies using '${vocabularyView.title ?? ''}'",
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                              fontSize: 18 * scaling,
-                                            ),
-                                          ),
-                                          dismissDirection:
-                                              DismissDirection.endToStart),
-                                    );
-                                  }),
+                                icon: const Icon(Icons.search_rounded),
+                                color: vocabularyView.useThis == 1
+                                    ? violetAppbarColour
+                                    : lightBlueGrey,
+                                onPressed: () {
+                                  searchInProjectId = vocabularyView.projectId!;
+                                  onUsageSearch(vocabularyView.title ?? '');
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      backgroundColor: violetAppbarColour,
+                                      behavior: SnackBarBehavior.floating,
+                                      duration: Duration(milliseconds: 1200),
+                                      content: Text(
+                                        "vocabularies using '${vocabularyView.title ?? ''}'",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 18 * scaling,
+                                        ),
+                                      ),
+                                      dismissDirection:
+                                          DismissDirection.endToStart,
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
                           Expanded(
                             flex: 5,
                             child: Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
-                                  4 * scaling, 0, 2 * scaling, 0),
+                                4 * scaling,
+                                0,
+                                2 * scaling,
+                                0,
+                              ),
                               child: AutoSizeText(
                                 vocabularyView.title!,
                                 style: TextStyle(
-                                    color: vocabularyView.useThis == 1
-                                        ? (vvErrorState.containsKey(vocabularyView.id!) &&
-                                        !vvErrorState[vocabularyView.id]! ? darkAnyMatchColour : veryVeryDark)
-                                        : lightBlueGrey),
+                                  color: vocabularyView.useThis == 1
+                                      ? (vvErrorState.containsKey(
+                                                  vocabularyView.id!,
+                                                ) &&
+                                                !vvErrorState[vocabularyView
+                                                    .id]!
+                                            ? darkAnyMatchColour
+                                            : veryVeryDark)
+                                      : lightBlueGrey,
+                                ),
                                 maxLines: 1,
                               ),
                             ),
@@ -899,14 +1059,19 @@ class _VocabularyPageState extends State<VocabularyPage> {
                             flex: 2,
                             child: Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
-                                  2 * scaling, 0, 2 * scaling, 0),
+                                2 * scaling,
+                                0,
+                                2 * scaling,
+                                0,
+                              ),
                               child: AutoSizeText(
                                 vocabularyView.category!,
                                 maxLines: 1,
                                 style: TextStyle(
-                                    color: vocabularyView.useThis == 1
-                                        ? inActiveLargeSetColour
-                                        : lightBlueGrey),
+                                  color: vocabularyView.useThis == 1
+                                      ? inActiveLargeSetColour
+                                      : lightBlueGrey,
+                                ),
                               ),
                             ),
                           ),
@@ -914,43 +1079,48 @@ class _VocabularyPageState extends State<VocabularyPage> {
                             flex: 2,
                             child: Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
-                                  2 * scaling, 0, 0, 0),
+                                2 * scaling,
+                                0,
+                                0,
+                                0,
+                              ),
                               child: AutoSizeText(
                                 vocabularyView.project!,
                                 maxLines: 1,
                                 style: TextStyle(
-                                    color: vocabularyView.useThis == 1
-                                        ? secondary
-                                        : lightBlueGrey),
+                                  color: vocabularyView.useThis == 1
+                                      ? secondary
+                                      : lightBlueGrey,
+                                ),
                               ),
                             ),
                           ),
                           Expanded(
                             flex: 1,
                             child: IconButton(
-                                icon: const Icon(Icons.star_border_rounded),
-                                color: vocabularyView.useThis == 1
-                                    ? blueAppbarColour
-                                    : lightBlueGrey,
-                                onPressed: () {
-                                  usingProjectId = vocabularyView.projectId!;
-                                  onUsingSearch(vocabularyView);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                        backgroundColor: blueAppbarColour,
-                                        behavior: SnackBarBehavior.floating,
-                                        duration: Duration(milliseconds: 1200),
-                                        content: Text(
-                                          "all vocabularies used by '${vocabularyView.title ?? ''}'",
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            fontSize: 18 * scaling,
-                                          ),
-                                        ),
-                                        dismissDirection:
-                                            DismissDirection.endToStart),
-                                  );
-                                }),
+                              icon: const Icon(Icons.star_border_rounded),
+                              color: vocabularyView.useThis == 1
+                                  ? blueAppbarColour
+                                  : lightBlueGrey,
+                              onPressed: () {
+                                usingProjectId = vocabularyView.projectId!;
+                                onUsingSearch(vocabularyView);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    backgroundColor: blueAppbarColour,
+                                    behavior: SnackBarBehavior.floating,
+                                    duration: Duration(milliseconds: 1200),
+                                    content: Text(
+                                      "all vocabularies used by '${vocabularyView.title ?? ''}'",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(fontSize: 18 * scaling),
+                                    ),
+                                    dismissDirection:
+                                        DismissDirection.endToStart,
+                                  ),
+                                );
+                              },
+                            ),
                           ),
                           Expanded(
                             flex: 1,
@@ -964,14 +1134,16 @@ class _VocabularyPageState extends State<VocabularyPage> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => VocabularyDetail(
-                                        vocabularyView: vocabularyView),
+                                      vocabularyView: vocabularyView,
+                                    ),
                                   ),
                                 ).then((value) async {
                                   if (markVVListOnSave == 1) {
                                     _refreshVocabularyViewList(true);
                                     vvErrorState =
                                         VocabUtils.checkVocabularyViews(
-                                            await _vocabularyViews);
+                                          await _vocabularyViews,
+                                        );
                                   } else {
                                     vvErrorState.clear();
                                   }
@@ -990,8 +1162,8 @@ class _VocabularyPageState extends State<VocabularyPage> {
                                   ? greenAppbarColour
                                   : lightBlueGrey,
                               onPressed: () async {
-                                final bool isDelete =
-                                    await showConfirmationChoiceDialog(
+                                final bool
+                                isDelete = await showConfirmationChoiceDialog(
                                   context,
                                   title: 'Delete ${vocabularyView.title!}?',
                                   message:
@@ -1002,8 +1174,9 @@ class _VocabularyPageState extends State<VocabularyPage> {
                                 );
 
                                 if (isDelete) {
-                                  await DatabaseHelper()
-                                      .deleteVocabulary(vocabularyView);
+                                  await DatabaseHelper().deleteVocabulary(
+                                    vocabularyView,
+                                  );
                                   _refreshVocabularyViewList(true);
                                 }
                               },
@@ -1019,8 +1192,9 @@ class _VocabularyPageState extends State<VocabularyPage> {
           ),
         ),
         floatingActionButton: FloatingActionButton(
-          backgroundColor:
-              batchMode ? orangeNotePaperColour : greenNotePaperColour,
+          backgroundColor: batchMode
+              ? orangeNotePaperColour
+              : greenNotePaperColour,
           child: batchMode
               ? const Icon(Icons.my_library_books_rounded)
               : const Icon(Icons.add),
@@ -1037,7 +1211,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                 "title": '',
                 "content": '',
                 "comment": '',
-                "useThis": 1
+                "useThis": 1,
               });
               Navigator.push(
                 context,
@@ -1100,12 +1274,12 @@ Future<bool> showConfirmationChoiceDialog(
 }
 
 Future<void> showConfirmationAlertDialog(
-    BuildContext context, {
-      required String title,
-      required String message,
-      required String text,
-      bool highlight = false,
-    }) async {
+  BuildContext context, {
+  required String title,
+  required String message,
+  required String text,
+  bool highlight = false,
+}) async {
   return await showDialog<void>(
     barrierDismissible: true,
     context: context,
@@ -1115,12 +1289,14 @@ Future<void> showConfirmationAlertDialog(
         content: Text(message),
         actions: <Widget>[
           TextButton(
-            child: Text(text.toUpperCase(),
-                style: highlight
-                    ? const TextStyle(color: Colors.red)
-                    : const TextStyle(color: Colors.green)),
+            child: Text(
+              text.toUpperCase(),
+              style: highlight
+                  ? const TextStyle(color: Colors.red)
+                  : const TextStyle(color: Colors.green),
+            ),
             onPressed: () => Navigator.of(ctx).pop(false),
-          )
+          ),
         ],
       );
     },

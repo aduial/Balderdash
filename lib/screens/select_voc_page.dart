@@ -36,7 +36,7 @@ class _SelectVocPageState extends State<SelectVocPage> {
   late Future<List<VocabularyView>> _vocabularyViews;
   List<VocabularyView> filteredVocabularies = [];
 
-  String subTitle = BootstrapSubTitle;
+  String subTitle = bootstrapSubTitle;
   String searchTerm = '';
   int projectId = 1;
   int categoryId = 1;
@@ -99,7 +99,7 @@ class _SelectVocPageState extends State<SelectVocPage> {
     // print("subtitles");
     final whereTitle = StringBuffer('');
     if (projectId == 1 && categoryId == 1) {
-      return BootstrapSubTitle;
+      return bootstrapSubTitle;
     } else {
       if (projectId > 1 && categoryId > 1) {
         whereTitle.write(

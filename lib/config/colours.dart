@@ -93,6 +93,8 @@ const offWhite = Color(0xFFF9F8F9);
 const notepaperWhite = Color(0xFFE6F0E3);
 const notepaperGrey = Color(0xFFD0D6C8);
 const notepaperLinked = Color(0xFFE0F0FF);
+const notepaperOrange = Color(0xFFF0DBCD);
+const notepaperYellow = Color(0xFFF0EDCD);
 
 const dividerColour = Color(0xFF3030A0);
 const themeTextColour = Color(0xDD000000);

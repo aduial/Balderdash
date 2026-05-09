@@ -111,6 +111,12 @@ class Usage extends StatelessWidget {
                                   'text-decoration': 'none'
                                 };
                               }
+                              if (element.localName == 'li') {
+                                return const {
+                                  'font-weight': '400',
+                                  'color': '#C0FEE8',
+                                };
+                              }
                               if (element.classes.contains('ylw')){
                                 return {'color': '#FFEF40'};
                               } else if (element.classes.contains('greentp')){
@@ -118,23 +124,39 @@ class Usage extends StatelessWidget {
                               } else if (element.classes.contains('violntp')){
                                 return {'color': '#C090FF'};
                               } else if (element.classes.contains('brigrn')){
-                                return {'color': '#97FFCD'};
+                                return {'color': '#90FF40'};
                               } else if (element.classes.contains('cyantp')){
                                 return {'color': '#83FFFF'};
                               } else if (element.classes.contains('orantp')){
-                                return {'color': '#FFA265'};
+                                return {
+                                  'font-weight': '900',
+                                  'color': '#FFA265',
+                                };
                               } else if (element.classes.contains('bluntp')){
-                                return {'color': '#78B1FF'};
+                                return {'color': '#4B89FF'};
                               } else if (element.classes.contains('yelntp')){
-                                return {'color': '#FCFF7F'};
+                                return {'color': '#FFEF40'};
                               } else if (element.classes.contains('redntp')){
-                                return {'color': '#FF7F7F'};
+                                return {
+                                  'color': '#FF4C4F',
+                                  'font-weight': '900'
+                                };
+                              } else if (element.classes.contains('fix')){
+                                return {
+                                  'color': '#FFF7BC',
+                                  'padding': '6px',
+                                  'background-color': '#27466F',
+                                  'font-family' : '"Lucida Console", "Courier New", monospace',
+                                  'font-size': '12px',
+                                  'font-weight': '600'
+                                };
                               }
                               return null;
                             },
                             textStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                              fontFamily: balderDashFont,
-                              fontWeight: FontWeight.w300,
+                              fontFamily: '"Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+                              fontWeight: FontWeight.w400,
+                              fontSize: 12,
                               color: ithildin,
                             ),
                           ),
@@ -171,28 +193,48 @@ const htmlData = r"""
       and collapse your device into a black hole 😨. In any case, it became too 
       funky to code.</p>
       
-      
       <h3>Filtering on Project and / or Category</h3>
       <p>The list of <span class="brigrn">Vocabularies</span> in the 
       <span class="redntp">Run Balderdash!</span> and the Vocabularies screens 
       can be narrowed down by typing (part of) the Vocabulary title in the search 
-      area, or by filtering on Project and / or Category. <br>
-      To do that, tap the gear icon top right. This opens a drawer similar 
-      to the menu drawer on the right side, where you can select these filters. 
-      When one or both filters are active it is indicated underneath the search bar. 
-      Note that Vocabularies from the <b>Library</b> project are always listed. 
-      When you filter on a project, <b>Library</b> Vocabularies are listed below 
-      the Project's own Vocabularies.</p>
+      text field on top of the screen, or by filtering on Project and / or Category.<br>
+      To do that, tap the gear icon in the top of the screen (second from the right). 
+      This opens a drawer similar to the menu drawer on the right side, where 
+      you can select these filters. When one or both filters are active it is 
+      indicated underneath the search bar. Note that Vocabularies from the 
+      <b>Library</b> project are always listed. When you filter on a project, 
+      <b>Library</b> Vocabularies are listed below the Project's own Vocabularies.</p>
       
-      <h3>Copying and moving vocabularies</h3>
+      <h3>Find Vocabulary on content</h3>
+      <p>So you're working on a sentence that needs an adjective to show how huge,
+      tiny, awesome, creepy etc. something is and you're positive you create a 
+      vocabulary for that purpose just last week ... but what was its title again?<br>
+      This happens far too often, really. The included database is probably filled
+      with vocabularies containing very similar collections of words, even from way
+      back using the original Nonsense! script.<br>
+      But no more: the app now has a proper search function that comes to the rescue.
+      In the Vocabulary screen, tap the 🔍(magnifying glass) search icon top right
+      of the screen.</p>
+      <p>This activates <span class="yelntp"><b>Word Search Mode</b></span>, indicated 
+      by the search icon turning into <span class="yelntp">🅧</span> and the rows
+      getting a slight yellow tint. The search textfield is cleared: typing more 
+      than two letters in it will get all vocabularies from the database that 
+      contain that string. Note that the other two buttons 
+      (for <span class="orantp">batch mode</span> and the gear icon) are 
+      disabled in <span class="yelntp"><b>Word Search Mode</b></span>.
+      Tapping <span class="yelntp">🅧</span> will exit <span class="yelntp">
+      <b>Word Search Mode</b></span>; the rows get their original tint and the filter 
+      string in the textarea will be restored.</p>
+      
+      <h3>Batch mode: copying and moving vocabularies</h3>
       <p>If you want to copy or move Vocabularies you'll first have to select 
-      them. To do that, tap the 'checkboxes' icon top right, left of the 
-      gear icon. This activates <span class="orantp">Batch Mode</span>, where  
-      you can select one or many Vocabularies. To copy or move to them to another 
+      them. To do that, tap the 'checkboxes' icon in the top of the screen, the 
+      leftmost of the three icons. This activates <span class="orantp">Batch Mode</span>
+      , indicated by the rows getting an orange tint. You can select vocabularies 
+      with the checkboxes on each row. To copy or move to them to another 
       project, tap the floating button bottom right (which turns <span class="orantp">
-      orange</span> in Batch Mode).<br>
-      Tap the orange <span class="orantp">🅧</span> button top right to exit 
-      Batch Mode.</p>
+      orange</span> in Batch Mode). Tap the orange <span class="orantp">🅧</span> 
+      button top right to exit Batch Mode.</p>
 
       <h3>Templates</h3>
       <p>Next, there are the <span class="violntp">Templates</span> that you 
