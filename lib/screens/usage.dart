@@ -308,6 +308,33 @@ const htmlData = r"""
       <p>And lastly, if enabled in the User Settings, Balderdash will check your 
       Vocabulary when you save it, and show in what line or lines it found what 
       errors.</p>
+      
+      <h3>Selecting & editing text in the detail screens</h3>
+      <p>As in other apps, single-tapping puts the cursor on that location in 
+      the textarea, double-tapping a word will select it, and triple-tapping 
+      selects the entire line. This may take some getting used to.<br>
+      Selecting text brings up a popup with (cut|copy|paste) options.</p>
+      
+      <h3>Jumping to a selected vocabulary</h3>
+      <p>Double-tapping a <b>{vocabulary}</b> command will select the vocabulary name
+      without the curly brackets; if you tap the "Go to selected" button bottom 
+      left, Balderdash tries to open the selected vocabulary for you. What exactly
+      happens depends on what it finds:</p>
+      <p>
+      <ul>
+      <li>if it doesn't find a vocabulary with that title, it will tell you</li>
+      <li>if it finds the vocabulary in either the current project or in the 
+      Library, it will open it right away</li>
+      <li>if it finds vocabularies with that title in the current project or in the 
+      Library <b>and</b> in other projects, it will offer to open the one in scope 
+      (ie. the current project or the library) while mentioning where it found 
+      the other one</li>
+      <li>if it finds vocabularies with that title in the current project <b>and</b>
+      in the Library, it asks which one you want to open; if it finds others with 
+      that title elsewhere, it will mention it.</li>
+      </ul>
+      </p>
+      
      
       
   """;

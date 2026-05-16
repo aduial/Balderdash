@@ -512,6 +512,28 @@ class _VocabularyPageState extends State<VocabularyPage> {
     ),
   );
 
+  // launches the Vocabulary detail screen and awaits the result from Navigator.pop
+  Future<void> _navigateToDetailscreen(BuildContext context, VocabularyView vv) async {
+    final result = await Navigator.push(
+        context,
+        MaterialPageRoute<bool>(
+            builder: (context) =>
+                VocabularyDetail(
+                  vocabularyView: vv,
+                ))
+    );
+    if (!context.mounted) return;
+    if (markVVListOnSave == 1 && result!) {
+      _refreshVocabularyViewList(true);
+      vvErrorState =
+          VocabUtils.checkVocabularyViews(
+            await _vocabularyViews,
+          );
+    } else {
+      vvErrorState.clear();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     Color getColor(Set<WidgetState> states) {
@@ -1130,27 +1152,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                                   ? greenAppbarColour
                                   : lightBlueGrey,
                               onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => VocabularyDetail(
-                                      vocabularyView: vocabularyView,
-                                    ),
-                                  ),
-                                ).then((value) async {
-                                  if (markVVListOnSave == 1) {
-                                    _refreshVocabularyViewList(true);
-                                    vvErrorState =
-                                        VocabUtils.checkVocabularyViews(
-                                          await _vocabularyViews,
-                                        );
-                                  } else {
-                                    vvErrorState.clear();
-                                  }
-                                  setState(() {
-                                    // _refreshVocabularyViewList(true);
-                                  });
-                                });
+                                _navigateToDetailscreen(context, vocabularyView);
                               },
                             ),
                           ),

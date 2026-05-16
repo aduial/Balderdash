@@ -191,9 +191,7 @@ const htmlData = r"""
       The smaller screen size gave rise to the <b>Vocabulary</b> as the basic unit of a 
       grammar, instead of .data file containing dozens of vocabularies each. </p>
       <p>How Balderdash! works, how to write vocabularies and managing projects in 
-      the app is all described in help pages.</p>
-     
-      
+      the app is covered in these pages.</p>
   """;
 
 final vocabFont = GoogleFonts.robotoMono().fontFamily;

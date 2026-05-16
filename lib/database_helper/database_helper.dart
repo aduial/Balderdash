@@ -457,10 +457,6 @@ class DatabaseHelper {
   // Inserting and updating a Template
   Future<Template> upsertTemplate(Template template) async {
     final db = await database;
-    // var count = Sqflite.firstIntValue(await db.rawQuery(
-    //     "SELECT COUNT(*) FROM $_templateTableName WHERE projectId = ? "
-    //     "AND title = ? AND isHtml = ?",
-    //     [template.projectId, template.title, template.isHtml]));
     final List<Map<String, dynamic>> results = await db.rawQuery(
         "SELECT * FROM $_templateTableName WHERE projectId = ? "
         "AND title = ? AND isHtml = ?",
@@ -692,6 +688,23 @@ class DatabaseHelper {
       "comment": from.comment,
       "useThis": from.useThis,
     });
+  }
+
+  Future<List<VocabularyView>> getVocabularyViewByTitle(String title) async {
+    final db = await database;
+    final List<Map<String, dynamic>> results = await db
+        .rawQuery("SELECT v.id, v.categoryId, c.name AS category, v.projectId, "
+        "p.title AS project, v.title, v.content, v.comment, v.useThis "
+        "FROM $_vocabularyTableName v "
+        "JOIN $_projectTableName p ON v.projectId = p.id "
+        "JOIN $_categoryTableName c ON v.categoryId = c.id "
+        "WHERE upper(v.title) = '$title'; ");
+    List<VocabularyView> vocabularyViews = [];
+    for (var result in results) {
+      VocabularyView vocabularyView = VocabularyView.fromMap(result);
+      vocabularyViews.add(vocabularyView);
+    }
+    return vocabularyViews;
   }
 
   // get VocabularyView list

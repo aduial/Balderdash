@@ -183,13 +183,74 @@ const htmlData = r"""
       <p>Tap on the list screen left if it hasn't already moved back. Find the item 
       called <b>KIFFAZ</b>. Tap the red triangle on its right and then the <b>play</b> 
       button on the next screen to see a list of alliterative poetic descriptions 
-      of a former Scary Rock Band.</p>
+      of a former Scary Rock Band. Other example vocabularies included:</p>
+     
+      <h3>Example vocabularies</h3>
+      <p>The following name vocabularies are for the most part compiled from 
+      publicly available online lists: <b>AFR_NAMES</b> (partly uses AMAZOKUWEWORDS), 
+      <b>ASIA_NAMES</b>, <b>CHINA_NAMES</b>, <b>DUTCH_NAMES</b> (partly made up on the spot), 
+      <b>ENG_NAMES</b>, <b>FRA_NAMES</b>, <b>GERMAN_NAMES</b>, <b>JAPAN_NAMES</b>,
+      <b>PORTUGUESE_NAMES</b>, <b>SCAN_NAMES</b> and <b>SPA_NAMES</b>.</p>
       
-      <p><b>EMBARRASSINGNAMES</b> generates embarrassing names, <b>WRITELC</b> 
-      a Lovecraftian abomination, and <b>WRITESOME</b> advertises the latest Fantasy- and SF 
-      book-titles. Try one of the <b>BLAHBLAHBLAH</b>'s if you need a snazzy 'Call 
-      to Action' - or why not one of the dozen or so name generators?</p>
-      <p>If you speak Dutch, try <b>BOEVEN</b>, <b>MEDILIST</b> or <b>AMGBOOKSERIE</b>.</p>
+      <p>The rest is quite different. These mostly use separate phoneme vocabularies 
+      combined to create words resembling a certain language, to achieve a specific 
+      (comedic) effect or for playful deconstructionism (a.k.a. Emperor Disrobement): 
+
+      <ul>
+      <li><b>AMAZOKUWEWORDS></b> is inspired by magnificent words like "Amazakué" 
+      (a type of tropical hardwood)</li>
+      <li><b>ANNIEMGNAMES</b> attempting to generate character names like those 
+      found in the stories by Annie M.G. Schmidt</li>
+      <li><b>BEDRIJVEN</b> nonsensical company names, Dutch oriented</li>
+      <li><b>DUTCH_SILLYNAMES</b> resembling real names, but more wacky</li>
+      <li><b>FATWANTPIEGSTRIX</b> ludicrous Dutch-sounding names created by combining
+      two syllables, named after prototype <i>Fatwant Piegstrik</i>, <b><i>retesnelle chick</i></b>
+      at Hipster Trajectory Designer <b>Toc-Toc</b></li>
+      <li><b>SNAZIAKIPPEKIPPES</b> ludicrous Dutch-sounding names created by combining
+      multiple separate phonemes, after prototype <i>Snaziak Ippekippe</i>, 
+      Hipster Trajectory Designer <b>Toc-Toc</b>'s <b><i>Account Scratcher</i></b></li>
+      <li><b>FATWANTIPPEKIPPES</b> and <b>SNAZIAKPIEGSTRIX</b> are superpositions
+      of the two above</li>
+      <li><b>JACKVANCENAMES</b> generates a list of character names reminiscent of
+      those found in Jack Vance's fantastical SF stories</li>
+      <li><b>FINNWORDS</b> early attempt to create Finnish-looking words. Needs more work.</li>
+      <li><b>KRAKOEWORDS</b> fooling around with croaky gutteral-sounding phonemes 
+      resulting in vaguely Orcish or Klingon-ish words. Probabl overuses the circonflex
+      accent.</li>
+      <li><b>MANAMAWORDS</b> using a limited set of phonemes with a lot of repetition,
+      conjuring up memories of the Muppet-show</li>
+      <li><b>SFBOOKLIST</b> creating mysterious-sounding SF book titles by combining
+      concepts that don't fit together. Takes some inspiration from well-worn SF cliche's.</li>
+      <li><b>WEIRDNAMES</b> pretty much self-explanatory</li>
+      <li><b>WEIRDWORDS</b> likewise, but more so</li>
+      <li><b>BV_MEDIGOED</b> A stab at playful deconstructionism, in this case of 
+      a pharmaceutical company's PR attempts. In Dutch. Warning: may generate 
+      repulsive descriptions, though aimed purely for comedic effect.</li>
+      <li><b>MEDILIST</b> A list of slogans, from the above company.</li>
+      <li><b>KIFFAZ</b> The A to Z of the Quadruple Cynosures of Meretriciously 
+      Incommodious Stridency</li>
+      <li><b>MAKIFF</b> One single line of the above</li>
+      <li><b>FANTASY_SF_TITLES</b> Another attempt at Emperor Disrobement, 
+      aimed at the kind of Fantasy that comes up with stuff like "the Garment of 
+      Punishing", and at the sub-genre known as "grimdark" in particular. Throws
+      in the occasional <b>Lovecraftian Abomination of the Day</b> by way of bonus.</li>
+      <li><b>BLAHBLAHBLAH1-4</b> Check this out if you urgently need a snazzy 'Call
+      to Action' in the Cultural Heritage Sector.</li>
+      <li><b>ALIENNAMES</b> Well, that.</li>
+      <li><b>AMGBOEKSERIE</b> Satirical: generates a series of children's book titles, 
+      suggesting plots with increasing psychological complications as the audience
+      grows up. In Dutch.</li>
+      <li><b>APALLINGNAMES</b> As it says: an experiment with the most dreadful 
+      phonemes. Be warned.</li>
+      <li><b>BOEVEN</b> Names of Dutch criminals, as they appear in certain television
+      series.</li>
+      <li><b>CORPORATENAMES</b> TBD</li>
+      <li><b>EMBARRASSINGWORDS</b> Almost as bad as APALLINGNAMES.</li>
+      <li><b>NAAMEN</b> TBD</li>
+      <li><b>SILLYNAMES</b> weird, but light-hearted. Safe.</li>
+      </ul>
+      </p>
+     
       <p>This app includes the original demo files from the Nonsense! perl script, 
       including several that use HTML or RDF templates to generate parody 
       versions of early geek-favourites like 

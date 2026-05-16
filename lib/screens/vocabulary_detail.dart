@@ -10,6 +10,7 @@ import 'package:balderdash/screens/run_page.dart';
 import 'package:balderdash/views/vocabulary_view.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_code_editor/flutter_code_editor.dart';
 import 'package:widgets_easier/widgets_easier.dart';
 import '../utils/vocab_utils.dart';
@@ -34,7 +35,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
   final TextEditingController commentController =
       TextEditingController(text: '');
   final TextEditingController testController = TextEditingController(text: '');
-  final contentController = CodeController();
+  final codeController = CodeController();
 
   bool vvListFetched = false;
   bool isExistingVV = false;
@@ -77,8 +78,8 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
     }
 
     titleController.text = widget.vocabularyView.title!;
-    contentController.language = balderdash;
-    contentController.text = widget.vocabularyView.content ?? '';
+    codeController.language = balderdash;
+    codeController.text = widget.vocabularyView.content ?? '';
     commentController.text = widget.vocabularyView.comment == ""
         ? " "
         : widget.vocabularyView.comment ?? '';
@@ -90,15 +91,15 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
     checkVocOnSave = await asyncPrefs.getInt(checkOnSave) ?? 1;
     showNoNonsense = await asyncPrefs.getInt(noNonsense) ?? 1;
     _projects = DatabaseHelper().getProjectsAbove(0, showNoNonsense == 1);
-
-
   }
 
   void setStartState() {
     titleStartState = titleController.text;
-    contentStartState = contentController.text;
+    contentStartState = codeController.text;
     commentStartState = commentController.text;
     categorySetStartState = isCategorySet;
+    codeController.popupController.enabled = false;
+    // contentController.selection.
   }
 
   void _refreshLists() {
@@ -121,7 +122,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
       "categoryId": newCategoryId,
       "projectId": newProjectId,
       "title": titleController.text,
-      "content": contentController.text,
+      "content": codeController.text,
       "comment": commentController.text,
       "useThis": newUsethis,
     });
@@ -133,10 +134,163 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
 
   bool editsNotSaved() {
     return (titleController.text != titleStartState ||
-        contentController.text != contentStartState ||
+        codeController.text != contentStartState ||
         commentController.text != commentStartState ||
         isCategorySet != categorySetStartState);
   }
+
+  // launches the Vocabulary detail screen and awaits the result from Navigator.pop
+  Future<void> _navigateToSelected(BuildContext context) async {
+    bool inThisProject = false;
+    VocabularyView selVV;
+    bool inLibrary = false;
+    int outOfScope = 0;
+    int? status = 0;
+
+    List<VocabularyView> foundList;
+    String selected = codeController.selection.textInside(codeController.text);
+    foundList = await DatabaseHelper().getVocabularyViewByTitle(selected.toUpperCase());
+
+    if (foundList.isEmpty){
+      if (mounted && context.mounted) {
+        await showConfirmationAlertMonolog(
+          context,
+          title: "No vocabulary with title $selected found",
+          message: "better luck next time",
+          text: 'Drat!',
+          highlight: true,
+        );
+      }
+      return;
+    } else if (foundList.length == 1 && context.mounted){
+      if (foundList[0].projectId == 1 ||
+          foundList[0].projectId == widget.vocabularyView.projectId) {
+        openSelected(context, foundList[0]);
+      } else {
+        if (mounted) {
+          // just wait for the click
+          await showConfirmationAlertMonolog(
+            context,
+            title: "Vocabulary $selected not accessible",
+            message: "it's in project $foundList[0].project",
+            text: 'Darn!',
+            highlight: true,
+          );
+        }
+        return;
+      }
+    } else {
+      // found > 1
+      StringBuffer outOfScopeProjects = StringBuffer("'");
+      for (VocabularyView foundVV in foundList) {
+        if (foundVV.projectId == widget.vocabularyView.projectId) {
+          inThisProject = true;
+        } else if (foundVV.projectId == 1) {
+          inLibrary = true;
+        } else {
+          outOfScope++;
+          outOfScope > 1
+              ? outOfScopeProjects.write("| ")
+              : outOfScopeProjects.write("");
+          outOfScopeProjects.write(foundVV.project);
+        }
+      }
+      outOfScopeProjects.write("'");
+      if (foundList.length == outOfScope) {
+        // none in scope, bad luck
+        status = 1;
+      } else if (foundList.length - outOfScope == 1) {
+        // there can only be one in scope, either project OR library
+        if (inThisProject) {
+          // it's in the project
+          status = 2;
+        } else {
+          // it's in the library
+          status = 3;
+        }
+      } else {
+        // difference = 2, one in the project and one in the library, offer choice
+        if (foundList.length == 2) {
+          status = 4;
+        } else {
+          // there is also at least one out of scope, inform user
+          status = 5;
+        }
+      }
+
+      if (mounted && context.mounted) {
+        final bool response = await showConfirmationAlertDialog(
+          context,
+          title:
+          'Multiple versions of $selected exist',
+          message: status == 1
+              ? "unfortunately neither is in scope of the current project: they're in "
+              "$outOfScopeProjects. Consider copying or moving one to the Library."
+              : status == 2
+              ? "Open the one in the current project?\n(the other is out of scope, in $outOfScopeProjects)."
+              : status == 3
+              ? "Open the one in the Library?\n(the other is out of scope, in $outOfScopeProjects)."
+              : status == 4
+              ? "Open the version in the current project or the one from the library?"
+              : status == 5
+              ? "Open the version in the current project or the one from the library?"
+              "\n(Other version(s) out of scope in $outOfScopeProjects)"
+              : "Unexpected error occurred",
+          positiveText: status == 1
+              ? 'cancel'
+              : status < 4
+              ? 'cancel'
+              : 'library',
+          negativeText: status == 1
+              ? 'cancel'
+              : status < 4
+              ? 'open'
+              : 'this project',
+          highlightPositive: true,
+        );
+        if (response && context.mounted) {
+          if (status == 1) {
+            return;
+          } else if (status == 2) {
+            openSelected(context, pickVV(foundList, widget.vocabularyView.projectId!)!);
+          } else if (status == 3) {
+            openSelected(context, pickVV(foundList, 1)!);
+          } else {
+            openSelected(context, pickVV(foundList, widget.vocabularyView.projectId!)!);
+          }
+        } else {
+          if (status < 4 ) {
+            return;
+          } else if (context.mounted) {
+            openSelected(context, pickVV(foundList, 1)!);
+          }
+        }
+      }
+    }
+    print(selected);
+  }
+
+  VocabularyView? pickVV(List<VocabularyView> vvl, int projectId){
+    for (VocabularyView vv in vvl){
+      if (vv.projectId == projectId){
+        return vv;
+      }
+    }
+    return null;
+  }
+
+  Future<void> openSelected(BuildContext context, VocabularyView vView) async {
+    final result = await Navigator.push(
+        context,
+        MaterialPageRoute<bool>(
+            builder: (context) =>
+                VocabularyDetail(
+                  vocabularyView: vView,
+                )
+        )
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -159,11 +313,11 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                   return;
                 } else {
                   setState(() {
-                    Navigator.of(context).pop();
+                    Navigator.of(context).pop(true);
                   });
                 }
               } else {
-                Navigator.of(context).pop();
+                Navigator.of(context).pop(false);
               }
             },
             icon: BackButtonIcon(),
@@ -185,7 +339,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
             onPressed: () async {
               if (checkVocOnSave == 1) {
                 String checkResults = VocabUtils.checkContent(
-                    contentController.text);
+                    codeController.text);
                 if (checkResults.isNotEmpty) {
                   final bool goBack = await showConfirmationAlertDialog(
                     context,
@@ -220,7 +374,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                 );
                 newVocabulary = makeNewVocabulary();
                 await DatabaseHelper().upsertVocabulary(newVocabulary);
-                Navigator.of(context).pop();
+                Navigator.of(context).pop(true);
               }
             },
           )
@@ -337,9 +491,12 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
               Padding(padding: EdgeInsets.all(3)),
               Row(children: [
                 Expanded(
-                  flex: 3,
+                  flex: 6,
                   child: TextFormField(
                     controller: titleController,
+                    inputFormatters: [
+                      UppercaseTextFormatter(),
+                    ],
                     textCapitalization: TextCapitalization.characters,
                     decoration: InputDecoration(
                         isDense: true,
@@ -374,61 +531,6 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                     },
                   ),
                 ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4.0 * scaling),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      maximumSize: Size.fromHeight(40 * scaling),
-                      iconColor: greenAppbarColour,
-                      shadowColor: Colors.black,
-                    ),
-                    onPressed: () async {
-                      newVocabulary = makeNewVocabulary();
-                      await DatabaseHelper().upsertVocabulary(newVocabulary);
-                      VocabularyView newVV = await getVV(newVocabulary.id!);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => RunPage(vocabularyView: newVV),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      "Test",
-                    ),
-                  ),
-                ),
-              ]),
-              Padding(padding: EdgeInsets.all(1)),
-              Row(children: [
-                Expanded(
-                  flex: 6,
-                  child: TextFormField(
-                    controller: commentController,
-                    decoration: InputDecoration(
-                        // constraints: BoxConstraints(
-                        //   maxHeight: 54 * scaling,
-                        // ),
-                        isDense: true,
-                        filled: true,
-                        fillColor: offWhite,
-                        floatingLabelBehavior: FloatingLabelBehavior.always,
-                        labelText: 'COMMENT',
-                        contentPadding: EdgeInsets.fromLTRB(10 * scaling,
-                            6 * scaling, 6 * scaling, 10 * scaling),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10 * scaling),
-                        )),
-                    maxLines: 1,
-                    // onChanged: (value) => onCommentChanged(),
-                    validator: (value) {
-                      return null;
-                    },
-                  ),
-                ),
                 Expanded(
                   flex: 1,
                   child: const Align(
@@ -456,8 +558,36 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                   padding: EdgeInsets.symmetric(horizontal: 4.0 * scaling),
                 ),
               ]),
+              Padding(padding: EdgeInsets.all(3)),
+              Row(children: [
+                Expanded(
+                  flex: 1,
+                  child: TextFormField(
+                    controller: commentController,
+                    decoration: InputDecoration(
+                        isDense: true,
+                        filled: true,
+                        fillColor: offWhite,
+                        floatingLabelBehavior: FloatingLabelBehavior.always,
+                        labelText: 'COMMENT',
+                        contentPadding: EdgeInsets.fromLTRB(10 * scaling,
+                            6 * scaling, 6 * scaling, 10 * scaling),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10 * scaling),
+                        )),
+                    maxLines: 1,
+                    // onChanged: (value) => onCommentChanged(),
+                    validator: (value) {
+                      return null;
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4.0 * scaling),
+                ),
+              ]),
               Padding(
-                padding: EdgeInsets.all(3 * scaling),
+                padding: EdgeInsets.all(5 * scaling),
               ),
               Container(
                 decoration: ShapeDecoration(
@@ -472,7 +602,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                       child: CodeField(
                         background: offWhite,
                         cursorColor: darkVerbatimMatchColour,
-                        controller: contentController,
+                        controller: codeController,
                         textStyle: TextStyle(
                             fontSize: 12 * scaling,
                             fontFamily: "Courier",
@@ -499,6 +629,57 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
               Padding(
                 padding: EdgeInsets.all(6 * scaling),
               ),
+              Row(children: [
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 22 *  scaling),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      maximumSize: Size.fromHeight(40 * scaling),
+                      iconColor: greenAppbarColour,
+                      shadowColor: Colors.black,
+                    ),
+                    onPressed: () {
+                      _navigateToSelected(context);
+                    },
+                    child: const Text(
+                      "Go to selected",
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20 *  scaling),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      maximumSize: Size.fromHeight(40 * scaling),
+                      iconColor: greenAppbarColour,
+                      shadowColor: Colors.black,
+                    ),
+                    onPressed: () async {
+                      newVocabulary = makeNewVocabulary();
+                      await DatabaseHelper().upsertVocabulary(newVocabulary);
+                      VocabularyView newVV = await getVV(newVocabulary.id!);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RunPage(vocabularyView: newVV),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      "Test",
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 22 *  scaling),
+                )
+              ]),
             ]),
           ),
         ),
@@ -555,6 +736,35 @@ Widget projectModalItem(
   );
 }
 
+
+Future<void> showConfirmationAlertMonolog(
+    BuildContext context, {
+      required String title,
+      required String message,
+      required String text,
+      bool highlight = false,
+    }) async {
+  return await showDialog<void>(
+    barrierDismissible: true,
+    context: context,
+    builder: (BuildContext ctx) {
+      return AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: <Widget>[
+          TextButton(
+            child: Text(text.toUpperCase(),
+                style: highlight
+                    ? const TextStyle(color: Colors.red)
+                    : const TextStyle(color: Colors.green)),
+            onPressed: () => Navigator.of(ctx).pop(false),
+          )
+        ],
+      );
+    },
+  );
+}
+
 Future<bool> showConfirmationAlertDialog(
   BuildContext context, {
   required String title,
@@ -574,15 +784,15 @@ Future<bool> showConfirmationAlertDialog(
               TextButton(
                 child: Text(negativeText.toUpperCase(),
                     style: !highlightPositive
-                        ? const TextStyle(color: Colors.red)
-                        : const TextStyle(color: Colors.green)),
+                        ? const TextStyle(color: Colors.blueGrey)
+                        : const TextStyle(color: Colors.deepOrange)),
                 onPressed: () => Navigator.of(ctx).pop(true),
               ),
               TextButton(
                 child: Text(positiveText.toUpperCase(),
                     style: highlightPositive
-                        ? const TextStyle(color: Colors.red)
-                        : const TextStyle(color: Colors.green)),
+                        ? const TextStyle(color: Colors.blueGrey)
+                        : const TextStyle(color: Colors.deepOrange)),
                 onPressed: () => Navigator.of(ctx).pop(false),
               ),
             ],
@@ -590,4 +800,17 @@ Future<bool> showConfirmationAlertDialog(
         },
       ) ??
       false;
+}
+
+class UppercaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue,
+      TextEditingValue newValue,
+      ) {
+    return TextEditingValue(
+      text: newValue.text.toUpperCase(),
+      selection: newValue.selection,
+    );
+  }
 }
