@@ -64,15 +64,18 @@ class DatabaseHelper {
     //return database
     return await openDatabase(
         dbPath,
-        version: 3,
+        version: 4,
       onUpgrade: _upgradeDb,
     );
   }
 
   Future<void> _upgradeDb(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 3) {
+    if (oldVersion < 2) {
       // rename column to repurpose as Markov indicator
       await db.execute('ALTER TABLE vocabulary RENAME COLUMN useThis TO isCFG;');
+    }
+    if (oldVersion < 4) {
+      // rename column to repurpose as Markov indicator
       await db.execute("INSERT INTO category (id, parentId, name, comment) VALUES(19, 1, 'Markov', NULL);");
     }
   }
