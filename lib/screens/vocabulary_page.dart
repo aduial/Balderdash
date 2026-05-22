@@ -520,7 +520,8 @@ class _VocabularyPageState extends State<VocabularyPage> {
             builder: (context) =>
                 VocabularyDetail(
                   vocabularyView: vv,
-                ))
+                )
+        )
     );
     if (!context.mounted) return;
     if (markVVListOnSave == 1 && result!) {
@@ -1026,7 +1027,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                               flex: 1,
                               child: IconButton(
                                 icon: const Icon(Icons.search_rounded),
-                                color: vocabularyView.useThis == 1
+                                color: vocabularyView.isCFG == 1
                                     ? violetAppbarColour
                                     : lightBlueGrey,
                                 onPressed: () {
@@ -1063,7 +1064,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                               child: AutoSizeText(
                                 vocabularyView.title!,
                                 style: TextStyle(
-                                  color: vocabularyView.useThis == 1
+                                  color: vocabularyView.isCFG == 1
                                       ? (vvErrorState.containsKey(
                                                   vocabularyView.id!,
                                                 ) &&
@@ -1090,7 +1091,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                                 vocabularyView.category!,
                                 maxLines: 1,
                                 style: TextStyle(
-                                  color: vocabularyView.useThis == 1
+                                  color: vocabularyView.isCFG == 1
                                       ? inActiveLargeSetColour
                                       : lightBlueGrey,
                                 ),
@@ -1110,7 +1111,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                                 vocabularyView.project!,
                                 maxLines: 1,
                                 style: TextStyle(
-                                  color: vocabularyView.useThis == 1
+                                  color: vocabularyView.isCFG == 1
                                       ? secondary
                                       : lightBlueGrey,
                                 ),
@@ -1121,7 +1122,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                             flex: 1,
                             child: IconButton(
                               icon: const Icon(Icons.star_border_rounded),
-                              color: vocabularyView.useThis == 1
+                              color: vocabularyView.isCFG == 1
                                   ? blueAppbarColour
                                   : lightBlueGrey,
                               onPressed: () {
@@ -1148,7 +1149,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                             flex: 1,
                             child: IconButton(
                               icon: const Icon(Icons.edit),
-                              color: vocabularyView.useThis == 1
+                              color: vocabularyView.isCFG == 1
                                   ? greenAppbarColour
                                   : lightBlueGrey,
                               onPressed: () {
@@ -1160,7 +1161,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                             flex: 1,
                             child: IconButton(
                               icon: const Icon(Icons.delete),
-                              color: vocabularyView.useThis == 1
+                              color: vocabularyView.isCFG == 1
                                   ? greenAppbarColour
                                   : lightBlueGrey,
                               onPressed: () async {
@@ -1213,7 +1214,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                 "title": '',
                 "content": '',
                 "comment": '',
-                "useThis": 1,
+                "isCFG": 1,
               });
               Navigator.push(
                 context,

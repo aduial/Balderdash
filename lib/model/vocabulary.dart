@@ -15,7 +15,7 @@ class Vocabulary {
   String? title;
   String? content;
   String? comment;
-  int? useThis;
+  int? isCFG;
 
   Vocabulary(
       {this.id,
@@ -24,7 +24,7 @@ class Vocabulary {
       this.title,
       this.content,
       this.comment,
-      this.useThis});
+      this.isCFG});
 
   Map<String, dynamic> toMap() {
     return {
@@ -34,7 +34,7 @@ class Vocabulary {
       "title": title,
       "content": content,
       "comment": comment,
-      "useThis": useThis
+      "isCFG": isCFG
     };
   }
 
@@ -46,7 +46,7 @@ class Vocabulary {
     vocabulary.title = vv.title;
     vocabulary.content = vv.content;
     vocabulary.comment = vv.comment;
-    vocabulary.useThis = vv.useThis;
+    vocabulary.isCFG = vv.isCFG;
     return vocabulary;
   }
 
@@ -58,12 +58,12 @@ class Vocabulary {
     vocabulary.title = map['title'];
     vocabulary.content = map['content'];
     vocabulary.comment = map['comment'];
-    vocabulary.useThis = map['useThis'];
+    vocabulary.isCFG = map['isCFG'];
     return vocabulary;
   }
 
   String dump() {
-    return "$categoryId$sep1$projectId$sep2$title$sep3$content$sep4$comment$sep5$useThis";
+    return "$categoryId$sep1$projectId$sep2$title$sep3$content$sep4$comment$sep5$isCFG";
   }
 
   static Vocabulary fromDump(String dump, int projectId) {
@@ -76,7 +76,7 @@ class Vocabulary {
     vocabulary.title = vocPattern.firstMatch(dump)?.group(3) ?? '';
     vocabulary.content = vocPattern.firstMatch(dump)?.group(4) ?? '';
     vocabulary.comment = vocPattern.firstMatch(dump)?.group(5) ?? '';
-    vocabulary.useThis =
+    vocabulary.isCFG =
         int.parse(vocPattern.firstMatch(dump)?.group(6) ?? '1');
     // if (vocabulary.title!.isEmpty) {
     //   print("gotcha");

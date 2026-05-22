@@ -45,7 +45,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
   late Vocabulary newVocabulary;
   late int newCategoryId;
   late int newProjectId;
-  late int newUsethis;
+  late int newIsCFG;
   int showNoNonsense = 1;
   int checkVocOnSave = 1;
 
@@ -62,7 +62,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
     _refreshLists();
 
     isExistingVV = (null != widget.vocabularyView.id);
-    if (isExistingVV) {
+    if (null != widget.vocabularyView.categoryId){
       newCategoryId = widget.vocabularyView.categoryId!;
       DatabaseHelper()
           .getCategory(newCategoryId)
@@ -83,7 +83,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
     commentController.text = widget.vocabularyView.comment == ""
         ? " "
         : widget.vocabularyView.comment ?? '';
-    newUsethis = widget.vocabularyView.useThis!;
+    newIsCFG = widget.vocabularyView.isCFG!;
     setStartState();
   }
 
@@ -95,6 +95,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
 
   void setStartState() {
     titleStartState = titleController.text;
+    onTitleChanged();
     contentStartState = codeController.text;
     commentStartState = commentController.text;
     categorySetStartState = isCategorySet;
@@ -109,7 +110,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
     });
   }
 
-  onTitleChanged(String title) async {
+  onTitleChanged() async {
     if (!vvListFetched) {
       vvList = await DatabaseHelper().getVocabularyViews();
       vvListFetched = true;
@@ -124,7 +125,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
       "title": titleController.text,
       "content": codeController.text,
       "comment": commentController.text,
-      "useThis": newUsethis,
+      "isCFG": newIsCFG,
     });
   }
 
@@ -296,6 +297,11 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leadingWidth: 46,
+        titleSpacing: 6,
+        iconTheme: IconThemeData(color: greenNotePaperColour),
+        // backgroundColor: inActiveLargeSetColour,
+        backgroundColor: regularResultBGColour,
         leading: IconButton(
             onPressed: () async {
               if (editsNotSaved()) {
@@ -322,22 +328,26 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
             },
             icon: BackButtonIcon(),
             color: greenNotePaperColour),
-        iconTheme: IconThemeData(
-          color: greenNotePaperColour,
-        ),
-        backgroundColor: regularResultBGColour,
         title: Text(
           "Edit ${widget.vocabularyView.title!}",
           style: TextStyle(color: notepaperWhite),
         ),
         actions: <Widget>[
           IconButton(
+            iconSize: 25.0, // desired size
+            padding: EdgeInsets.fromLTRB(6, 0, 8, 2),
+            constraints:
+            const BoxConstraints(), // override default min size of 48px
+            style: const ButtonStyle(
+              tapTargetSize:
+              MaterialTapTargetSize.shrinkWrap, // the '2023' part
+            ),
             icon: Icon(
               Icons.save,
               color: greenNotePaperColour,
             ),
             onPressed: () async {
-              if (checkVocOnSave == 1) {
+              if (checkVocOnSave == 1 && widget.vocabularyView.isCFG == 1) {
                 String checkResults = VocabUtils.checkContent(
                     codeController.text);
                 if (checkResults.isNotEmpty) {
@@ -377,7 +387,51 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                 Navigator.of(context).pop(true);
               }
             },
-          )
+          ),
+          IconButton(
+            iconSize: 25.0, // desired size
+            padding: EdgeInsets.fromLTRB(8, 0, 8, 2),
+            constraints:
+            const BoxConstraints(), // override default min size of 48px
+            style: const ButtonStyle(
+              tapTargetSize:
+              MaterialTapTargetSize.shrinkWrap, // the '2023' part
+            ),
+            icon: Icon(
+              Icons.data_object,
+              color: Colors.deepOrangeAccent,
+            ),
+            onPressed: () {
+              _navigateToSelected(context);
+            },
+          ),
+          IconButton(
+            iconSize: 25.0, // desired size
+            padding: EdgeInsets.fromLTRB(8, 0, 16, 2),
+            constraints:
+            const BoxConstraints(), // override default min size of 48px
+            style: const ButtonStyle(
+              tapTargetSize:
+              MaterialTapTargetSize.shrinkWrap, // the '2023' part
+            ),
+            icon: Icon(
+              Icons.play_arrow,
+              color: Colors.amberAccent,
+            ),
+            onPressed: () async {
+              newVocabulary = makeNewVocabulary();
+              await DatabaseHelper().upsertVocabulary(newVocabulary);
+              VocabularyView newVV = await getVV(newVocabulary.id!);
+              if (context.mounted) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => RunPage(vocabularyView: newVV),
+                  ),
+                );
+              }
+            },
+          ),
         ],
       ),
       backgroundColor: notepaperWhite,
@@ -510,7 +564,7 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                           borderRadius: BorderRadius.circular(10 * scaling),
                         )),
                     maxLines: 1,
-                    onChanged: (value) => onTitleChanged(value),
+                    onChanged: (value) => onTitleChanged(),
                     validator: (value) {
                       if (isExistingVV &&
                           value == widget.vocabularyView.title) {
@@ -533,9 +587,9 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                 ),
                 Expanded(
                   flex: 1,
-                  child: const Align(
+                  child: Align(
                     alignment: Alignment.centerRight,
-                    child: Text('use?'),
+                    child: Text(newIsCFG == 1 ? 'CFG' : 'MKV'),
                   ),
                 ),
                 Padding(
@@ -544,12 +598,14 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
                 Expanded(
                   flex: 1,
                   child: Switch(
-                    value: newUsethis == 1,
+                    value: newIsCFG == 1,
                     activeThumbColor: greenNotePaperColour,
                     activeTrackColor: greenAppbarColour,
+                    inactiveThumbColor: redNotePaperColour,
+                    inactiveTrackColor: redAppbarColour,
                     onChanged: (bool value) {
                       setState(() {
-                        newUsethis = value ? 1 : 0;
+                        newIsCFG = value ? 1 : 0;
                       });
                     },
                   ),
@@ -629,57 +685,6 @@ class _VocabularyDetailState extends State<VocabularyDetail> {
               Padding(
                 padding: EdgeInsets.all(6 * scaling),
               ),
-              Row(children: [
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 22 *  scaling),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      maximumSize: Size.fromHeight(40 * scaling),
-                      iconColor: greenAppbarColour,
-                      shadowColor: Colors.black,
-                    ),
-                    onPressed: () {
-                      _navigateToSelected(context);
-                    },
-                    child: const Text(
-                      "Go to selected",
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20 *  scaling),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      maximumSize: Size.fromHeight(40 * scaling),
-                      iconColor: greenAppbarColour,
-                      shadowColor: Colors.black,
-                    ),
-                    onPressed: () async {
-                      newVocabulary = makeNewVocabulary();
-                      await DatabaseHelper().upsertVocabulary(newVocabulary);
-                      VocabularyView newVV = await getVV(newVocabulary.id!);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => RunPage(vocabularyView: newVV),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      "Test",
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 22 *  scaling),
-                )
-              ]),
             ]),
           ),
         ),

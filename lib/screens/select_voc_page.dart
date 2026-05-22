@@ -265,7 +265,7 @@ class _SelectVocPageState extends State<SelectVocPage> {
                               child: AutoSizeText(
                                 vocabularyView.title!,
                                 style: TextStyle(
-                                    color: vocabularyView.useThis == 1
+                                    color: vocabularyView.isCFG == 1
                                         ? veryVeryDark
                                         : lightBlueGrey),
                                 maxLines: 1,
@@ -281,7 +281,7 @@ class _SelectVocPageState extends State<SelectVocPage> {
                                 vocabularyView.category!,
                                 maxLines: 1,
                                 style: TextStyle(
-                                    color: vocabularyView.useThis == 1
+                                    color: vocabularyView.isCFG == 1
                                         ? inActiveLargeSetColour
                                         : lightBlueGrey),
                               ),
@@ -296,7 +296,7 @@ class _SelectVocPageState extends State<SelectVocPage> {
                                 vocabularyView.project!,
                                 maxLines: 1,
                                 style: TextStyle(
-                                    color: vocabularyView.useThis == 1
+                                    color: vocabularyView.isCFG == 1
                                         ? secondary
                                         : lightBlueGrey),
                               ),
@@ -306,14 +306,14 @@ class _SelectVocPageState extends State<SelectVocPage> {
                             flex: 1,
                             child: IconButton(
                               iconSize: 20,
-                              icon: vocabularyView.useThis == 1
+                              icon: vocabularyView.isCFG == 1
                                   ? const Icon(Icons.play_arrow_rounded)
                                   : const Icon(Icons.stop_rounded),
-                              color: vocabularyView.useThis == 1
+                              color: vocabularyView.isCFG == 1
                                   ? redAppbarColour
                                   : lightBlueGrey,
                               onPressed: () {
-                                if (vocabularyView.useThis == 1) {
+                                if (vocabularyView.isCFG == 1) {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(

@@ -57,29 +57,35 @@ class _RunPageState extends State<RunPage> {
       "title": widget._vocabularyView.title,
       "content": widget._vocabularyView.content,
       "comment": widget._vocabularyView.comment,
-      "useThis": widget._vocabularyView.useThis,
+      "isCFG": widget._vocabularyView.isCFG,
     });
-    VocTrace vc = VocTrace(
-        vocabulary: voc,
-        line: pickRandomLine(splitVocabulary(voc.content!)),
-        variableName: StringUtils.capitalise(voc.title!.toLowerCase()));
-    String result = await parseVocabulary(vc);
-    String htmlResult = result.replaceAll("\n", "<br>");
-    stateVariables.clear();
-    if (result.contains(doubleCurlyBracesError)) {
-      // resultController.text =
+    if (voc.isCFG == 0){
       setState(() {
-        htmlData =
-        "Vocabulary '${vc.variableName}' contains double curly "
-            "braces ( {{ or }} ) leading to infinite loops. Please fix this first.";
+        htmlData = markovificate(voc);
       });
     } else {
-      setState(() {
-        htmlData = htmlResult;
-      });
+      VocTrace vc = VocTrace(
+          vocabulary: voc,
+          line: pickRandomLine(splitVocabulary(voc.content!)),
+          variableName: StringUtils.capitalise(voc.title!.toLowerCase()));
+      String result = await parseVocabulary(vc);
+      String htmlResult = result.replaceAll("\n", "<br>");
+      stateVariables.clear();
+      if (result.contains(doubleCurlyBracesError)) {
+        // resultController.text =
+        setState(() {
+          htmlData =
+          "Vocabulary '${vc.variableName}' contains double curly "
+              "braces ( {{ or }} ) leading to infinite loops. Please fix this first.";
+        });
+      } else {
+        setState(() {
+          htmlData = htmlResult;
+        });
 
-      // print(htmlData);
-      // resultController.text = result;
+        // print(htmlData);
+        // resultController.text = result;
+      }
     }
   }
 
@@ -441,7 +447,97 @@ class _RunPageState extends State<RunPage> {
     }
   }
 
+  String markovificate(Vocabulary voc){
+    String chain = "";
+    // digrams or more?
+    if (voc.content?.indexOf(':') == 3) {
+      chain = makeDigramChain(mapDigrams(splitMarkov(voc.content!)));
+    } else {
+      chain = mapNGrams(splitMarkov(voc.content!));
+    }
+    return chain;
+  }
 
+  List<String> splitMarkov(String content) {
+    LineSplitter ls = LineSplitter();
+    return ls.convert(content);
+  }
+
+  Map<String, String> mapDigrams(List<String> tokenList){
+    Map<String, String> digramMap = {};
+    for (String token in tokenList){
+      digramMap[token.substring(0, 1)] = spreadNgrams(token.substring(2));
+    }
+    return digramMap;
+  }
+
+  String mapNGrams(List<String> tokenList){
+    int keyLength = tokenList[1].indexOf('{');
+    Map<String, String> ngramMap = {};
+    for (String token in tokenList){
+      if (token.startsWith('_')){
+        ngramMap['_'] = spreadNgrams(token.substring(2));
+      } else {
+        ngramMap[token.substring(0, keyLength)] = spreadNgrams(token.substring(keyLength));
+      }
+    }
+    return makeNGramChain(ngramMap, keyLength);
+  }
+
+  String spreadNgrams(String ngrams){
+    ngrams = ngrams.replaceAll('{', '').replaceAll('}', '');
+    StringBuffer spread = StringBuffer();
+    List<String> ngramList = ngrams.split(',');
+    for (String ngram in ngramList) {
+      if (ngram.isNotEmpty) {
+        String char = ngram
+            .split(':')
+            .first;
+        var j = int.parse(ngram
+            .split(':')
+            .last);
+        for (var i = 0; i < j; i++) {
+          spread.write(char);
+        }
+      }
+    }
+    return spread.toString();
+  }
+
+  String makeDigramChain(Map<String, String> markovMap){
+    String link = '';
+    StringBuffer sb = StringBuffer();
+    link = pickRandomFromString(markovMap['_']!, 1);
+    sb.write(link);
+    while (link != '_') {
+      link = pickRandomFromString(markovMap[link]!, 1);
+      sb.write(link);
+    }
+    return sb.toString().replaceAll('_', '\n');
+  }
+
+  String makeNGramChain(Map<String, String> markovMap, int keyLength){
+    String link = '';
+    String lastHalfLink = '';
+    String nextHalfLink = '';
+    StringBuffer sb = StringBuffer();
+    link = pickRandomFromString(markovMap['_']!, keyLength);
+    sb.write(link);
+    while (nextHalfLink != '_') {
+      // print("link: $link");
+      lastHalfLink = link.substring(1);
+      nextHalfLink = pickRandomFromString(markovMap[link]!, 1);
+      link = lastHalfLink + nextHalfLink;
+      sb.write(nextHalfLink);
+    }
+    return sb.toString().replaceAll('_', '\n');
+  }
+
+  String pickRandomFromString(String input, int keyLen){
+    int len = (input.length / keyLen).floor();
+    var pos = Random().nextInt(len) * keyLen;
+    return input.substring(pos, pos + keyLen);
+  }
 
   @override
   Widget build(BuildContext context) {

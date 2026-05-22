@@ -78,7 +78,7 @@ const String rdfContent = "RDF";
 const String prjInsertInto =
     "INSERT INTO project (typeId, authorId, title, notes) VALUES ";
 const String vocInsertInto =
-    "INSERT INTO vocabulary (projectId, categoryId, title, content, comment, useThis) VALUES ";
+    "INSERT INTO vocabulary (projectId, categoryId, title, content, comment, isCFG) VALUES ";
 const String tplInsertInto =
     "INSERT INTO template (projectId, title, content, isHtml, notes) VALUES ";
 const String pvocMark = "--projectvocabularies";

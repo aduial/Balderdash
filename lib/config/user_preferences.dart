@@ -42,7 +42,7 @@ class _UserPreferencesState extends State<UserPreferences> {
     initComplete = false;
     super.initState();
     loadPreferences();
-    loadProjects();
+    // loadProjects();
   }
 
   Future<void> loadPreferences() async {
@@ -51,6 +51,8 @@ class _UserPreferencesState extends State<UserPreferences> {
     newCheckOnSave = await asyncPrefs.getInt(checkOnSave) ?? 1;
     categoryId = await asyncPrefs.getInt(defaultCategory) ?? 1;
     projectId = await asyncPrefs.getInt(defaultProject) ?? 1;
+
+    _projects = DatabaseHelper().getProjectsAbove(0, newNoNonsense == 1);
     _categories = DatabaseHelper().getCategoriesAbove(0);
     await setCurrentCategory(categoryId);
     await setCurrentProject(projectId);
@@ -59,11 +61,11 @@ class _UserPreferencesState extends State<UserPreferences> {
   }
 
   // is nog even een dingetje
-  Future<void> loadProjects() async {
-    if (initComplete) {
-      _projects = DatabaseHelper().getProjectsAbove(0, newNoNonsense == 1);
-    }
-  }
+  // Future<void> loadProjects() async {
+  //   if (initComplete) {
+  //     _projects = DatabaseHelper().getProjectsAbove(0, newNoNonsense == 1);
+  //   }
+  // }
 
 
   Future<void> storeMarkVocabListOnSave(int value) async {

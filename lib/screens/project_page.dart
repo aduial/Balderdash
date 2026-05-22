@@ -30,7 +30,6 @@ class _ProjectPageState extends State<ProjectPage> {
   void initState() {
     super.initState();
     loadPreferences();
-    _refreshProjectViewList();
   }
 
   Future<void> loadPreferences() async {

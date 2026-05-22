@@ -10,6 +10,7 @@ import 'package:balderdash/screens/select_voc_page.dart';
 import 'package:balderdash/screens/template_page.dart';
 import 'package:balderdash/screens/type_page.dart';
 import 'package:balderdash/screens/vocabulary_page.dart';
+import 'package:balderdash/screens/markov.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -205,6 +206,18 @@ class HomeScreenState extends State<HomeScreen> {
                   leading:
                       Icon(Icons.web_rounded, color: violetNotePaperColour),
                   title: Text('HTML Templates'),
+                ),
+                ListTile(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        // builder: (context) => const FileDemo()),
+                          builder: (context) => const Markov()),
+                    );
+                  },
+                  leading: Icon(Icons.recycling_rounded, color: pink),
+                  title: Text('Markov Text'),
                 ),
                 ListTile(
                   onTap: () {

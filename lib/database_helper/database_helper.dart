@@ -62,7 +62,18 @@ class DatabaseHelper {
       await io.File(dbPath).writeAsBytes(bytes, flush: true);
     }
     //return database
-    return await openDatabase(dbPath, version: 1);
+    return await openDatabase(
+        dbPath,
+        version: 2,
+      onUpgrade: _upgradeDb,
+    );
+  }
+
+  Future<void> _upgradeDb(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // rename column to repurpose as Markov indicatorr
+      await db.execute('ALTER TABLE vocabulary RENAME COLUMN useThis TO isCFG;');
+    }
   }
 
   // Future<void> makeBackup(bool withTimestamp) async {
@@ -131,7 +142,7 @@ class DatabaseHelper {
         title TEXT NOT NULL DEFAULT "NEW",
         content TEXT,
         comment TEXT,
-        useThis INTEGER NOT NULL DEFAULT 1,
+        isCFG INTEGER NOT NULL DEFAULT 1,
         FOREIGN KEY(projectId) REFERENCES $_projectTableName(id)
         FOREIGN KEY(categoryId) REFERENCES $_categoryTableName(id)
         UNIQUE(projectId, title)
@@ -665,7 +676,7 @@ class DatabaseHelper {
     var count = results.length;
     if (count == 0) {
       // print("insert");
-      await db.insert(_vocabularyTableName, vocabulary.toMap(),
+      vocabulary.id = await db.insert(_vocabularyTableName, vocabulary.toMap(),
           conflictAlgorithm: ConflictAlgorithm.replace);
     } else {
       if (results.isNotEmpty) {
@@ -686,7 +697,7 @@ class DatabaseHelper {
       "title": from.title,
       "content": from.content,
       "comment": from.comment,
-      "useThis": from.useThis,
+      "isCFG": from.isCFG,
     });
   }
 
@@ -694,7 +705,7 @@ class DatabaseHelper {
     final db = await database;
     final List<Map<String, dynamic>> results = await db
         .rawQuery("SELECT v.id, v.categoryId, c.name AS category, v.projectId, "
-        "p.title AS project, v.title, v.content, v.comment, v.useThis "
+        "p.title AS project, v.title, v.content, v.comment, v.isCFG "
         "FROM $_vocabularyTableName v "
         "JOIN $_projectTableName p ON v.projectId = p.id "
         "JOIN $_categoryTableName c ON v.categoryId = c.id "
@@ -712,7 +723,7 @@ class DatabaseHelper {
     final db = await database;
     final List<Map<String, dynamic>> results = await db
         .rawQuery("SELECT v.id, v.categoryId, c.name AS category, v.projectId, "
-            "p.title AS project, v.title, v.content, v.comment, v.useThis "
+            "p.title AS project, v.title, v.content, v.comment, v.isCFG "
             "FROM $_vocabularyTableName v "
             "JOIN $_projectTableName p ON v.projectId = p.id "
             "JOIN $_categoryTableName c ON v.categoryId = c.id "
@@ -730,7 +741,7 @@ class DatabaseHelper {
     final db = await database;
     final List<Map<String, dynamic>> results = await db
         .rawQuery("SELECT v.id, v.categoryId, c.name AS category, v.projectId, "
-        "p.title AS project, v.title, v.content, v.comment, v.useThis "
+        "p.title AS project, v.title, v.content, v.comment, v.isCFG "
         "FROM $_vocabularyTableName v "
         "JOIN $_projectTableName p ON v.projectId = p.id "
         "JOIN $_categoryTableName c ON v.categoryId = c.id "
@@ -758,7 +769,7 @@ class DatabaseHelper {
     final db = await database;
     final map = await db.rawQuery(
         "SELECT v.id, v.categoryId, c.name AS category, v.projectId, "
-        "p.title AS project, v.title, v.content, v.comment, v.useThis "
+        "p.title AS project, v.title, v.content, v.comment, v.isCFG "
         "FROM $_vocabularyTableName v "
         "JOIN $_projectTableName p ON v.projectId = p.id "
         "JOIN $_categoryTableName c ON v.categoryId = c.id "
@@ -777,7 +788,7 @@ class DatabaseHelper {
     final db = await database;
     final List<Map<String, dynamic>> results = await db
         .rawQuery("SELECT v.id, v.categoryId, c.name AS category, v.projectId, "
-            "p.title AS project, v.title, v.content, v.comment, v.useThis "
+            "p.title AS project, v.title, v.content, v.comment, v.isCFG "
             "FROM $_vocabularyTableName v "
             "JOIN $_projectTableName p ON v.projectId = p.id "
             "JOIN $_categoryTableName c ON v.categoryId = c.id "
@@ -840,7 +851,7 @@ class DatabaseHelper {
         "SELECT * FROM $_vocabularyTableName "
         "WHERE title = '$searchTerm' "
         "AND (projectId = $projectId OR projectId = 1) "
-        "AND useThis = 1;");
+        "AND isCFG = 1;");
     List<Vocabulary> vocabularies = [];
     for (var result in results) {
       Vocabulary vocabulary = Vocabulary.fromMap(result);
@@ -856,7 +867,7 @@ class DatabaseHelper {
     final map = await db.rawQuery("SELECT * FROM $_vocabularyTableName "
         "WHERE title = '$searchTerm' "
         "AND (projectId = $projectId OR projectId = 1) "
-        "AND useThis = 1;");
+        "AND isCFG = 1;");
     if (map.isNotEmpty) {
       return Vocabulary.fromMap(map.first);
     } else {
@@ -872,7 +883,7 @@ class DatabaseHelper {
     final db = await database;
     final List<Map<String, dynamic>> results = await db.rawQuery(
         "SELECT v.id, v.categoryId, c.name AS category, v.projectId, "
-        "p.title AS project, v.title, v.content, v.comment, v.useThis "
+        "p.title AS project, v.title, v.content, v.comment, v.isCFG "
         "FROM $_vocabularyTableName v "
         "JOIN $_projectTableName p ON v.projectId = p.id "
         "JOIN $_categoryTableName c ON v.categoryId = c.id "

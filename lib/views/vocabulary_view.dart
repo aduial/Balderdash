@@ -11,7 +11,7 @@ class VocabularyView {
   String? title;
   String? content;
   String? comment;
-  int? useThis;
+  int? isCFG;
 
   VocabularyView({
     this.id,
@@ -22,7 +22,7 @@ class VocabularyView {
     this.title,
     this.content,
     this.comment,
-    this.useThis});
+    this.isCFG});
 
   Map<String, dynamic> toMap() {
     return {
@@ -34,7 +34,7 @@ class VocabularyView {
       "title": title,
       "content": content,
       "comment": comment,
-      "useThis": useThis
+      "isCFG": isCFG
     };
   }
 
@@ -48,7 +48,7 @@ class VocabularyView {
     vocabularyView.title = map['title'];
     vocabularyView.content = map['content'];
     vocabularyView.comment = map['comment'];
-    vocabularyView.useThis = map['useThis'];
+    vocabularyView.isCFG = map['isCFG'];
     return vocabularyView;
   }
 }
