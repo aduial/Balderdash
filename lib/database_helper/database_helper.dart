@@ -854,8 +854,7 @@ class DatabaseHelper {
     final List<Map<String, dynamic>> results = await db.rawQuery(
         "SELECT * FROM $_vocabularyTableName "
         "WHERE title = '$searchTerm' "
-        "AND (projectId = $projectId OR projectId = 1) "
-        "AND isCFG = 1;");
+        "AND (projectId = $projectId OR projectId = 1); ");
     List<Vocabulary> vocabularies = [];
     for (var result in results) {
       Vocabulary vocabulary = Vocabulary.fromMap(result);
@@ -870,8 +869,7 @@ class DatabaseHelper {
     final db = await database;
     final map = await db.rawQuery("SELECT * FROM $_vocabularyTableName "
         "WHERE title = '$searchTerm' "
-        "AND (projectId = $projectId OR projectId = 1) "
-        "AND isCFG = 1;");
+        "AND (projectId = $projectId OR projectId = 1); ");
     if (map.isNotEmpty) {
       return Vocabulary.fromMap(map.first);
     } else {
