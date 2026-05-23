@@ -85,7 +85,12 @@ class _SelectVocPageState extends State<SelectVocPage> {
   void _refreshVocabularyViewList(bool findUsage) {
     setState(() {
       _vocabularyViews = DatabaseHelper().getFilteredVocabulariesBPAC(
-          searchTerm, projectId, categoryId, findUsage, showNoNonsense == 1);
+        searchTerm,
+        projectId,
+        categoryId,
+        findUsage,
+        showNoNonsense == 1,
+      );
       subTitle = setSubTitle();
       _getVocabularyListLength().then((value) {
         setState(() {
@@ -103,15 +108,18 @@ class _SelectVocPageState extends State<SelectVocPage> {
     } else {
       if (projectId > 1 && categoryId > 1) {
         whereTitle.write(
-            "${_catDDKey.currentState?.getSelectedItem?.name} for ${_prjDDKey.currentState?.getSelectedItem?.title}");
+          "${_catDDKey.currentState?.getSelectedItem?.name} for ${_prjDDKey.currentState?.getSelectedItem?.title}",
+        );
       }
       if (projectId == 1 && categoryId > 1) {
         whereTitle.write(
-            "${_catDDKey.currentState?.getSelectedItem?.name} vocabularies");
+          "${_catDDKey.currentState?.getSelectedItem?.name} vocabularies",
+        );
       }
       if (projectId > 1 && categoryId == 1) {
         whereTitle.write(
-            "Vocabularies for ${_prjDDKey.currentState?.getSelectedItem?.title}");
+          "Vocabularies for ${_prjDDKey.currentState?.getSelectedItem?.title}",
+        );
       }
       return whereTitle.toString();
     }
@@ -159,19 +167,14 @@ class _SelectVocPageState extends State<SelectVocPage> {
       disabledGestures: false,
       childDecoration: BoxDecoration(
         boxShadow: const <BoxShadow>[
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 10.0,
-          ),
+          BoxShadow(color: Colors.black12, blurRadius: 10.0),
         ],
         borderRadius: BorderRadius.all(Radius.circular(16 * scaling)),
       ),
       child: Scaffold(
         appBar: AppBar(
           toolbarHeight: 70 * scaling,
-          iconTheme: IconThemeData(
-            color: redNotePaperColour,
-          ),
+          iconTheme: IconThemeData(color: redNotePaperColour),
           backgroundColor: inActiveLargeSetColour,
           title: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -180,8 +183,10 @@ class _SelectVocPageState extends State<SelectVocPage> {
               SizedBox(
                 height: 30 * scaling,
                 child: TextField(
-                  style:
-                      TextStyle(color: darkerBlueGrey, fontSize: 16 * scaling),
+                  style: TextStyle(
+                    color: darkerBlueGrey,
+                    fontSize: 16 * scaling,
+                  ),
                   onChanged: (value) => onSearch(value),
                   decoration: InputDecoration(
                     isDense: true,
@@ -191,32 +196,34 @@ class _SelectVocPageState extends State<SelectVocPage> {
                     contentPadding: EdgeInsets.all(0),
                     prefixIcon: Icon(Icons.search, color: darkerBlueGrey),
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(50 * scaling),
-                        borderSide: BorderSide.none),
+                      borderRadius: BorderRadius.circular(50 * scaling),
+                      borderSide: BorderSide.none,
+                    ),
                     hintStyle: TextStyle(
-                        fontSize: 14 * scaling, color: darkerBlueGrey),
+                      fontSize: 14 * scaling,
+                      color: darkerBlueGrey,
+                    ),
                   ),
                 ),
               ),
               Padding(padding: EdgeInsets.all(4 * scaling)),
               Text(
                 subTitle,
-                style:
-                    TextStyle(color: notepaperWhite, fontSize: 14.0 * scaling),
+                style: TextStyle(
+                  color: notepaperWhite,
+                  fontSize: 14.0 * scaling,
+                ),
               ),
               Padding(padding: EdgeInsets.all(4 * scaling)),
             ],
           ),
           actions: <Widget>[
             IconButton(
-              icon: Icon(
-                Icons.settings,
-                color: redNotePaperColour,
-              ),
+              icon: Icon(Icons.settings, color: redNotePaperColour),
               onPressed: () {
                 handleSettingsButtonPressed();
               },
-            )
+            ),
           ],
         ),
         body: Container(
@@ -247,7 +254,11 @@ class _SelectVocPageState extends State<SelectVocPage> {
                     return Container(
                       height: 36 * scaling,
                       padding: EdgeInsets.fromLTRB(
-                          5.0 * scaling, 0.0, 5.0 * scaling, 0.0),
+                        5.0 * scaling,
+                        0.0,
+                        5.0 * scaling,
+                        0.0,
+                      ),
                       decoration: BoxDecoration(
                         border: Border(
                           bottom: BorderSide(width: scaling, color: tanteRia),
@@ -261,13 +272,18 @@ class _SelectVocPageState extends State<SelectVocPage> {
                             flex: 6,
                             child: Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
-                                  4 * scaling, 0, 2 * scaling, 0),
+                                4 * scaling,
+                                0,
+                                2 * scaling,
+                                0,
+                              ),
                               child: AutoSizeText(
                                 vocabularyView.title!,
                                 style: TextStyle(
-                                    color: vocabularyView.isCFG == 1
-                                        ? veryVeryDark
-                                        : lightBlueGrey),
+                                  color: vocabularyView.isCFG == 1
+                                      ? veryVeryDark
+                                      : blueTextColour,
+                                ),
                                 maxLines: 1,
                               ),
                             ),
@@ -276,14 +292,17 @@ class _SelectVocPageState extends State<SelectVocPage> {
                             flex: 2,
                             child: Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
-                                  2 * scaling, 0, 2 * scaling, 0),
+                                2 * scaling,
+                                0,
+                                2 * scaling,
+                                0,
+                              ),
                               child: AutoSizeText(
                                 vocabularyView.category!,
                                 maxLines: 1,
                                 style: TextStyle(
-                                    color: vocabularyView.isCFG == 1
-                                        ? inActiveLargeSetColour
-                                        : lightBlueGrey),
+                                  color: inActiveLargeSetColour,
+                                ),
                               ),
                             ),
                           ),
@@ -291,14 +310,17 @@ class _SelectVocPageState extends State<SelectVocPage> {
                             flex: 2,
                             child: Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
-                                  2 * scaling, 0, 2 * scaling, 0),
+                                2 * scaling,
+                                0,
+                                2 * scaling,
+                                0,
+                              ),
                               child: AutoSizeText(
                                 vocabularyView.project!,
                                 maxLines: 1,
                                 style: TextStyle(
-                                    color: vocabularyView.isCFG == 1
-                                        ? secondary
-                                        : lightBlueGrey),
+                                  color: secondary,
+                                ),
                               ),
                             ),
                           ),
@@ -306,26 +328,22 @@ class _SelectVocPageState extends State<SelectVocPage> {
                             flex: 1,
                             child: IconButton(
                               iconSize: 20,
-                              icon: vocabularyView.isCFG == 1
-                                  ? const Icon(Icons.play_arrow_rounded)
-                                  : const Icon(Icons.stop_rounded),
+                              icon: const Icon(Icons.play_arrow_rounded),
                               color: vocabularyView.isCFG == 1
                                   ? redAppbarColour
-                                  : lightBlueGrey,
+                                  : blueTextColour,
                               onPressed: () {
-                                if (vocabularyView.isCFG == 1) {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => RunPage(
-                                          vocabularyView: vocabularyView),
-                                    ),
-                                  ).then((value) {
-                                    setState(() {
-                                      _refreshVocabularyViewList(false);
-                                    });
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        RunPage(vocabularyView: vocabularyView),
+                                  ),
+                                ).then((value) {
+                                  setState(() {
+                                    _refreshVocabularyViewList(false);
                                   });
-                                }
+                                });
                               },
                             ),
                           ),
@@ -359,9 +377,7 @@ class _SelectVocPageState extends State<SelectVocPage> {
                     // color: Colors.black26,
                     shape: BoxShape.circle,
                   ),
-                  child: Image.asset(
-                    getDrawerImg(),
-                  ),
+                  child: Image.asset(getDrawerImg()),
                 ),
                 Padding(
                   padding: EdgeInsets.all(12.0 * scaling),
@@ -384,25 +400,29 @@ class _SelectVocPageState extends State<SelectVocPage> {
                           },
                           decoratorProps: DropDownDecoratorProps(
                             decoration: InputDecoration(
-                                floatingLabelBehavior:
-                                    FloatingLabelBehavior.auto,
-                                isDense: true,
-                                filled: true,
-                                fillColor: offWhite,
-                                labelText: 'PROJECT',
-                                // labelText: widget.vocabularyView.project,
-                                floatingLabelStyle: TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.w500),
-                                border: OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(10 * scaling),
-                                )),
+                              floatingLabelBehavior: FloatingLabelBehavior.auto,
+                              isDense: true,
+                              filled: true,
+                              fillColor: offWhite,
+                              labelText: 'PROJECT',
+                              // labelText: widget.vocabularyView.project,
+                              floatingLabelStyle: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(
+                                  10 * scaling,
+                                ),
+                              ),
+                            ),
                           ),
                           compareFn: (item, sItem) => item.title == sItem.title,
                           popupProps: PopupProps.modalBottomSheet(
-                              showSelectedItems: true,
-                              showSearchBox: false,
-                              itemBuilder: projectModalItem),
+                            showSelectedItems: true,
+                            showSearchBox: false,
+                            itemBuilder: projectModalItem,
+                          ),
                         ),
                       ),
                       SizedBox(height: 30 * scaling, width: 8 * scaling),
@@ -418,9 +438,7 @@ class _SelectVocPageState extends State<SelectVocPage> {
                             _advancedDrawerController.hideDrawer();
                           });
                         },
-                        child: const Icon(
-                          Icons.clear,
-                        ),
+                        child: const Icon(Icons.clear),
                       ),
                     ],
                   ),
@@ -447,27 +465,30 @@ class _SelectVocPageState extends State<SelectVocPage> {
                           },
                           decoratorProps: DropDownDecoratorProps(
                             decoration: InputDecoration(
-                                floatingLabelBehavior:
-                                    FloatingLabelBehavior.auto,
-                                isDense: true,
-                                filled: true,
-                                fillColor: offWhite,
-                                labelText: 'CATEGORY',
-                                floatingLabelStyle: TextStyle(
-                                    fontSize: 18 * scaling,
-                                    fontWeight: FontWeight.w500),
-                                labelStyle: TextStyle(fontSize: 14 * scaling),
-                                border: OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(10 * scaling),
-                                )),
+                              floatingLabelBehavior: FloatingLabelBehavior.auto,
+                              isDense: true,
+                              filled: true,
+                              fillColor: offWhite,
+                              labelText: 'CATEGORY',
+                              floatingLabelStyle: TextStyle(
+                                fontSize: 18 * scaling,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              labelStyle: TextStyle(fontSize: 14 * scaling),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(
+                                  10 * scaling,
+                                ),
+                              ),
+                            ),
                           ),
                           // selectedItem: currentCategory,
                           compareFn: (item, sItem) => item.name == sItem.name,
                           popupProps: PopupProps.modalBottomSheet(
-                              showSelectedItems: true,
-                              showSearchBox: false,
-                              itemBuilder: categoryModalItem),
+                            showSelectedItems: true,
+                            showSearchBox: false,
+                            itemBuilder: categoryModalItem,
+                          ),
                         ),
                       ),
                       SizedBox(height: 30 * scaling, width: 8 * scaling),
@@ -483,9 +504,7 @@ class _SelectVocPageState extends State<SelectVocPage> {
                             _advancedDrawerController.hideDrawer();
                           });
                         },
-                        child: const Icon(
-                          Icons.clear,
-                        ),
+                        child: const Icon(Icons.clear),
                       ),
                     ],
                   ),
@@ -497,9 +516,7 @@ class _SelectVocPageState extends State<SelectVocPage> {
                     color: Colors.white54,
                   ),
                   child: Container(
-                    margin: EdgeInsets.symmetric(
-                      vertical: 16.0 * scaling,
-                    ),
+                    margin: EdgeInsets.symmetric(vertical: 16.0 * scaling),
                   ),
                 ),
               ],

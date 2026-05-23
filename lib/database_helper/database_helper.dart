@@ -74,7 +74,7 @@ class DatabaseHelper {
       // rename column to repurpose as Markov indicator
       await db.execute('ALTER TABLE vocabulary RENAME COLUMN useThis TO isCFG;');
     }
-    if (oldVersion < 4) {
+    if (oldVersion < 3) {
       // rename column to repurpose as Markov indicator
       await db.execute("INSERT INTO category (id, parentId, name, comment) VALUES(19, 1, 'Markov', NULL);");
     }

@@ -133,7 +133,10 @@ class Usage extends StatelessWidget {
                                   'color': '#FFA265',
                                 };
                               } else if (element.classes.contains('bluntp')){
-                                return {'color': '#4B89FF'};
+                                return {
+                                  'color': '#00B8FF',
+                                  'font-weight': '700'
+                                };
                               } else if (element.classes.contains('yelntp')){
                                 return {'color': '#FFEF40'};
                               } else if (element.classes.contains('redntp')){
@@ -141,6 +144,9 @@ class Usage extends StatelessWidget {
                                   'color': '#FF4C4F',
                                   'font-weight': '900'
                                 };
+                              } else if (element.classes.contains('pinktp')){
+                                return {'color': '#FFA2A4'};
+                                // color: pink
                               } else if (element.classes.contains('fix')){
                                 return {
                                   'color': '#FFF7BC',
@@ -205,16 +211,16 @@ const htmlData = r"""
       <b>Library</b> project are always listed. When you filter on a project, 
       <b>Library</b> Vocabularies are listed below the Project's own Vocabularies.</p>
       
-      <h3>Find Vocabulary on content</h3>
+      <h3>Finding Vocabularies on content</h3>
       <p>So you're working on a sentence that needs an adjective to show how huge,
       tiny, awesome, creepy etc. something is and you're positive you create a 
-      vocabulary for that purpose just last week ... but what was its title again?<br>
+      vocabulary for that purpose just last week ... <i>but what was its title again?</i><br>
       This happens far too often, really. The included database is probably filled
       with vocabularies containing very similar collections of words, even from way
       back using the original Nonsense! script.<br>
-      But no more: the app now has a proper search function that comes to the rescue.
-      In the Vocabulary screen, tap the 🔍(magnifying glass) search icon top right
-      of the screen.</p>
+      But those worries are over: the app now has a proper search function that 
+      comes to the rescue. In the Vocabulary screen, tap the 🔍(magnifying glass) 
+      search icon top right of the screen.</p>
       <p>This activates <span class="yelntp"><b>Word Search Mode</b></span>, indicated 
       by the search icon turning into <span class="yelntp">🅧</span> and the rows
       getting a slight yellow tint. The search textfield is cleared: typing more 
@@ -333,6 +339,26 @@ const htmlData = r"""
       in the Library, it asks which one you want to open; if it finds others with 
       that title elsewhere, it will mention it.</li>
       </ul>
+      </p>
+      
+      <h3>Creating Markov Vocabularies from example text</h3>
+      <p>Go to the <span class="pinktp"><b>Markov Chains</b></span> screen in the main menu, tap the "Open File"
+      button, find and select a file with example words. Words in the example file 
+      must be separated by spaces or returns. Balderdash will use all words in the 
+      file, so make sure there's no unwanted text in there that could influence the
+      result you want.
+      </p>
+      <p>When the file is loaded, the four buttons labeled <b>N=2</b> to <b>N=5</b>
+      are enabled. Choose <b>N=2</b> if you want results that only loosely resemble
+      the example, or one of the higher ones if you want them to be more similar.</p>
+      <p>The result will vary depending on how many examples you provide. The analysis 
+      will be better when it's based on more examples, but be aware of the fact 
+      that the size of the resulting Markov Vocabularies is proportional to the 
+      size of the example input and the N-gram size. Start small and work your way 
+      up; it will also depend on the capacity of your device how far you can go.</p>
+      <p>In the 'Run Balderdash' and Vocabulary screens, Markov vocabularies are
+      <span class="bluntp">LISTED IN BLUE</span> instead of dark grey.<br>
+      See the "Vocabularies and Markov Chains" page for more about Markov Vocabularies.
       </p>
       
      

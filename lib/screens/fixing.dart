@@ -200,7 +200,7 @@ const htmlData = r"""
       <p>If it is enabled in the User Settings, the app will check your Vocabulary 
       when you save it, and show what line or lines contain what errors.</p>
 
-      <h3>Tracking down the problem</h3>
+      <h3>Tracking down a problem</h3>
       <p>None of that will help you when the vocabulary is technically OK, but doesn't
       produce what you want. In such cases it's best to isolate the problem like 
       this: starting from the bootstrap (start) vocabulary, find the first vocabulary 
@@ -215,7 +215,7 @@ const htmlData = r"""
       are set. In that case, copy the <b>{FIXVARIABLES}</b> to your test vocabulary
       to ensure they are all initialised.</p>
 
-      <h3>Common errors</h3>
+      <h3>Common issues</h3>
       <ul>
       <li><b>Short-circuiting the app</b> It's perfectly OK to refer to the current 
       vocabulary, but make sure that the app can exit the loop. For instance, say 
@@ -260,11 +260,23 @@ const htmlData = r"""
       Vocabularies help page for an example of how you can set things up.</li> 
       <li><b>It's not as funny as I hoped ...</b> What can I say? It can turn out
       quite different than expected, though that goes both ways: it can also turn 
-      out better. Most of that comes down to finding the right balance between 
-      chaos and order - for instance, creating names from a few sets of individual 
-      letters vs. sets of syllables. I found that, though in the first case you 
-      have the most possibilities, you need to be very careful to avoid creating 
-      similar garble. Using larger fragments often works much better.</li>
+      out <i>better</i> than expected. Most of that comes down to finding the right balance 
+      between chaos and order - for instance, creating names from a few sets of 
+      individual letters vs. sets of syllables. I found that, though in the first 
+      case you have the most possibilities, you need to be very careful to avoid 
+      creating similar garble. Using larger fragments often works much better.</li>
+      <li><b>It's hard to generate interesting / funny words using a grammar</b>
+      It's not super easy, indeed. Have you tried playing around with Markov 
+      Vocabularies generated from examples you provide? The results of these are 
+      less "controlled" than for a context-free grammar, but they are generally very
+      good at producing similarly-flavoured words. There's also nothing stopping 
+      you from combining CFG- and Markov vocabularies:
+      <p class="fix"><b>BESTOFBOTH</b><br>
+      {^Markov_firsthalf}{^CFG_lasthalf}<br>
+      {^CFG_firstname} {^Markov_lastname}<br>
+      {^CFG_person_role} {^Markov_asimov_name}</span><br><br>
+      </p> 
+      </li> 
       </ul>
       
       

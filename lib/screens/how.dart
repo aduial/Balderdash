@@ -177,7 +177,8 @@ const htmlData = r"""
       <p>The idea is that you provide <b>Balderdash!</b> with a bootstrap vocabulary, 
       say, <b>VOC1</b>. This provides Balderdash! with a starting point for your 
       grammar. Its 'Category' doesn't matter because that's just a label: all 
-      vocabularies are processed in the same way.</p>
+      vocabularies are processed in the same way, except Markov chain Vocabularies 
+      that are marked as such when they are created in the Markov Text screen.</p>
       <p>All vocabularies contain lines with text and commands between curly 
       braces {} that refer to other vocabularies (and perform some other functions 
       that we'll get into later).</p>
@@ -196,11 +197,14 @@ const htmlData = r"""
       across vocabularies, and the results of a well-written grammar (set of 
       vocabularies) can be surprising. Balderdash! can produce combinations 
       of phrases (and, for the bold & brave: new words from separate syllables 
-      or even letters) that you would never have thought of.</p>
+      or even letters) that you would never have thought of.</p> 
+      <p><b>Balderdash</b> can create <b>Markov chain vocabularies</b> from a given example 
+      text: these contain a statistical analysis of the input and generate random 
+      words that are more or less similar to the example.</p>
       <p>In that sense, Balderdash! is (or, really, YOU are) way more creative 
       and free than an AI that obediently regurgitates content found elsewhere.</p>
-      <p>Balderdash! can walk the narrow path between meaningless chaos and boring 
-      copy-pasting, but it is up to you, dear user, to lead the way.</p>
+      <p><b>Balderdash!</b> can walk the narrow path between meaningless chaos and boring 
+      copy-pasting but it is up to you, dear user, to lead the way.</p>
       <p>Copy-pasting and generating chaos are simple; compiling text alternatives, 
       crafting phrase patterns and using variables as contextual cement to produce 
       a grammar that leaves you in stitches is hard, but immensely rewarding.</p>

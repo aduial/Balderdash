@@ -1027,9 +1027,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                               flex: 1,
                               child: IconButton(
                                 icon: const Icon(Icons.search_rounded),
-                                color: vocabularyView.isCFG == 1
-                                    ? violetAppbarColour
-                                    : lightBlueGrey,
+                                color: violetAppbarColour,
                                 onPressed: () {
                                   searchInProjectId = vocabularyView.projectId!;
                                   onUsageSearch(vocabularyView.title ?? '');
@@ -1072,7 +1070,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                                                     .id]!
                                             ? darkAnyMatchColour
                                             : veryVeryDark)
-                                      : lightBlueGrey,
+                                      : blueTextColour,
                                 ),
                                 maxLines: 1,
                               ),
@@ -1091,9 +1089,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                                 vocabularyView.category!,
                                 maxLines: 1,
                                 style: TextStyle(
-                                  color: vocabularyView.isCFG == 1
-                                      ? inActiveLargeSetColour
-                                      : lightBlueGrey,
+                                  color: inActiveLargeSetColour,
                                 ),
                               ),
                             ),
@@ -1111,9 +1107,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                                 vocabularyView.project!,
                                 maxLines: 1,
                                 style: TextStyle(
-                                  color: vocabularyView.isCFG == 1
-                                      ? secondary
-                                      : lightBlueGrey,
+                                  color: secondary,
                                 ),
                               ),
                             ),
@@ -1122,9 +1116,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                             flex: 1,
                             child: IconButton(
                               icon: const Icon(Icons.star_border_rounded),
-                              color: vocabularyView.isCFG == 1
-                                  ? blueAppbarColour
-                                  : lightBlueGrey,
+                              color: blueAppbarColour,
                               onPressed: () {
                                 usingProjectId = vocabularyView.projectId!;
                                 onUsingSearch(vocabularyView);
@@ -1149,9 +1141,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                             flex: 1,
                             child: IconButton(
                               icon: const Icon(Icons.edit),
-                              color: vocabularyView.isCFG == 1
-                                  ? greenAppbarColour
-                                  : lightBlueGrey,
+                              color: greenAppbarColour,
                               onPressed: () {
                                 _navigateToDetailscreen(context, vocabularyView);
                               },
@@ -1161,9 +1151,7 @@ class _VocabularyPageState extends State<VocabularyPage> {
                             flex: 1,
                             child: IconButton(
                               icon: const Icon(Icons.delete),
-                              color: vocabularyView.isCFG == 1
-                                  ? greenAppbarColour
-                                  : lightBlueGrey,
+                              color: greenAppbarColour,
                               onPressed: () async {
                                 final bool
                                 isDelete = await showConfirmationChoiceDialog(

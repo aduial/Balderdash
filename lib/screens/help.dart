@@ -98,7 +98,7 @@ class Help extends StatelessWidget {
                   );
                 },
                 leading: Icon(Icons.article_rounded),
-                title: Text('Vocabularies'),
+                title: Text('Vocabularies and Markov Chains'),
               ),
               ListTile(
                 onTap: () {

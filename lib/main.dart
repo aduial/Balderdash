@@ -217,7 +217,7 @@ class HomeScreenState extends State<HomeScreen> {
                     );
                   },
                   leading: Icon(Icons.recycling_rounded, color: pink),
-                  title: Text('Markov Text'),
+                  title: Text('Markov Chains'),
                 ),
                 ListTile(
                   onTap: () {
