@@ -289,8 +289,11 @@ class _RunPageState extends State<RunPage> {
         .replaceFirst('^', '');
     String varTitle = vc.line.substring(equals + 2, end);
     VocTrace vcn = await retrieveVocabularyVariable(vc, varTitle);
-    await parseVocabulary(vcn);
-    // vcn.localResult.write(await parseVocabulary(vcn));
+    if (vcn.vocabulary.isCFG == 1) {
+      await parseVocabulary(vcn);
+    } else {
+      vcn.localResult.write(markovificate(vcn.vocabulary));
+    }
     stateVariables.addAll({key: vcn.getResult()});
     // chop state var from current line
     vc.line = vc.line.substring(end + 1);
@@ -299,6 +302,7 @@ class _RunPageState extends State<RunPage> {
 
   Future<VocTrace> parseVariable(VocTrace vc) async {
     int repeat = 1;
+    String nextResult = '';
     String varTitle = '';
     if (vc.line.contains(RegExp(r'^{\^?\w*(#\d+-\d+)}'))) {
       repeat = parseNumberBetween(vc);
@@ -309,14 +313,20 @@ class _RunPageState extends State<RunPage> {
     varTitle = vc.line.substring(start + 1, end);
     VocTrace vcn = await retrieveVocabularyVariable(vc, varTitle);
     for (int i = 1; i <= repeat; i++) {
-      vcn.line = pickRandomLine(splitVocabulary(vcn.vocabulary.content!));
-      String nextResult = await parseVocabulary(vcn);
+      if (vcn.vocabulary.isCFG == 1) {
+        // regular voc
+        vcn.line = pickRandomLine(splitVocabulary(vcn.vocabulary.content!));
+        nextResult = await parseVocabulary(vcn);
+      } else {
+        // markov voc
+        nextResult = StringUtils.getCasey(varTitle, markovificate(vcn.vocabulary));
+      }
       if (nextResult.contains(endlessLoopError)) {
         vc.localResult.write(
             "Endless loop detected parsing '${vcn.line}', please review the syntax");
         break;
       } else {
-        vc.localResult.write(await parseVocabulary(vcn));
+        vc.localResult.write(nextResult);
       }
       vcn.localResult.clear();
     }
@@ -524,13 +534,12 @@ class _RunPageState extends State<RunPage> {
     link = pickRandomFromString(markovMap['_']!, keyLength);
     sb.write(link);
     while (nextHalfLink != '_') {
-      // print("link: $link");
       lastHalfLink = link.substring(1);
       nextHalfLink = pickRandomFromString(markovMap[link]!, 1);
       link = lastHalfLink + nextHalfLink;
       sb.write(nextHalfLink);
     }
-    return sb.toString().replaceAll('_', '\n');
+    return sb.toString().replaceAll('_', '');
   }
 
   String pickRandomFromString(String input, int keyLen){

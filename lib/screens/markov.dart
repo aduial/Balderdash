@@ -55,6 +55,7 @@ class _MarkovState extends State<Markov> {
   Future<void> loadPreferences() async {
     showNoNonsense = await asyncPrefs.getInt(noNonsense) ?? 1;
     int projectId = await asyncPrefs.getInt(defaultProject) ?? 1;
+    _projects = DatabaseHelper().getProjectsAbove(0, showNoNonsense == 1);
     await setCurrentProject(projectId);
     // _refreshProjectViewList();
     initComplete = true;
@@ -81,6 +82,7 @@ class _MarkovState extends State<Markov> {
           .last
           .split(".")
           .first
+          .replaceAll(RegExp(r'[\s_-]+'), '')
           .toUpperCase();
     } else {
       return;
@@ -106,7 +108,7 @@ class _MarkovState extends State<Markov> {
       );
     }
     Map<String, Map<String, int>> tokenMap = Token.getTokenMap();
-    markovType = '_DIGRAM';
+    markovType = 'N2';
     createMarkovVocabulary(tokenMap);
   }
 
@@ -124,7 +126,7 @@ class _MarkovState extends State<Markov> {
       }
     }
     Map<String, Map<String, int>> tokenMap = Token.getTokenMap();
-    markovType = '_TRIGRAM';
+    markovType = 'N3';
     createMarkovVocabulary(tokenMap);
     // print(tokenMap.toString());
   }
@@ -143,7 +145,7 @@ class _MarkovState extends State<Markov> {
       }
     }
     Map<String, Map<String, int>> tokenMap = Token.getTokenMap();
-    markovType = '_4GRAM';
+    markovType = 'N4';
     createMarkovVocabulary(tokenMap);
     // print(tokenMap.toString());
   }
@@ -162,7 +164,7 @@ class _MarkovState extends State<Markov> {
       }
     }
     Map<String, Map<String, int>> tokenMap = Token.getTokenMap();
-    markovType = '_5GRAM';
+    markovType = 'N5';
     createMarkovVocabulary(tokenMap);
     // print(tokenMap.toString());
   }
@@ -188,7 +190,7 @@ class _MarkovState extends State<Markov> {
       "category": '',
       "projectId": curProject.id,
       "project": '',
-      "title": fileName + markovType,
+      "title": '${fileName}_$markovType',
       "content": sb.toString(),
       "comment": '',
       "isCFG": 0,
