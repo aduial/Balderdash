@@ -162,9 +162,10 @@ class _UserPreferencesState extends State<UserPreferences> {
               children: [
                 DefaultTextStyle.merge(
                   style: TextStyle(
-                      color: offWhite,
-                      fontSize: 13.5,
-                    fontWeight: FontWeight.bold,),
+                    color: offWhite,
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.bold,
+                  ),
                   child: Container(
                     decoration: BoxDecoration(
                       border: Border.all(color: darkerBlueGrey),
@@ -177,7 +178,7 @@ class _UserPreferencesState extends State<UserPreferences> {
                     ),
                     padding: EdgeInsets.all(7),
                     child: Text(
-                      "Vocabularies screen default Category and Project",
+                      "Vocabulary editor default Category and Project",
                     ),
                   ),
                 ),
@@ -187,6 +188,7 @@ class _UserPreferencesState extends State<UserPreferences> {
                 Row(
                   children: [
                     Expanded(
+                      flex: 3,
                       child: DropdownSearch<Category>(
                         key: _catAppKey,
                         itemAsString: (item) => item.name!,
@@ -208,7 +210,7 @@ class _UserPreferencesState extends State<UserPreferences> {
                             floatingLabelBehavior: FloatingLabelBehavior.always,
                             isDense: true,
                             filled: true,
-                            fillColor: offWhite,
+                            fillColor: notepaperYellow,
                             labelText: 'CATEGORY',
                             // labelText: widget.vocabularyView.category,
                             labelStyle: TextStyle(fontSize: 14 * scaling),
@@ -233,6 +235,30 @@ class _UserPreferencesState extends State<UserPreferences> {
                     ),
                     Padding(padding: EdgeInsets.all(4 * scaling)),
                     Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: middleGreen,
+                          backgroundColor: notepaperYellow,
+                          iconColor: cyanAppbarColour,
+                          shadowColor: Colors.black,
+                        ),
+                        onPressed: () {
+                          buildSnackBar(context, 'Clear default app category');
+                          setState(() {
+                            setAppCategory(1);
+                            storeAppCategory(1);
+                          });
+                        },
+                        child: Text("Clear"),
+                      ),
+                    ),
+                  ],
+                ),
+                Padding(padding: EdgeInsets.all(5 * scaling)),
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 3,
                       child: DropdownSearch<Project>(
                         key: _prjAppKey,
                         itemAsString: (item) => item.title!,
@@ -254,7 +280,7 @@ class _UserPreferencesState extends State<UserPreferences> {
                             floatingLabelBehavior: FloatingLabelBehavior.always,
                             isDense: true,
                             filled: true,
-                            fillColor: offWhite,
+                            fillColor: notepaperYellow,
                             labelText: 'PROJECT',
                             // labelText: widget.vocabularyView.project,
                             labelStyle: TextStyle(fontSize: 14 * scaling),
@@ -278,33 +304,13 @@ class _UserPreferencesState extends State<UserPreferences> {
                         ),
                       ),
                     ),
-                  ],
-                ),
-                Padding(padding: EdgeInsets.all(5 * scaling)),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: middleGreen,
-                          iconColor: cyanAppbarColour,
-                          shadowColor: Colors.black,
-                        ),
-                        onPressed: () {
-                          buildSnackBar(context, 'Clear default app category');
-                          setState(() {
-                            setAppCategory(1);
-                            storeAppCategory(1);
-                          });
-                        },
-                        child: Text("Clear App Category"),
-                      ),
-                    ),
+
                     Padding(padding: EdgeInsets.all(4 * scaling)),
                     Expanded(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           foregroundColor: middleGreen,
+                          backgroundColor: notepaperYellow,
                           iconColor: cyanAppbarColour,
                           shadowColor: Colors.black,
                         ),
@@ -315,7 +321,7 @@ class _UserPreferencesState extends State<UserPreferences> {
                             storeAppProject(1);
                           });
                         },
-                        child: Text("Clear App Project"),
+                        child: Text("Clear"),
                         // const Icon(
                         //   Icons.clear,
                         // ),
@@ -324,13 +330,14 @@ class _UserPreferencesState extends State<UserPreferences> {
                   ],
                 ),
                 Row(
-                  children: [Padding(padding: EdgeInsets.all(14.0 * scaling))],
+                  children: [Padding(padding: EdgeInsets.all(15.0 * scaling))],
                 ),
                 DefaultTextStyle.merge(
                   style: TextStyle(
                     color: offWhite,
                     fontSize: 14.5,
-                    fontWeight: FontWeight.bold),
+                    fontWeight: FontWeight.bold,
+                  ),
                   child: Container(
                     decoration: BoxDecoration(
                       border: Border.all(color: darkerBlueGrey),
@@ -345,7 +352,7 @@ class _UserPreferencesState extends State<UserPreferences> {
                     child: Text("General application settings"),
                   ),
                 ),
-                Padding(padding: EdgeInsets.all(8 * scaling)),
+                Padding(padding: EdgeInsets.all(6 * scaling)),
                 Row(
                   children: [
                     Padding(padding: EdgeInsets.all(4.0 * scaling)),
@@ -419,7 +426,7 @@ class _UserPreferencesState extends State<UserPreferences> {
                       flex: 2,
                       child: const Align(
                         alignment: Alignment.centerLeft,
-                        child: Text("Hide original Nonsense! demo's"),
+                        child: Text("Hide original Nonsense! content"),
                       ),
                     ),
                     Padding(padding: EdgeInsets.all(4.0 * scaling)),
@@ -427,14 +434,15 @@ class _UserPreferencesState extends State<UserPreferences> {
                 ),
 
                 Row(
-                  children: [Padding(padding: EdgeInsets.all(10.0 * scaling))],
+                  children: [Padding(padding: EdgeInsets.all(12.0 * scaling))],
                 ),
 
                 DefaultTextStyle.merge(
                   style: TextStyle(
                     color: offWhite,
                     fontSize: 13.5,
-                    fontWeight: FontWeight.bold,),
+                    fontWeight: FontWeight.bold,
+                  ),
                   child: Container(
                     decoration: BoxDecoration(
                       border: Border.all(color: darkerBlueGrey),
@@ -446,18 +454,16 @@ class _UserPreferencesState extends State<UserPreferences> {
                       ),
                     ),
                     padding: EdgeInsets.all(7),
-                    child: Text(
-                      "Run Balderdash default Category and Project",
-                    ),
+                    child: Text("Run Balderdash default Category and Project"),
                   ),
                 ),
-
                 Row(
                   children: [Padding(padding: EdgeInsets.all(10.0 * scaling))],
                 ),
                 Row(
                   children: [
                     Expanded(
+                      flex: 3,
                       child: DropdownSearch<Category>(
                         key: _catRVocKey,
                         itemAsString: (item) => item.name!,
@@ -482,7 +488,7 @@ class _UserPreferencesState extends State<UserPreferences> {
                             floatingLabelBehavior: FloatingLabelBehavior.always,
                             isDense: true,
                             filled: true,
-                            fillColor: offWhite,
+                            fillColor: notepaperOrange,
                             labelText: 'CATEGORY',
                             // labelText: widget.vocabularyView.category,
                             labelStyle: TextStyle(fontSize: 14 * scaling),
@@ -505,8 +511,37 @@ class _UserPreferencesState extends State<UserPreferences> {
                         ),
                       ),
                     ),
+
                     Padding(padding: EdgeInsets.all(4 * scaling)),
+
                     Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: redAppbarColour,
+                          backgroundColor: notepaperOrange,
+                          iconColor: cyanAppbarColour,
+                          shadowColor: Colors.black,
+                        ),
+                        onPressed: () {
+                          buildSnackBar(
+                            context,
+                            'Clear default run Balderdash category',
+                          );
+                          setState(() {
+                            setRVocCategory(1);
+                            storeRVocCategory(1);
+                          });
+                        },
+                        child: Text("Clear"),
+                      ),
+                    ),
+                  ],
+                ),
+                Padding(padding: EdgeInsets.all(5 * scaling)),
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 3,
                       child: DropdownSearch<Project>(
                         key: _prjRVocKey,
                         itemAsString: (item) => item.title!,
@@ -531,7 +566,7 @@ class _UserPreferencesState extends State<UserPreferences> {
                             floatingLabelBehavior: FloatingLabelBehavior.always,
                             isDense: true,
                             filled: true,
-                            fillColor: offWhite,
+                            fillColor: notepaperOrange,
                             labelText: 'PROJECT',
                             // labelText: widget.vocabularyView.project,
                             labelStyle: TextStyle(fontSize: 14 * scaling),
@@ -555,45 +590,28 @@ class _UserPreferencesState extends State<UserPreferences> {
                         ),
                       ),
                     ),
-                  ],
-                ),
 
-                Padding(padding: EdgeInsets.all(5 * scaling)),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: redAppbarColour,
-                          iconColor: cyanAppbarColour,
-                          shadowColor: Colors.black,
-                        ),
-                        onPressed: () {
-                          buildSnackBar(context, 'Clear default run Balderdash category');
-                          setState(() {
-                            setRVocCategory(1);
-                            storeRVocCategory(1);
-                          });
-                        },
-                        child: Text("Clear Run Category"),
-                      ),
-                    ),
                     Padding(padding: EdgeInsets.all(4 * scaling)),
+
                     Expanded(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           foregroundColor: redAppbarColour,
+                          backgroundColor: notepaperOrange,
                           iconColor: cyanAppbarColour,
                           shadowColor: Colors.black,
                         ),
                         onPressed: () {
-                          buildSnackBar(context, 'Clear default Run Balderdash project');
+                          buildSnackBar(
+                            context,
+                            'Clear default Run Balderdash project',
+                          );
                           setState(() {
                             setRVocProject(1);
                             storeRVocProject(1);
                           });
                         },
-                        child: Text("Clear Run Project"),
+                        child: Text("Clear"),
                         // const Icon(
                         //   Icons.clear,
                         // ),
