@@ -53,8 +53,12 @@ class Help extends StatelessWidget {
                 ),
                 clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
-                  // color: Colors.black12,
+                  color: Colors.black12,
                   shape: BoxShape.circle,
+                  border: Border.all(
+                    color: darkerBlueGrey,
+                    width: 1.0,
+                  ),
                 ),
                 child: Image.asset(
                   getHelpImg(),
@@ -98,7 +102,7 @@ class Help extends StatelessWidget {
                   );
                 },
                 leading: Icon(Icons.article_rounded),
-                title: Text('Vocabularies and Markov Chains'),
+                title: Text('Vocabularies & Markov Chains'),
               ),
               ListTile(
                 onTap: () {

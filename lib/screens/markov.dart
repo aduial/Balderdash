@@ -88,7 +88,8 @@ class _MarkovState extends State<Markov> {
       return;
     }
     fileContent = fileContent.replaceAll(RegExp(r'\s+'), '_').toLowerCase();
-    fileContent = fileContent.replaceAll(RegExp('[^A-Za-z_]'), '');
+    // remove non-word characters - a-z A_Z +accented +underscore
+    fileContent = fileContent.replaceAll(RegExp('\W'), '');
     setState(() {
       if (fileContent.isEmpty) {
         fileLoaded = false;

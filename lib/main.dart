@@ -345,14 +345,14 @@ class HomeScreenState extends State<HomeScreen> {
                     padding: EdgeInsetsDirectional.fromSTEB(
                         20 * scaling, 0 * scaling, 20 * scaling, 0 * scaling),
                     child: Text(
-                      "A million monkeys with typewriters in your pocket "
+                      "A million monkeys with typewriters in your pocket, "
                       "without the bananas and ink ribbons.",
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                           color: ithildin,
                           fontWeight: FontWeight.w300,
                           fontStyle: FontStyle.italic,
-                          fontSize: 15 * scaling),
+                          fontSize: 20 * scaling),
                     ),
                   ),
                 ),
@@ -375,8 +375,10 @@ class HomeScreenState extends State<HomeScreen> {
                     padding: EdgeInsetsDirectional.fromSTEB(
                         20 * scaling, 0, 20 * scaling, 0),
                     child: Text(
-                      "Balderdash! is a re-implementation of the 2001 context-free-grammar text generator 'Nonsense' by James Baughn, Fred Hirsch and Peter Suschlik "
-                      "(nonsense.sourceforge.net) and is dedicated to the memory of James Baughn (†2020)",
+                      "Balderdash! is a re-implementation (with some extras) of "
+                      "the 2001 context-free-grammar text generator 'Nonsense' "
+                      "by James Baughn, Fred Hirsch and Peter Suschlik (nonsense.sourceforge.net) "
+                      "and is dedicated to the memory of James Baughn (†2020)",
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                           color: ithildin,
@@ -460,7 +462,7 @@ class HomeScreenState extends State<HomeScreen> {
                     padding: EdgeInsetsDirectional.fromSTEB(
                         30 * scaling, 10 * scaling, 30 * scaling, 10 * scaling),
                     child: Text(
-                      "Balderdash! was built by Lúthien Dulk\n(https://animatrice.nl)",
+                      "Balderdash! was built by Lúthien Dulk\nhttps://animatrice.nl",
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                           color: ithildin,

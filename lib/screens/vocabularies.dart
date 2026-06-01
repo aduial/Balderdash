@@ -344,90 +344,93 @@ prefixed with a dollar sign:<p>
 warned that it can make things <i>really</i> complex  <i>really</i> fast.</p>
 <p>To give a very basic example:</p>
 
-<p class="fix">POINTERDEMO<br>
+<p class='fix'><span class='title'>POINTERDEMO</span><br>
 ${lc}Fixpplwords$rc$lc${dl}Name$rc is my $lc${dl}person$rc<br>
-${lc}Fixpplwords$rc$lc$dl${dl}Name$rc is $lc$dl${dl}person$rc<br>
-<br>
-FIXPPLWORDS<br>
+${lc}Fixpplwords$rc$lc$dl${dl}Name$rc is $lc$dl${dl}person$rc<br></p>
+
+<p class='fix'><span class='title'>FIXPPLWORDS</span><br>
 ${lc}Name${av}Femname$rc${lc}Person${av}Femperson}<br>
-${lc}Name${av}Malename$rc${lc}Person${av}Maleperson}<br>
-<br>
-FEMNAME<br>
+${lc}Name${av}Malename$rc${lc}Person${av}Maleperson}<br></p>
+
+
+<p class='fix'><span class='title'>FEMNAME</span><br>
 Petra<br>
 Purkje<br>
-Eline<br>
-<br>
-PETRA<br>
+Eline<br></p>
+
+<p class='fix'><span class='title'>PETRA</span><br>
 Petraya<br>
 Pie-traa<br>
-Mrs. P<br>
-<br>
-PURKJE<br>
+Ms. P<br></p>
+
+<p class='fix'><span class='title'>PURKJE</span><br>
 Pien<br>
 Petronella<br>
-Plien<br>
-<br>
-ELINE<br>
-Vere<br>
-Klapsie<br>
-<br>
-MALENAME<br>
+Plien<br></p>
+
+<p class='fix'><span class='title'>ELINE</span><br>
+Eline<br>
+Klapsie<br></p>
+
+
+<p class='fix'><span class='title'>MALENAME</span><br>
 John<br>
 Robert<br>
-Giovanni<br>
-<br>
-JOHN<br>
+Giovanni<br></p>
+
+<p class='fix'><span class='title'>JOHN</span><br>
 Johnny<br>
 Jan<br>
-Sjon 'the Knife'<br>
-<br>
-ROBERT<br>
+Het 'Rekenwonder'<br>
+Sjon 'the Knife'<br></p>
+
+<p class='fix'><span class='title'>ROBERT</span><br>
 Roberto<br>
 Robbie<br>
-Rob<br>
-<br>
-GIOVANNI<br>
-Iohan<br>
-<br>
-MALEPERSON<br>
+Rob<br></p>
+
+<p class='fix'><span class='title'>GIOVANNI</span><br>
+Johannes<br>
+Iohan<br></p>
+
+<p class='fix'><span class='title'>MALEPERSON</span><br>
 uncle<br>
 nephew<br>
-grandpa<br>
-<br>
-UNCLE<br>
+grandpa<br><\p>
+
+<p class='fix'><span class='title'>UNCLE</span><br>
 an uncle-of-sorts<br>
 actually called Ranucle<br>
-my German 'Onkel'<br>
-<br>
-NEPHEW<br>
+my German 'Onkel'<br></p>
+
+<p class='fix'><span class='title'>NEPHEW</span><br>
 actually quite a good guitar-player<br>
 my best friend<br>
-kind of a German 'Dieter'<br>
-<br>
-GRANDPA<br>
+kind of a German 'Dieter'<br></p>
+
+<p class='fix'><span class='title'>GRANDPA</span><br>
 a blunderbuss-wielding old-timer grandpa<br>
 an ancestor<br>
-my hero<br>
-<br>
-FEMPERSON<br>
+my hero<br></p>
+
+<p class='fix'><span class='title'>FEMPERSON</span><br>
 aunt<br>
 niece<br>
-maternal grandma<br>
-<br>
-AUNT<br>
-affectionally called "tantetje"<br>
+maternal grandma<br></p>
+
+<p class='fix'><span class='title'>AUNT</span><br>
+affectionally called "Tantanna"<br>
 my mother<br>
-really something else<br>
-<br>
-NIECE<br>
+really something else<br></p>
+
+<p class='fix'><span class='title'>NIECE</span><br>
 a nice niece<br>
 actually my mother's neigbour lady<br>
-known by some as "Noes"<br>
-<br>
-GRANDMA<br>
+known by some as "Noes"<br></p>
+
+<p class='fix'><span class='title'>GRANDMA</span><br>
 Mrs.-Grandma-to-you<br>
-a true "Grammy Award"
-</p>
+a true "Grammy Award"<br></p>
 
 <p>The first line in <b>POINTERDEMO</b> could produce:</p>
 <ul>
@@ -439,12 +442,13 @@ a true "Grammy Award"
 <li><b>Petronella is really something else</b></li>
 <li><b>Klapsie is my mother's neighbour lady</b> ... etcetera.</li></ul>
 
-<p>Just sayin' ... you best understand the above before you start messing around with
-it. And this is just one level of pointers: there's nothing stopping you from
-using them in, say, <b>MALENAME</b> - but let me stop here, before people get
-funny ideas about warping reality or messing with the Noosphere, which is best 
-left to the good folk at the <a href="https://scp-wiki.wikidot.com/">
-SCP wiki</a>.</p>
+<p>Just sayin' ... It is a good idea to thoroughly understand the above before you 
+twist your brain into <a href ="https://www.youtube.com/watch?v=WPXgaSfUWA8">Jones knot
+</a> that requires solving the smooth Poincaré conjecture to untangle it. And this 
+is just one level of pointers: there's nothing stopping you from using them in, 
+say, <b>MALENAME</b> - but let me stop here, before people get funny ideas about 
+warping reality or messing with the Noosphere, which is best left to the good 
+folk at the <a href="https://scp-wiki.wikidot.com/">SCP wiki</a>.</p>
 
 <p>It's probably best to set all variables together in a dedicated one-line 
 vocabulary titled <b>{SETVARIABLES}</b> (set it to the 'set variables' category), 

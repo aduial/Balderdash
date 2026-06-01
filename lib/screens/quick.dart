@@ -212,7 +212,8 @@ const htmlData = r"""
       <li><b>FATWANTIPPEKIPPES</b> and <b>SNAZIAKPIEGSTRIX</b> are superpositions
       of the two above</li>
       <li><b>JACKVANCENAMES</b> generates a list of character names reminiscent of
-      those found in Jack Vance's fantastical SF stories</li>
+      those found in Jack Vance's fantastical SF stories. Uses a mix of CFG and 
+      Markov-chaining.</li>
       <li><b>FINNWORDS</b> early attempt to create Finnish-looking words. Needs more work.</li>
       <li><b>KRAKOEWORDS</b> fooling around with croaky gutteral-sounding phonemes 
       resulting in vaguely Orcish or Klingon-ish words. Probabl overuses the circonflex
@@ -230,24 +231,24 @@ const htmlData = r"""
       <li><b>KIFFAZ</b> The A to Z of the Quadruple Cynosures of Meretriciously 
       Incommodious Stridency</li>
       <li><b>MAKIFF</b> One single line of the above</li>
-      <li><b>FANTASY_SF_TITLES</b> Another attempt at Emperor Disrobement, 
-      aimed at the kind of Fantasy that comes up with stuff like "the Garment of 
-      Punishing", and at the sub-genre known as "grimdark" in particular. Throws
-      in the occasional <b>Lovecraftian Abomination of the Day</b> by way of bonus.</li>
+      <li><b>FANTASY_SF_TITLES</b> Another attempt at 'Emperor Disrobement', aimed 
+      at the kind of fantasy stories that plague humanity with gems like 'The Garment 
+      of Punishing', and at the 'grimdark' subgenre in particular. Throws
+      in the occasional <b>Lovecraftian Abomination of the Day</b>.</li>
       <li><b>BLAHBLAHBLAH1-4</b> Check this out if you urgently need a snazzy 'Call
       to Action' in the Cultural Heritage Sector.</li>
       <li><b>ALIENNAMES</b> Well, that.</li>
       <li><b>AMGBOEKSERIE</b> Satirical: generates a series of children's book titles, 
       suggesting plots with increasing psychological complications as the audience
       grows up. In Dutch.</li>
-      <li><b>APALLINGNAMES</b> As it says: an experiment with the most dreadful 
-      phonemes. Be warned.</li>
-      <li><b>BOEVEN</b> Names of Dutch criminals, as they appear in certain television
+      <li><b>APALLINGNAMES</b> As it says. This is an experiment with 'Phoneme Engineering' 
+      involving the most dreadful phonemes. Be warned.</li>
+      <li><b>BOEVEN</b> Names of Dutch criminals as they appear in certain television
       series.</li>
       <li><b>CORPORATENAMES</b> TBD</li>
       <li><b>EMBARRASSINGWORDS</b> Almost as bad as APALLINGNAMES.</li>
       <li><b>NAAMEN</b> TBD</li>
-      <li><b>SILLYNAMES</b> weird, but light-hearted. Safe.</li>
+      <li><b>SILLYNAMES</b> weird, but harmless.</li>
       </ul>
       </p>
      
