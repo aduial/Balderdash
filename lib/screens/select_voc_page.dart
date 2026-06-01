@@ -60,8 +60,8 @@ class _SelectVocPageState extends State<SelectVocPage> {
   }
 
   Future loadPreferences() async {
-    categoryId = await asyncPrefs.getInt(defaultCategory) ?? 1;
-    projectId = await asyncPrefs.getInt(defaultProject) ?? 1;
+    categoryId = await asyncPrefs.getInt(rVocCategory) ?? 1;
+    projectId = await asyncPrefs.getInt(rVocProject) ?? 1;
     showNoNonsense = await asyncPrefs.getInt(noNonsense) ?? 1;
     _projects = DatabaseHelper().getProjectsAbove(0, showNoNonsense == 1);
     _categories = DatabaseHelper().getCategoriesAbove(0);

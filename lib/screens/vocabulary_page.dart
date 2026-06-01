@@ -84,8 +84,8 @@ class _VocabularyPageState extends State<VocabularyPage> {
   }
 
   Future loadPreferences() async {
-    categoryId = await asyncPrefs.getInt(defaultCategory) ?? 1;
-    projectId = await asyncPrefs.getInt(defaultProject) ?? 1;
+    categoryId = await asyncPrefs.getInt(appCategory) ?? 1;
+    projectId = await asyncPrefs.getInt(appProject) ?? 1;
     markVVListOnSave = await asyncPrefs.getInt(markOnSave) ?? 1;
     showNoNonsense = await asyncPrefs.getInt(noNonsense) ?? 1;
     _projects = DatabaseHelper().getProjectsAbove(0, showNoNonsense == 1);
