@@ -298,7 +298,9 @@ class _ImExportState extends State<ImExport> {
     if (result != null) {
       importedFile = File(result.files.first.path!);
       importedPath = importedFile.path;
-      fileContent = String.fromCharCodes(importedFile.readAsBytesSync());
+
+      fileContent = await importedFile.readAsString();
+      // fileContent = String.fromCharCodes(importedFile.readAsBytesSync());
     } else {
       return;
     }

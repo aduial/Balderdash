@@ -76,7 +76,7 @@ class _MarkovState extends State<Markov> {
     if (result != null) {
       importedFile = File(result.files.first.path!);
       importedPath = importedFile.path;
-      fileContent = "_${String.fromCharCodes(importedFile.readAsBytesSync())}";
+      fileContent = await importedFile.readAsString();
       fileName = importedFile.path
           .split(Platform.pathSeparator)
           .last
